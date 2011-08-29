@@ -1,22 +1,26 @@
 /**
- * BaseEntityImpl
+ * AbstractHibernateEntity
  * (C) 2011 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
  *
- * Created on Aug 25, 2011
+ * Created on Aug 29, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.orm.hibernate;
 
 import java.util.Date;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * 
@@ -33,9 +37,9 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
      * @return The ID of the data entity.
      */
     // TODO: @GeneratedValue won't work with H2, but @SequenceGenerator will. Why?
+    // @SequenceGenerator(name="seq", initialValue=1, allocationSize=100)
     @Id
-    // @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @SequenceGenerator(name="seq", initialValue=1, allocationSize=100)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Override
     public long getId() {
         return _id;
@@ -47,6 +51,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
      * directly.
      * @param id The ID to set for the data entity.
      */
+    @Override
     public void setId(long id) {
         _id = id;
     }
@@ -74,59 +79,92 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
     @Override
     public void setEnabled(boolean enabled) {
         _enabled = enabled;
-    }
-
-    /**
-     * Sets the timestamp of the last update to the data entity.
-     * @param timestamp The timestamp of the last update to the data entity.
-     */
-    @Override
-    public void setTimestamp(Date timestamp) {
-        _timestamp = timestamp;
-    }
-
-    /**
-     * Returns the timestamp of the last update to the data entity.
-     * @return The timestamp of the last update to the data entity.
-     */
-    @Override
-    public Date getTimestamp() {
-        return _timestamp;
-    }
-    /**
-     * Sets the timestamp of the data entity's creation.
-     * @param timestamp The timestamp of the data entity's creation.
-     */
-    @Override
-    public void setCreated(Date created) {
-        _created = created;
+        _disabled = enabled ? null : new Date();
     }
 
     /**
      * Returns the timestamp of the data entity's creation.
      * @return The timestamp of the data entity's creation.
      */
+    @Temporal(TemporalType.TIMESTAMP)
     @Override
     public Date getCreated() {
         return _created;
     }
 
     /**
-     * Indicates whether this entity class is deletable. If so, the {@link BaseHibernateDAO#delete(Object)}
-     * method will actually delete the entity from the database. Otherwise, it calls the
-     * {@link #setEnabled(boolean)} method, setting the enabled state to <b>false</b>. This returns
-     * the value of the protected static member {@link #DELETABLE}. You can change the deletable
-     * state of an entity class by overriding that value or by overriding this method. 
-     * @see BaseHibernateEntity#isDeletable()
+     * Sets the timestamp of the data entity's creation.
+     * @param timestamp The timestamp of the data entity's creation.
      */
-    @Override
-    @Transient
-    public boolean isDeletable() {
-        return DELETABLE;
+    public void setCreated(Date created) {
+        _created = created;
     }
-    protected static boolean DELETABLE = true;
+
+    /**
+     * Returns the timestamp of the last update to the data entity.
+     * @return The timestamp of the last update to the data entity.
+     */
+    @Temporal(TemporalType.TIMESTAMP)
+    @Override
+    public Date getTimestamp() {
+        return _timestamp;
+    }
+
+    /**
+     * Sets the timestamp of the last update to the data entity.
+     * @param timestamp The timestamp to set for the last update to the data entity.
+     */
+    @Temporal(TemporalType.TIMESTAMP)
+    @Override
+    public void setTimestamp(Date timestamp) {
+        _timestamp = timestamp;
+    }
+    
+    /**
+     * Returns the timestamp of the data entity's disabling.
+     * @return The timestamp of the data entity's disabling.
+     */
+    @Temporal(TemporalType.TIMESTAMP)    
+    @Override
+    public Date getDisabled() {
+        return _disabled;
+    }
+    
+    /**
+     * Sets the timestamp of the data entity's disabling.
+     * @param disabled The timestamp to set for the data entity's disabling.
+     */
+    @Temporal(TemporalType.TIMESTAMP)    
+    @Override
+    public void setDisabled(Date disabled) {
+        _disabled = disabled;
+    }
+    
+    /**
+     * Handles the pre-persist event, which occurs as the object is first persisted
+     * to the database, i.e. at creation. This sets the created and timestamp properties
+     * to the current date and time.
+     */
+    // TODO: Need to move to JPA instead of Hibernate to take advantage of persistence lifecycle annotations.
+    @PrePersist
+    protected void onCreate() {
+        _created = _timestamp = new Date();
+    }
+
+    /**
+     * Handles the pre-update event, which occurs as the object is updated and pushed
+     * to the database, i.e. at modification. This sets the timestamp property to the
+     * current date and time.
+     */
+    // TODO: Need to move to JPA instead of Hibernate to take advantage of persistence lifecycle annotations.
+    @PreUpdate
+    protected void onUpdate() {
+        _timestamp = new Date();
+    }
+
     private long _id = 0;
     private boolean _enabled = true;
-    private Date _created = new Date();
-    private Date _timestamp = new Date();
+    private Date _created;
+    private Date _timestamp;
+    private Date _disabled = new Date(0);
 }

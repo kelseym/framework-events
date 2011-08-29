@@ -1,13 +1,15 @@
 /**
- * BaseService
+ * BaseHibernateService
  * (C) 2011 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
  *
- * Created on Aug 24, 2011
+ * Created on Aug 29, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.orm.hibernate;
+
+import java.util.List;
 
 import org.nrg.framework.services.NrgService;
 
@@ -56,4 +58,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param entity The entity to be deleted.
      */
     public abstract void delete(E entity);
+    
+    public abstract List<E> getAll();
+    public abstract List<E> getAllWithDisabled();
 }

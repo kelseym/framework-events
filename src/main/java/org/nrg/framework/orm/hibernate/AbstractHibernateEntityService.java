@@ -1,13 +1,16 @@
 /**
- * AbstractEntityServiceImpl
+ * AbstractHibernateEntityService
  * (C) 2011 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
  *
- * Created on Aug 24, 2011 by Rick Herrick <rick.herrick@wustl.edu>
+ * Created on Aug 29, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.orm.hibernate;
+
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +24,13 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Rick Herrick <rick.herrick@wustl.edu>
  */
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity> implements BaseHibernateService<E> {
+
+    @SuppressWarnings("unchecked")
+    public AbstractHibernateEntityService() {
+        ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
+        _parameterizedType = (Class<E>) parameterizedType.getActualTypeArguments()[0];
+        _isAuditable = HibernateUtils.isAuditable(_parameterizedType);
+    }
 
     /**
      * @return A new empty entity object.
@@ -50,7 +60,11 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         if (_log.isDebugEnabled()) {
             _log.debug("Retrieving entity for ID: " + id);
         }
-        return getDao().retrieve(id);
+        if (_isAuditable) {
+            return getDao().findEnabledById(id);
+        } else {
+            return getDao().retrieve(id);
+        }
     }
 
     /**
@@ -72,11 +86,11 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         if (_log.isDebugEnabled()) {
             _log.debug("Deleting entity for ID: " + entity.getId());
         }
-        if (entity.isDeletable()) {
-            getDao().delete(entity);
-        } else {
+        if (_isAuditable) {
             entity.setEnabled(false);
             getDao().update(entity);
+        } else {
+            getDao().delete(entity);
         }
     }
 
@@ -91,11 +105,27 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         delete(getDao().retrieve(id));
     }
 
+    @Transactional
+    public List<E> getAll() {
+        _log.debug("Getting all enabled entities");
+        return getDao().findAllEnabled();
+    }
+
+    @Transactional
+    public List<E> getAllWithDisabled() {
+        _log.debug("Getting all enabled and disabled entities");
+        return getDao().findAll();
+    }
+
+    
     /**
      * Gets the DAO configured for the service instance.
      * @return The DAO object.
      */
     abstract protected BaseHibernateDAO<E> getDao();
 
+
     private static final Log _log = LogFactory.getLog(AbstractHibernateEntityService.class);
+    private boolean _isAuditable;
+    private Class<E> _parameterizedType;
 }
