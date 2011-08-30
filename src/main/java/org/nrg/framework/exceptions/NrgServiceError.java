@@ -11,9 +11,13 @@ package org.nrg.framework.exceptions;
 
 public enum NrgServiceError {
 	Unknown,
-	AlreadyInitialized,
+	AlreadyInitialized, 
+	ChannelRendererNotFound, 
+	ChannelRendererProcessingError,
 	DuplicateDefinition,
-	DuplicateSubscriber;
+	DuplicateSubscriber,
+	InvalidChannelRenderer,
+	UnknownChannelRendererError;
 	
 	public static NrgServiceError Default = Unknown;
 }

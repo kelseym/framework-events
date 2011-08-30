@@ -117,6 +117,39 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         return getDao().findAll();
     }
 
+    @Transactional
+    public void refresh(E entity) {
+        refresh(true, entity);
+    }
+    
+    @Transactional
+    public void refresh(List<E> entities) {
+        refresh(true, entities);
+    }
+    
+    @Transactional
+    public void refresh(E... entities) {
+        refresh(true, entities);
+    }
+    
+    @Transactional
+    public void refresh(boolean initialize, E entity) {
+        getDao().refresh(initialize, entity);
+    }
+    
+    @Transactional
+    public void refresh(boolean initialize, List<E> entities) {
+        for (E entity : entities) {
+            getDao().refresh(initialize, entity);
+        }
+    }
+    
+    @Transactional
+    public void refresh(boolean initialize, E... entities) {
+        for (E entity : entities) {
+            getDao().refresh(initialize, entity);
+        }
+    }
     
     /**
      * Gets the DAO configured for the service instance.

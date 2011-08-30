@@ -61,4 +61,11 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
     
     public abstract List<E> getAll();
     public abstract List<E> getAllWithDisabled();
+    
+    public abstract void refresh(E entity);
+    public abstract void refresh(List<E> entities);
+    public abstract void refresh(E... entities);
+    public abstract void refresh(boolean initialize, E entity);
+    public abstract void refresh(boolean initialize, List<E> entities);
+    public abstract void refresh(boolean initialize, E... entities);
 }

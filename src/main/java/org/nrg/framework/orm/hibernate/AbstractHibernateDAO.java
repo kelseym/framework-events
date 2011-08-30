@@ -17,6 +17,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
@@ -189,7 +190,15 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> implem
         E entity = findById(id, lock);
         return entity != null && entity.isEnabled() ? entity : null;
     }
-    
+
+    @Override
+    public void refresh(boolean initialize, E entity) {
+        getSession().refresh(entity);
+        if (initialize) {
+            Hibernate.initialize(entity);
+        }
+    }
+
     protected Session getSession() {
         try {
             return _factory.getCurrentSession();

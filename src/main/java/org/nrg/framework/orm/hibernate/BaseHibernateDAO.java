@@ -43,5 +43,7 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
     public abstract E findEnabledById(long id, boolean lock);
     
     public abstract List<E> findByExample(E exampleInstance, String[] excludeProperty);
+    
+    public abstract void refresh(boolean initialize, E entity);
 
 }
