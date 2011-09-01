@@ -47,6 +47,28 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<finalName>nrg-framework-${project.version}</finalName>
+        <plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>findbugs-maven-plugin</artifactId>
+			</plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+				<artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+        </plugins>
+	</build>
+
     <reporting>
         <plugins>
             <plugin>
