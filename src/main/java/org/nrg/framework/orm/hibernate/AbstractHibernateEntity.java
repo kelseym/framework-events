@@ -39,7 +39,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
     // TODO: @GeneratedValue won't work with H2, but @SequenceGenerator will. Why?
     // @SequenceGenerator(name="seq", initialValue=1, allocationSize=100)
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Override
     public long getId() {
         return _id;
