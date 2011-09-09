@@ -43,6 +43,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      * @param entity The entity to be added to the system.
      * @see BaseHibernateService#create(Object)
      */
+    @Override
     @Transactional
     public void create(E entity) {
         if (_log.isDebugEnabled()) {
@@ -55,6 +56,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      * 
      * @see BaseHibernateService#retrieve(long)
      */
+    @Override
     @Transactional
     public E retrieve(long id) {
         if (_log.isDebugEnabled()) {
@@ -70,6 +72,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     /**
      * @see BaseHibernateService#update(Object)
      */
+    @Override
     @Transactional
     public void update(E entity) {
         if (_log.isDebugEnabled()) {
@@ -81,6 +84,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     /**
      * @see BaseHibernateService#delete(Object)
      */
+    @Override
     @Transactional
     public void delete(E entity) {
         if (_log.isDebugEnabled()) {
@@ -97,6 +101,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     /**
      * @see BaseHibernateService#delete(long)
      */
+    @Override
     @Transactional
     public void delete(long id) {
         if (_log.isDebugEnabled()) {
@@ -105,38 +110,45 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         delete(getDao().retrieve(id));
     }
 
+    @Override
     @Transactional
     public List<E> getAll() {
         _log.debug("Getting all enabled entities");
         return getDao().findAllEnabled();
     }
 
+    @Override
     @Transactional
     public List<E> getAllWithDisabled() {
         _log.debug("Getting all enabled and disabled entities");
         return getDao().findAll();
     }
 
+    @Override
     @Transactional
     public void refresh(E entity) {
         refresh(true, entity);
     }
     
+    @Override
     @Transactional
     public void refresh(List<E> entities) {
         refresh(true, entities);
     }
     
+    @Override
     @Transactional
     public void refresh(E... entities) {
         refresh(true, entities);
     }
     
+    @Override
     @Transactional
     public void refresh(boolean initialize, E entity) {
         getDao().refresh(initialize, entity);
     }
     
+    @Override
     @Transactional
     public void refresh(boolean initialize, List<E> entities) {
         for (E entity : entities) {
@@ -144,6 +156,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
     }
     
+    @Override
     @Transactional
     public void refresh(boolean initialize, E... entities) {
         for (E entity : entities) {
@@ -156,7 +169,6 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      * @return The DAO object.
      */
     abstract protected BaseHibernateDAO<E> getDao();
-
 
     private static final Log _log = LogFactory.getLog(AbstractHibernateEntityService.class);
     private boolean _isAuditable;

@@ -16,7 +16,9 @@ public enum NrgServiceError {
 	ChannelRendererProcessingError,
 	DuplicateDefinition,
 	DuplicateSubscriber,
-	InvalidChannelRenderer,
+	InvalidChannelRenderer, 
+	NoMatchingCategory,
+	NoMatchingDefinition,
 	UnknownChannelRendererError;
 	
 	public static NrgServiceError Default = Unknown;
