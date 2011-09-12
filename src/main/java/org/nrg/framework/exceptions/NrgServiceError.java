@@ -16,7 +16,9 @@ public enum NrgServiceError {
 	ChannelRendererProcessingError,
 	DuplicateDefinition,
 	DuplicateSubscriber,
-	InvalidChannelRenderer, 
+	GenericMailError,
+	InvalidChannelRenderer,
+	InvalidMailAttachment,
 	NoMatchingCategory,
 	NoMatchingDefinition,
 	UnknownChannelRendererError;
