@@ -10,7 +10,6 @@
 package org.nrg.framework.orm.hibernate;
 
 import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
 import java.util.Date;
 import java.util.List;
 
@@ -37,13 +36,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Rick Herrick <rick.herrick@wustl.edu>
  */
-abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> implements BaseHibernateDAO<E> {
-    @SuppressWarnings("unchecked")
+abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateDAO<E> {
     protected AbstractHibernateDAO()
     {
-        ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-        _parameterizedType = (Class<E>) parameterizedType.getActualTypeArguments()[0];
-        _isAuditable = HibernateUtils.isAuditable(_parameterizedType);
+        super();
+        _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
     }
 
     protected AbstractHibernateDAO(SessionFactory factory)
@@ -220,16 +217,10 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> implem
         return crit.list();
     }
 
-    protected Class<E> getParameterizedType()
-    {
-        return _parameterizedType;
-    }
-
     private static final Log _log = LogFactory.getLog(AbstractHibernateDAO.class);
 
     @Autowired
     private SessionFactory _factory;
     
-    private Class<E> _parameterizedType;
     private boolean _isAuditable;
 }

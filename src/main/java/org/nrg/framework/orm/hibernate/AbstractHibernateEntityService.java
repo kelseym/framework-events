@@ -9,7 +9,6 @@
  */
 package org.nrg.framework.orm.hibernate;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -23,13 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author Rick Herrick <rick.herrick@wustl.edu>
  */
-abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity> implements BaseHibernateService<E> {
+abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E> {
 
-    @SuppressWarnings("unchecked")
     public AbstractHibernateEntityService() {
-        ParameterizedType parameterizedType = (ParameterizedType) getClass().getGenericSuperclass();
-        _parameterizedType = (Class<E>) parameterizedType.getActualTypeArguments()[0];
-        _isAuditable = HibernateUtils.isAuditable(_parameterizedType);
+        super();
+        _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
     }
 
     /**
@@ -172,5 +169,4 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
 
     private static final Log _log = LogFactory.getLog(AbstractHibernateEntityService.class);
     private boolean _isAuditable;
-    private Class<E> _parameterizedType;
 }
