@@ -68,4 +68,12 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
     public abstract void refresh(boolean initialize, E entity);
     public abstract void refresh(boolean initialize, List<E> entities);
     public abstract void refresh(boolean initialize, E... entities);
+    
+    /**
+     * Provides a hook for programmatically validating entities before committing them
+     * to the database. 
+     * @param entity The entity to be validated.
+     * @return A non-null string with a message if the entity has invalid state, null otherwise.
+     */
+    public abstract String validate(E entity);
 }

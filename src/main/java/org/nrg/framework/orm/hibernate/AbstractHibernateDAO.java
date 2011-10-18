@@ -43,6 +43,12 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
     }
 
+    protected AbstractHibernateDAO(Class<E> clazz)
+    {
+        super(clazz);
+        _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
+    }
+    
     protected AbstractHibernateDAO(SessionFactory factory)
     {
         if (_log.isDebugEnabled())

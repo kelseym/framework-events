@@ -11,6 +11,9 @@ package org.nrg.framework.orm.hibernate;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+
+import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClassUsageException;
 
 /**
  * 
@@ -29,6 +32,9 @@ abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity>
             }
             if (superclass instanceof ParameterizedType) {
                 parameterizedType = (ParameterizedType) superclass;
+                if (parameterizedType.getActualTypeArguments()[0] instanceof TypeVariable) {
+                    throw new InvalidDirectParameterizedClassUsageException("When using a parameterized worker directly (i.e. with a generic subclass), you must call the AbstractParameterizedWorker constructor that takes the parameterized type directly.");
+                }
             } else {
                 clazz = clazz.getSuperclass();
             }
@@ -36,7 +42,11 @@ abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity>
         _parameterizedType = (Class<E>) parameterizedType.getActualTypeArguments()[0];
     }
 
-    protected Class<E> getParameterizedType() {
+    protected AbstractParameterizedWorker(Class<E> clazz) {
+        _parameterizedType = clazz;
+    }
+
+        protected Class<E> getParameterizedType() {
         return _parameterizedType;
     }
 

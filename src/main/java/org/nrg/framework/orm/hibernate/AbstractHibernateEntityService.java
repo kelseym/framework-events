@@ -22,6 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author Rick Herrick <rick.herrick@wustl.edu>
  */
+// TODO: Integrate calls to the validate() method in the methods that commit objects to the database. Currently that returns a String,
+// but this should probably be modified to either throw an exception or return a more complex object that has a severity and message.
+// For example, in the exclusion service, you can save a System-scoped object with a target ID. This is worth a warning, but not worth
+// an error. However, you can NOT save a Project- or DataType-scoped object WITHOUT a target ID, since you need something to relate with
+// the scope. That should be an error or fatal or something.
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E> {
 
     public AbstractHibernateEntityService() {
@@ -160,7 +165,18 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
             getDao().refresh(initialize, entity);
         }
     }
-    
+
+    /**
+     * Provides a default validation method that can be overridden in specific implementations.
+     * This implementation always returns <b>null</b>, i.e. entities are always considered to
+     * be in a valid state. Overriding implementations should return a non-null string message
+     * for entities that are in an invalid state, but otherwise return null.
+     */
+    @Override
+    public String validate(E entity) {
+        return null;
+    }
+
     /**
      * Gets the DAO configured for the service instance.
      * @return The DAO object.
