@@ -20,9 +20,11 @@ public enum NrgServiceError {
 	InvalidChannelRenderer,
 	InvalidDirectParameterizedClassUsage,
 	InvalidMailAttachment,
+	InvalidRestServiceParameters,
 	NoMatchingCategory,
 	NoMatchingDefinition,
-	UnknownChannelRendererError;
+	UnknownChannelRendererError,
+	UnsupportedFeature;
 	
 	public static NrgServiceError Default = Unknown;
 }
