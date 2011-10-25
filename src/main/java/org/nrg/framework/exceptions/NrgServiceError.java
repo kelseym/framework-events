@@ -19,10 +19,12 @@ public enum NrgServiceError {
 	GenericMailError,
 	InvalidChannelRenderer,
 	InvalidDirectParameterizedClassUsage,
-	InvalidMailAttachment,
+	InvalidMailAttachment, 
+	InvalidRestServiceParameters,
 	NoMatchingCategory,
 	NoMatchingDefinition,
-	UnknownChannelRendererError;
+	UnknownChannelRendererError,
+	UnsupportedFeature;
 	
 	public static NrgServiceError Default = Unknown;
 }
