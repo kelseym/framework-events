@@ -19,7 +19,7 @@ public enum NrgServiceError {
 	GenericMailError,
 	InvalidChannelRenderer,
 	InvalidDirectParameterizedClassUsage,
-	InvalidMailAttachment, 
+	InvalidMailAttachment,
 	InvalidRestServiceParameters,
 	NoMatchingCategory,
 	NoMatchingDefinition,
