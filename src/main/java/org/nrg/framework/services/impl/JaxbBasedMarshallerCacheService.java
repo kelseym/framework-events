@@ -405,12 +405,12 @@ public final class JaxbBasedMarshallerCacheService implements MarshallerCacheSer
     }
 
     /**
-     * Convert the given <code>JAXBException</code> to a {@link TipException}
-     * with an appropriate {@link TipErrorCode} value.
+     * Convert the given <code>JAXBException</code> to a {@link XmlMappingException}
+     * with an appropriate error message.
      * 
      * @param exception
      *            <code>JAXBException</code> that occured
-     * @return the corresponding {@link TipException}
+     * @return the corresponding {@link XmlMappingException}
      */
     protected XmlMappingException convertJaxbException(JAXBException exception) {
         if (exception instanceof ValidationException) {

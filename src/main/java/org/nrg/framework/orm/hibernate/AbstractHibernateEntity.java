@@ -94,7 +94,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
 
     /**
      * Sets the timestamp of the data entity's creation.
-     * @param timestamp The timestamp of the data entity's creation.
+     * @param created The timestamp of the data entity's creation.
      */
     public void setCreated(Date created) {
         _created = created;

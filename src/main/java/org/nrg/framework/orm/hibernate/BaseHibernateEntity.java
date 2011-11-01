@@ -52,7 +52,7 @@ public interface BaseHibernateEntity {
     abstract public Date getCreated();
     /**
      * Sets the timestamp of the data entity's creation.
-     * @param timestamp The timestamp of the data entity's creation.
+     * @param created The timestamp of the data entity's creation.
      */
     public abstract void setCreated(Date created);
     /**
@@ -72,7 +72,7 @@ public interface BaseHibernateEntity {
     abstract public Date getDisabled();
     /**
      * Sets the timestamp of the data entity's disabling.
-     * @param timestamp The timestamp of the data entity's disabling.
+     * @param disabled The timestamp of the data entity's disabling.
      */
     public abstract void setDisabled(Date disabled);
 }

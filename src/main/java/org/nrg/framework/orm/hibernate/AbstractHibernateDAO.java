@@ -72,7 +72,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#create(E)
+     * @see BaseHibernateDAO#create(BaseHibernateEntity)
      */
     @Override
     public Serializable create(E entity) {
@@ -96,7 +96,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#update(E)
+     * @see BaseHibernateDAO#update(BaseHibernateEntity)
      */
     @Override
     public void update(E entity) {
@@ -107,7 +107,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#delete(E)
+     * @see BaseHibernateDAO#delete(BaseHibernateEntity)
      */
     @Override
     public void delete(E entity) {
@@ -140,7 +140,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
    /**
-     * @see BaseHibernateDAO#findByExample(E, java.lang.String[])
+     * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
      */
     @Override
     @SuppressWarnings("unchecked")

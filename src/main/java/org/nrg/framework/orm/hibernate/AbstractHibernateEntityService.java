@@ -43,7 +43,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     /**
      * Adds the submitted entity to the system.
      * @param entity The entity to be added to the system.
-     * @see BaseHibernateService#create(Object)
+     * @see BaseHibernateService#create(BaseHibernateEntity)
      */
     @Override
     @Transactional
@@ -72,7 +72,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
-     * @see BaseHibernateService#update(Object)
+     * @see BaseHibernateService#update(BaseHibernateEntity)
      */
     @Override
     @Transactional
@@ -84,7 +84,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
-     * @see BaseHibernateService#delete(Object)
+     * @see BaseHibernateService#delete(BaseHibernateEntity)
      */
     @Override
     @Transactional
