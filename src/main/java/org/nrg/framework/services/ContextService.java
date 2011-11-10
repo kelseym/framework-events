@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
  * This provides a static initializer and means of access to the Spring context
  * for classes that may not otherwise have access to them, e.g. from Turbine or
  * restlet code.
+ *
  * @author Rick Herrick <rick.herrick@wustl.edu>
  */
 @Service
@@ -29,7 +30,8 @@ public class ContextService implements NrgService, ApplicationContextAware {
     /**
      * Public constructor for use by Spring to initialize the ContextService within
      * the application context. Other classes or applications should not call this
-     * constructor and should only call the 
+     * constructor and should only call the
+     *
      * @throws NrgServiceException Thrown when the ContextService is already initialized.
      */
     public ContextService() throws NrgServiceException {
@@ -41,6 +43,7 @@ public class ContextService implements NrgService, ApplicationContextAware {
 
     /**
      * Returns the existing instance of the ContextService.
+     *
      * @return The existing instance of the ContextService.
      */
     public static ContextService getInstance() {
@@ -56,6 +59,7 @@ public class ContextService implements NrgService, ApplicationContextAware {
 
     /**
      * Provides the setter for the application context.
+     *
      * @see ApplicationContextAware#setApplicationContext(ApplicationContext)
      */
     @Override
@@ -65,17 +69,19 @@ public class ContextService implements NrgService, ApplicationContextAware {
 
     /**
      * Gets a bean of the indicated type.
-     * @param <T> The type of the bean to be retrieved.
+     *
+     * @param <T>  The type of the bean to be retrieved.
      * @param type The class of the bean to be retrieved.
      * @return An object of the type.
      */
     public <T> T getBean(Class<T> type) {
         return _context.getBean(type);
     }
-    
+
     /**
      * Gets the bean with the indicated name and type.
-     * @param <T> The type of the bean to be retrieved.
+     *
+     * @param <T>  The type of the bean to be retrieved.
      * @param name The name of the bean to be retrieved.
      * @param type The class of the bean to be retrieved.
      * @return An object of the type.
@@ -83,7 +89,7 @@ public class ContextService implements NrgService, ApplicationContextAware {
     public <T> T getBean(String name, Class<T> type) {
         return _context.getBean(name, type);
     }
-    
+
     private static ContextService _instance;
     private ApplicationContext _context;
 }
