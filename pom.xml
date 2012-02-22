@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<name>NRG Common Framework</name>
-	<url>http://nrg.wustl.edu</url>
 	<description>Defines the common framework for NRG services and libraries.</description>
+    <url>http://nrg.wustl.edu</url>
 
 	<parent>
-		<groupId>org.nrg</groupId>
 		<artifactId>nrg</artifactId>
+		<groupId>org.nrg</groupId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../nrg/pom.xml</relativePath>
 	</parent>
 
 	<artifactId>framework</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<packaging>jar</packaging>
 
+    <licenses>
+        <license>
+            <name>BSD</name>
+            <url>http://www.opensource.org/licenses/bsd-license.php</url>
+        </license>
+    </licenses>
 	<scm>
-		<url>http://bitbucket.org/nrg/nrg_framework</url>
+        <connection>https://bitbucket.org/nrg/nrg_framework</connection>
+        <url>https://bitbucket.org/nrg/nrg_framework</url>
 	</scm>
 
 	<dependencies>
@@ -32,6 +36,10 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>org.springframework.oxm</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>org.springframework.web</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
@@ -39,6 +47,14 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>com.springsource.org.apache.commons.logging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+            <artifactId>com.springsource.org.apache.commons.lang</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.httpclient</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.log4j</groupId>
@@ -52,9 +68,11 @@
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
         </dependency>
-
-		<!-- Test dependencies -->
 		<dependency>
+            <groupId>org.restlet</groupId>
+            <artifactId>org.restlet</artifactId>
+        </dependency>
+        <dependency>
 			<groupId>org.junit</groupId>
 			<artifactId>com.springsource.org.junit</artifactId>
 			<scope>test</scope>
@@ -75,6 +93,32 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+    <repositories>
+        <repository>
+            <id>org.nrg.maven.artifacts.snapshot</id>
+            <name>NRG/XDAT/XNAT Temporary Snapshot Maven Repo</name>
+            <url>http://maven.xnat.org/libs-snapshot</url>
+        </repository>
+        <repository>
+            <id>org.nrg.maven.artifacts.release</id>
+            <name>NRG/XDAT/XNAT Temporary Release Maven Repo</name>
+            <url>http://maven.xnat.org/libs-release</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>org.nrg.maven.plugins.snapshot</id>
+            <name>NRG/XDAT/XNAT Temporary Snapshot Maven Plugin Repo</name>
+            <url>http://maven.xnat.org/plugins-snapshot</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>org.nrg.maven.plugins.release</id>
+            <name>NRG/XDAT/XNAT Temporary Release Maven Plugin Repo</name>
+            <url>http://maven.xnat.org/plugins-release</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 	<build>
 		<finalName>nrg-framework-${project.version}</finalName>
