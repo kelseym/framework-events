@@ -14,6 +14,9 @@ import org.nrg.framework.exceptions.NrgServiceException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,7 +27,7 @@ import org.springframework.stereotype.Service;
  * @author Rick Herrick <rick.herrick@wustl.edu>
  */
 @Service
-public class ContextService implements NrgService, ApplicationContextAware {
+public class ContextService implements NrgService, ApplicationContextAware, ApplicationListener {
     public static String SERVICE_NAME = "ContextService";
 
     /**
@@ -65,6 +68,19 @@ public class ContextService implements NrgService, ApplicationContextAware {
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         _context = context;
+    }
+
+    /**
+     * Handles updates to the application context.
+     *
+     * @param event    The application event. This is checked to see if it's a <b>ContextRefreshedEvent</b>
+     *                 and, if so, the application context will be refreshed.
+     */
+    @Override
+    public void onApplicationEvent(final ApplicationEvent event) {
+        if (event instanceof ContextRefreshedEvent) {
+            ContextService.getInstance().setApplicationContext(((ContextRefreshedEvent) event).getApplicationContext());
+        }
     }
 
     /**
