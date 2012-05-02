@@ -30,15 +30,15 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>org.springframework.orm</artifactId>
+			<artifactId>spring-orm</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>org.springframework.oxm</artifactId>
+			<artifactId>spring-oxm</artifactId>
 		</dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>org.springframework.web</artifactId>
+            <artifactId>spring-web</artifactId>
         </dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -79,7 +79,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
-			<artifactId>org.springframework.test</artifactId>
+			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -93,32 +93,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-    <repositories>
-        <repository>
-            <id>org.nrg.maven.artifacts.snapshot</id>
-            <name>XNAT Snapshot Maven Repo</name>
-            <url>http://maven.xnat.org/libs-snapshot</url>
-        </repository>
-        <repository>
-            <id>org.nrg.maven.artifacts.release</id>
-            <name>XNAT Release Maven Repo</name>
-            <url>http://maven.xnat.org/libs-release</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>org.nrg.maven.plugins.snapshot</id>
-            <name>XNAT Snapshot Maven Plugin Repo</name>
-            <url>http://maven.xnat.org/plugins-snapshot</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>org.nrg.maven.plugins.release</id>
-            <name>XNAT Release Maven Plugin Repo</name>
-            <url>http://maven.xnat.org/plugins-release</url>
-        </pluginRepository>
-    </pluginRepositories>
 
 	<build>
 		<finalName>nrg-framework-${project.version}</finalName>

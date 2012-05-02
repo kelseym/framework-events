@@ -24,7 +24,7 @@ public enum NrgServiceError {
 	NoMatchingCategory,
 	NoMatchingDefinition,
 	UnknownChannelRendererError,
-	UnsupportedFeature;
+	UnsupportedFeature, DuplicateCategory;
 	
 	public static NrgServiceError Default = Unknown;
 }
