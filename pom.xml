@@ -7,9 +7,9 @@
     <url>http://nrg.wustl.edu</url>
 
     <parent>
-        <artifactId>nrg</artifactId>
         <groupId>org.nrg</groupId>
-        <version>1.6.1</version>
+        <artifactId>nrg</artifactId>
+        <version>1.6.2-SNAPSHOT</version>
         <relativePath>../nrg/pom.xml</relativePath>
     </parent>
 
