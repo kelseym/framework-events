@@ -9,22 +9,37 @@
  */
 package org.nrg.framework.application;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+import static org.junit.Assert.*;
+
 public class ApplicationLauncherTests {
 
+    private static final String TEST_URI = "http://www.yahoo.com";
+    private static final String TEST_NAME = "foo";
+    private static final int TEST_COUNT = 10;
+    public static final String TEST_TARGET_1 = "one";
+    public static final String TEST_TARGET_2 = "two";
+    public static final String TEST_TARGET_3 = "three";
+    private static final String[] TEST_PARAMS = { "prog", "-h", "-n", TEST_NAME, "-u", TEST_URI, "-c", Integer.toString(TEST_COUNT), "--targets", TEST_TARGET_1, TEST_TARGET_2, TEST_TARGET_3 };
+
     @Test
-    public void testBasicTestApplication() throws ApplicationParameterException {
-        BasicTestApplicationLauncher launcher = new BasicTestApplicationLauncher(new String[] { "prog", "-h" });
+    public void testBasicTestApplication() throws ApplicationParameterException, URISyntaxException {
+        BasicTestApplicationLauncher launcher = new BasicTestApplicationLauncher(TEST_PARAMS);
         assertNotNull(launcher);
         assertTrue(launcher.getHelp());
+        assertFalse(StringUtils.isBlank(launcher.getName()));
+        assertEquals("foo", launcher.getName());
+        assertNotNull(launcher.getUri());
+        assertEquals(new URI(TEST_URI), launcher.getUri());
+        assertEquals(TEST_COUNT, launcher.getCount());
+        assertNotNull(launcher.getTargets());
     }
 }

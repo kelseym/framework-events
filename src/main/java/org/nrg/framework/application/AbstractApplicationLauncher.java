@@ -17,6 +17,7 @@ import org.nrg.framework.annotations.CommandLineParameter;
 import org.nrg.framework.application.ApplicationParameterException.Type;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -135,6 +136,7 @@ public abstract class AbstractApplicationLauncher {
                             }
                             throw new ApplicationParameterException(Type.SyntaxFormat, parameterId, message.toString());
                         }
+                        throw exception;
                     }
                 }
             } catch (ReflectiveOperationException exception) {
@@ -148,28 +150,41 @@ public abstract class AbstractApplicationLauncher {
         if (types == null || types.length == 0) {
             throw new ApplicationParameterException(Type.UnknownParameterTypes);
         }
-        final List<Object> coercedArguments = new ArrayList<Object>(types.length);
-        if (types.length > 1) {
-            if (types.length != arguments.size()) {
-                throw new ApplicationParameterException(Type.SyntaxFormat);
-            }
-            int index = 0;
-            for (Class<?> type : types) {
-                coercedArguments.add(convertStringToType(type, arguments.get(index++)));
-            }
+        final boolean isArrayParameter = types.length == 1 && types[0].isArray();
+        if (types.length != arguments.size() && !isArrayParameter) {
+            throw new ApplicationParameterException(Type.SyntaxFormat);
         }
-        return new Object[0];  //To change body of created methods use File | Settings | File Templates.
+        Class<?> type = isArrayParameter ? types[0].getComponentType() : null;
+        final List<Object> coercedArguments = new ArrayList<Object>(types.length);
+        for (int index = 0; index < arguments.size(); index++) {
+            if (!isArrayParameter) {
+                type = types[index];
+            }
+            coercedArguments.add(convertStringToType(type, arguments.get(index)));
+        }
+
+        return isArrayParameter ? new Object[] { coercedArguments.toArray((Object[]) Array.newInstance(types[0].getComponentType(), coercedArguments.size())) } : coercedArguments.toArray();
     }
 
     private Object convertStringToType(final Class<?> type, final String argument) throws ApplicationParameterException {
         Object object;
         if (type == String.class) {
             object = argument;
-        } else if (type == Integer.class) {
+        } else if (type == Integer.class || type == int.class) {
             object = Integer.parseInt(argument);
-        } else if (type == Boolean.class) {
-            object = Boolean.parseBoolean(argument);
-        } else if (type == Boolean.class) {
+        } else if (type == Long.class || type == long.class) {
+            object = Long.parseLong(argument);
+        } else if (type == Float.class || type == float.class) {
+            object = Float.parseFloat(argument);
+        } else if (type == Double.class || type == double.class) {
+            object = Double.parseDouble(argument);
+        } else if (type == Character.class || type == char.class) {
+            object = argument.toCharArray()[0];
+        } else if (type == Byte.class || type == byte.class) {
+            object = Byte.parseByte(argument);
+        } else if (type == Short.class || type == short.class) {
+            object = Short.parseShort(argument);
+        } else if (type == Boolean.class || type == boolean.class) {
             object = Boolean.parseBoolean(argument);
         } else if (type == URI.class) {
             try {
