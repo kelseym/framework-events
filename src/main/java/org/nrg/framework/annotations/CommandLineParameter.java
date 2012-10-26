@@ -41,6 +41,12 @@ public @interface CommandLineParameter {
     public String help() default "";
 
     /**
+     * Indicates whether this command-line parameter is required to be specified. By default, parameters are not
+     * required.
+     */
+    public boolean required() default false;
+
+    /**
      * The number of accepted arguments for this parameter. This is specified using the {@link AcceptedArguments}
      * enumeration. In the cause of {@link AcceptedArguments#SpecificCount}, you can set the specific count to be used
      * with the {@link #argCount()} attribute.

@@ -61,6 +61,7 @@ public class ApplicationParameterException extends Exception {
     private final String _parameter;
 
     public enum Type {
+        HelpRequested(0),
         UnknownParameter(1),
         SyntaxFormat(2),
         UnsupportedFeature(3),

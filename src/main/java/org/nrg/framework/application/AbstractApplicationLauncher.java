@@ -10,17 +10,19 @@
 package org.nrg.framework.application;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nrg.framework.annotations.AcceptedArguments;
 import org.nrg.framework.annotations.CommandLineParameter;
 import org.nrg.framework.application.ApplicationParameterException.Type;
 
-import java.lang.annotation.Annotation;
+import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.CharBuffer;
 import java.util.*;
 
 /**
@@ -29,15 +31,73 @@ import java.util.*;
  * in the application base
  */
 public abstract class AbstractApplicationLauncher {
-    protected AbstractApplicationLauncher(String[] arguments) throws ApplicationParameterException {
+    protected AbstractApplicationLauncher(String[] arguments) {
         _arguments = Arrays.asList(Arrays.copyOfRange(arguments, 1, arguments.length));
-        scan();
-        harvest();
-        prune();
+        try {
+            scan();
+            harvest();
+            prune();
+            if (getHelp()) {
+                throw new ApplicationParameterException(Type.HelpRequested);
+            }
+        } catch (ApplicationParameterException exception) {
+            if (!StringUtils.isBlank(exception.getMessage())) {
+                _log.warn(exception.getMessage());
+            }
+            displayHelp();
+        }
+    }
+
+    /**
+     * The setter for the help option.
+     *
+     * @param help Incoming parameter.
+     */
+    @CommandLineParameter(value = "h", longOption = "help", help = "Displays this help text.", arguments = AcceptedArguments.StandAlone)
+    public void setHelp(boolean help) {
+        _help = help;
+    }
+
+    /**
+     * The getter for the help option.
+     *
+     * @return Gets the value for the help option.
+     */
+    public boolean getHelp() {
+        return _help;
     }
 
     public List<String> getTrailingArguments() {
         return _trailing;
+    }
+
+    protected void displayHelp() {
+        if (_parametersByShortOption == null || _parametersByShortOption.size() == 0) {
+            OUT.println("No parameters found for this application!");
+        } else {
+            // TODO: Add an annotation to put application name, copyright info, and introductory help text on the class level.
+            OUT.println(getClass().getSimpleName() + " help:\n");
+            for(ParameterData parameter : _parametersByShortOption.values()) {
+                StringBuilder parameterText = new StringBuilder(PREFIX);
+                parameterText.append(SHORT_OPTION_DELIMITER).append(parameter.getShortOption());
+                if (parameter.hasLongOption()) {
+                    parameterText.append(", ").append(LONG_OPTION_DELIMITER).append(parameter.getLongOption());
+                }
+
+                // If our parameter text is so long that it will either run into the hanging indent text or directly up
+                // to the hanging indent text (i.e., no space left between them)...
+                final int length = parameterText.length();
+                if (length > HANGING_INDENT - 1) {
+                    // Then add a new line
+                    parameterText.append(INDENT_FILLER);
+                } else {
+                    parameterText.append(CharBuffer.allocate(HANGING_INDENT - length).toString().replace('\0', ' '));
+                }
+
+                parameterText.append(WordUtils.wrap(parameter.getHelp(), WIDTH - HANGING_INDENT, INDENT_FILLER, true));
+                OUT.println(parameterText.toString());
+            }
+        }
     }
 
     /**
@@ -46,14 +106,12 @@ public abstract class AbstractApplicationLauncher {
     private void scan() throws ApplicationParameterException {
         Method[] methods = getClass().getMethods();
         for (Method method : methods) {
-            Annotation[] annotations = method.getAnnotations();
-            for (Annotation annotation : annotations) {
-                if (annotation.annotationType() == CommandLineParameter.class) {
-                    if (_log.isDebugEnabled()) {
-                        _log.debug("Found command-line parameter on " + getClass().getName() + "." + method.getName() + "() method");
-                    }
+            CommandLineParameter annotation = method.getAnnotation(CommandLineParameter.class);
+            if (annotation != null) {
+                if (_log.isDebugEnabled()) {
+                    _log.debug("Found command-line parameter annotation " + annotation.value() + " on " + getClass().getName() + "." + method.getName() + "() method");
                 }
-                final ParameterData parameter = new ParameterData(method, (CommandLineParameter) annotation);
+                final ParameterData parameter = new ParameterData(method, annotation);
                 if (_parametersByShortOption.containsKey(parameter.getShortOption())) {
                     throw new ApplicationParameterException(Type.DuplicateParameter, "Your application has multiple declarations of the short option " + parameter.getShortOption());
                 }
@@ -87,11 +145,6 @@ public abstract class AbstractApplicationLauncher {
 
                 // Try to get the data for the indicated parameter.
                 parameter = getParameterData(argument);
-
-                // If it's null, we didn't find it.
-                if (parameter == null) {
-                    throw new ApplicationParameterException(Type.UnknownParameter, argument, "The parameter " + argument + " is not a valid parameter.");
-                }
 
                 // Now store the parameter option in the map of parameter data and initialize the argument cache.
                 _parameters.put(parameter.getShortOption(), new ArrayList<String>());
@@ -245,30 +298,61 @@ public abstract class AbstractApplicationLauncher {
         }
     }
 
-    private ParameterData getParameterData(String parameter) {
-        for (String delimiter : OPTION_DELIMITERS) {
-            if (parameter.startsWith(delimiter)) {
-                parameter = parameter.substring(delimiter.length());
-                break;
+    private ParameterData getParameterData(String parameter) throws ApplicationParameterException {
+        if (parameter.startsWith(LONG_OPTION_DELIMITER)) {
+            parameter = parameter.substring(LONG_OPTION_DELIMITER.length());
+            if (_parametersByLongOption.containsKey(parameter)) {
+                return _parametersByLongOption.get(parameter);
             }
         }
-        if (_parametersByShortOption.containsKey(parameter)) {
-            return _parametersByShortOption.get(parameter);
+        if (parameter.startsWith(SHORT_OPTION_DELIMITER)) {
+            parameter = parameter.substring(SHORT_OPTION_DELIMITER.length());
+            if (_parametersByShortOption.containsKey(parameter)) {
+                return _parametersByShortOption.get(parameter);
+            }
         }
-        if (_parametersByLongOption.containsKey(parameter)) {
-            return _parametersByLongOption.get(parameter);
-        }
-        return null;
+        // We didn't find it.
+        throw new ApplicationParameterException(Type.UnknownParameter, parameter, "The parameter " + parameter + " is not a valid parameter.");
     }
 
     private boolean isParameter(final String argument) {
         return StringUtils.startsWithAny(argument, OPTION_DELIMITERS);
     }
 
-
     private static final Log _log = LogFactory.getLog(AbstractApplicationLauncher.class);
-    private static final String[] OPTION_DELIMITERS = new String[] { "--", "-" };
+    /**
+     * This is the text to place before each option in the help text.
+     */
+    private static final String PREFIX = " ";
+    /**
+     * This is the width of the hanging indent in the help text. Illustration ('|' is the left margin):
+     *
+     * <div style='font-family: "Courier New", Courier, monospace'>
+     * | -h, --help         Show this help text.
+     * |12345678901234567890
+     * </div>
+     *
+     * Above shows a 20-character hanging indent.
+     */
+    private static final int HANGING_INDENT = 20;
+    /**
+     * Provides the indent filler to format the hanging indent space.
+     */
+    private static final String INDENT_FILLER = "\n" + CharBuffer.allocate(HANGING_INDENT).toString().replace('\0', ' ');
+    /**
+     * The overall format width for the help text.
+     */
+    private static final int WIDTH = 80;
+    /**
+     * The print stream for help text and user messages.
+     */
+    private static PrintStream OUT = System.out;
 
+    private static final String SHORT_OPTION_DELIMITER = "-";
+    private static final String LONG_OPTION_DELIMITER = "--";
+    private static final String[] OPTION_DELIMITERS = new String[] { LONG_OPTION_DELIMITER, SHORT_OPTION_DELIMITER };
+
+    private boolean _help;
     private List<String> _arguments;
     private Map<String, List<String>> _parameters = new LinkedHashMap<String, List<String>>();
     private List<String> _trailing = new ArrayList<String>();
@@ -300,6 +384,10 @@ public abstract class AbstractApplicationLauncher {
 
         public String getShortOption() {
             return _shortOption;
+        }
+
+        public boolean hasLongOption() {
+            return !StringUtils.isBlank(_longOption);
         }
 
         public String getLongOption() {
