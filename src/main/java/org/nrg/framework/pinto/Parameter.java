@@ -7,7 +7,7 @@
  *
  * Created on 10/12/12 by rherri01
  */
-package org.nrg.framework.annotations;
+package org.nrg.framework.pinto;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,7 +22,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RUNTIME)
-public @interface CommandLineParameter {
+public @interface Parameter {
     /**
      * Specifies the short option for this command-line parameter.
      * @return The value of the short option.
@@ -47,19 +47,19 @@ public @interface CommandLineParameter {
     public boolean required() default false;
 
     /**
-     * The number of accepted arguments for this parameter. This is specified using the {@link AcceptedArguments}
-     * enumeration. In the cause of {@link AcceptedArguments#SpecificCount}, you can set the specific count to be used
-     * with the {@link #argCount()} attribute.
+     * The number of accepted arguments for this parameter. This is specified using the {@link ArgCount} enumeration. In
+     * the cause of {@link ArgCount#SpecificCount}, you can set the specific count to be used with the {@link #argCount()}
+     * attribute.
      * @return The number of accepted arguments for this parameter.
      */
-    public AcceptedArguments arguments() default AcceptedArguments.StandAlone;
+    public ArgCount argCount() default ArgCount.StandAlone;
 
     /**
-     * Whe the {@link #arguments()} attribute is set to {@link AcceptedArguments#SpecificCount}, this attribute
+     * Whe the {@link #argCount()} attribute is set to {@link ArgCount#SpecificCount}, this attribute
      * specifies the value for the specific number of arguments for this parameter.
      * @return The specific number of arguments for this parameter.
      */
-    public int argCount() default 0;
+    public int exactArgCount() default 0;
 
     /**
      * The type into which the parameter arguments should be coerced.

@@ -7,13 +7,13 @@
  *
  * Created on 10/16/12 by rherri01
  */
-package org.nrg.framework.annotations;
+package org.nrg.framework.pinto;
 
 /**
- * Provides enums for specifying the expected arguments for {@link CommandLineParameter command-line parameters}.
+ * Provides enums for specifying the expected arguments for {@link Parameter command-line parameters}.
  * This sets the expectations for the data that comes after the parameter specifier, if any.
  */
-public enum AcceptedArguments {
+public enum ArgCount {
     /**
      * Indicates that the parameter has no accompanying arguments. This can be something like verbose or help
      * parameters, e.g. --help.
@@ -45,7 +45,7 @@ public enum AcceptedArguments {
     OneToN,
     /**
      * Indicates that there is a specific number of arguments to this parameter. The number of arguments should be
-     * specified with the {@link org.nrg.framework.annotations.CommandLineParameter#argCount()} attribute.
+     * specified with the {@link Parameter#argCount()} attribute.
      */
     SpecificCount
 }

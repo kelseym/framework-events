@@ -7,15 +7,12 @@
  *
  * Created on 10/16/12 by rherri01
  */
-package org.nrg.framework.application;
+package org.nrg.framework.pinto;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nrg.framework.annotations.AcceptedArguments;
-import org.nrg.framework.annotations.CommandLineParameter;
-import org.nrg.framework.application.ApplicationParameterException.Type;
 
 import java.io.PrintStream;
 import java.lang.reflect.Array;
@@ -27,21 +24,27 @@ import java.nio.CharBuffer;
 import java.util.*;
 
 /**
- * Works with the {@link CommandLineParameter annotation} to scan a class and extract command-line parameters
- * from annotated properties in the class definition. These parameters and any accompanying arguments are stored
- * in the application base
+ * Defines the base functionality for a parameter interface object (PIntO) bean. Scan a bean class and extract the
+ * command-line parameters from methods annotated with the {@link Parameter} annotation. These parameters and any
+ * accompanying arguments are stored in the bean object.
  */
-public abstract class AbstractApplicationLauncher {
-    protected AbstractApplicationLauncher(String[] arguments) {
+public abstract class AbstractPintoBean {
+
+    protected AbstractPintoBean(String[] arguments) {
+        this(arguments, System.out);
+    }
+    protected AbstractPintoBean(String[] arguments, PrintStream printStream) {
         _arguments = Arrays.asList(Arrays.copyOfRange(arguments, 1, arguments.length));
+        _printStream = printStream;
+
         try {
             scan();
             harvest();
             prune();
             if (getHelp()) {
-                throw new ApplicationParameterException(Type.HelpRequested);
+                throw new PintoException(PintoExceptionType.HelpRequested);
             }
-        } catch (ApplicationParameterException exception) {
+        } catch (PintoException exception) {
             if (!StringUtils.isBlank(exception.getMessage())) {
                 _log.warn(exception.getMessage());
             }
@@ -49,12 +52,20 @@ public abstract class AbstractApplicationLauncher {
         }
     }
 
+    public void setPrintStream(PrintStream printStream) {
+        _printStream = printStream;
+    }
+
+    public PrintStream getPrintStream() {
+        return _printStream;
+    }
+
     /**
      * The setter for the help option.
      *
      * @param help Incoming parameter.
      */
-    @CommandLineParameter(value = "h", longOption = "help", help = "Displays this help text.", arguments = AcceptedArguments.StandAlone)
+    @Parameter(value = "h", longOption = "help", help = "Displays this help text.", argCount = ArgCount.StandAlone)
     public void setHelp(boolean help) {
         _help = help;
     }
@@ -68,16 +79,25 @@ public abstract class AbstractApplicationLauncher {
         return _help;
     }
 
+    /**
+     * Returns any arguments that are posted on the end of the list of arguments but aren't associated with a parameter.
+     * @return Any arguments on the end of the list of arguments not associated with a parameter.
+     */
     public List<String> getTrailingArguments() {
         return _trailing;
     }
 
-    protected void displayHelp() {
+    /**
+     * Display the help for each of the available command-line parameters supported by this bean. The help is printed to
+     * the stream specified by the {@link #setPrintStream(java.io.PrintStream)} property or passed in through the
+     * {@link AbstractPintoBean(String[], PrintStream)} constructor.
+     */
+    public void displayHelp() {
         if (_parametersByShortOption == null || _parametersByShortOption.size() == 0) {
-            OUT.println("No parameters found for this application!");
+            _printStream.println("No parameters found for this application!");
         } else {
             // TODO: Add an annotation to put application name, copyright info, and introductory help text on the class level.
-            OUT.println(getClass().getSimpleName() + " help:\n");
+            _printStream.println(getClass().getSimpleName() + " help:\n");
             for(ParameterData parameter : _parametersByShortOption.values()) {
                 StringBuilder parameterText = new StringBuilder(PREFIX);
                 parameterText.append(SHORT_OPTION_DELIMITER).append(parameter.getShortOption());
@@ -86,7 +106,7 @@ public abstract class AbstractApplicationLauncher {
                 }
 
                 // If our parameter text is so long that it will either run into the hanging indent text or directly up
-                // to the hanging indent text (i.e., no space left between them)...
+                // to the hanging in¡dent text (i.e., no space left between them)...
                 final int length = parameterText.length();
                 if (length > HANGING_INDENT - 1) {
                     // Then add a new line
@@ -96,133 +116,20 @@ public abstract class AbstractApplicationLauncher {
                 }
 
                 parameterText.append(WordUtils.wrap(parameter.getHelp(), WIDTH - HANGING_INDENT, INDENT_FILLER, true));
-                OUT.println(parameterText.toString());
+                _printStream.println(parameterText.toString());
             }
         }
     }
 
     /**
-     * Scans the application for configured parameters.
+     * Converts a string to the type indicated by the <b>type</b> parameter. The ability of a pinto bean to convert
+     * strings to any arbitrary type can be extended by overriding and extending this method.
+     * @param type        Indicates the type to which the argument should be converted.
+     * @param argument    The argument to be converted.
+     * @return An object of the indicated type from the given value.
+     * @throws PintoException
      */
-    private void scan() throws ApplicationParameterException {
-        Method[] methods = getClass().getMethods();
-        for (Method method : methods) {
-            CommandLineParameter annotation = method.getAnnotation(CommandLineParameter.class);
-            if (annotation != null) {
-                if (_log.isDebugEnabled()) {
-                    _log.debug("Found command-line parameter annotation " + annotation.value() + " on " + getClass().getName() + "." + method.getName() + "() method");
-                }
-                final ParameterData parameter = new ParameterData(method, annotation);
-                if (_parametersByShortOption.containsKey(parameter.getShortOption())) {
-                    throw new ApplicationParameterException(Type.DuplicateParameter, "Your application has multiple declarations of the short option " + parameter.getShortOption());
-                }
-                _parametersByShortOption.put(parameter.getShortOption(), parameter);
-                final String longOption = parameter.getLongOption();
-                if (!StringUtils.isBlank(longOption)) {
-                    if (_parametersByLongOption.containsKey(parameter.getLongOption())) {
-                        throw new ApplicationParameterException(Type.DuplicateParameter, "Your application has multiple declarations of the long option " + parameter.getLongOption());
-                    }
-                    _parametersByLongOption.put(longOption, parameter);
-                }
-            }
-        }
-    }
-
-    /**
-     * Harvests the command-line parameters and sorts them along with their arguments. Any trailing
-     * arguments are assigned to the last found parameter. Trailing arguments that occur without
-     * parameters are stashed in the {@link #getTrailingArguments()} property.
-     * @throws ApplicationParameterException
-     */
-    private void harvest() throws ApplicationParameterException {
-        ParameterData parameter = null;
-        for (String argument : _arguments) {
-            // Is this argument a parameter?
-            if (isParameter(argument)) {
-                // If there are trailing arguments, then something is wrong.
-                if (_trailing.size() > 0) {
-                    throw new ApplicationParameterException(Type.SyntaxFormat, argument, "Trailing arguments were found prior to the parameter " + argument + ". Check that you've supplied only the expected number of arguments to each parameter.");
-                }
-
-                // Try to get the data for the indicated parameter.
-                parameter = getParameterData(argument);
-
-                // Now store the parameter option in the map of parameter data and initialize the argument cache.
-                _parameters.put(parameter.getShortOption(), new ArrayList<String>());
-            } else if (parameter == null) {
-                // This is a fail-safe catch for situations with no parameters, e.g., ls file1 file2 file3
-                _trailing.add(argument);
-            } else {
-                // Add the argument to the current parameter. The last parameter will harvest all trailing data.
-                // We'll handle that situation when we prune the parameter list.
-                _parameters.get(parameter.getShortOption()).add(argument);
-            }
-        }
-    }
-
-    /**
-     * Prunes the parameters and arguments. This includes validating the arguments passed in against
-     * the accepted arguments for each parameter, as well as removing trailing arguments.
-     */
-    private void prune() throws ApplicationParameterException {
-        for (String parameterId : _parameters.keySet()) {
-            ParameterData parameter = _parametersByShortOption.get(parameterId);
-            List<String> arguments = _parameters.get(parameterId);
-
-            validateArgCount(parameter, arguments);
-
-            final Method method = parameter.getMethod();
-            try {
-                if (parameter.getAcceptedArguments() == AcceptedArguments.StandAlone) {
-                    method.invoke(this, true);
-                } else {
-                    try {
-                        Object[] coercedArguments = coerceArguments(method, arguments);
-                        method.invoke(this, coercedArguments);
-                    } catch (ApplicationParameterException exception) {
-                        if (exception.getType() == Type.UnknownParameterTypes && StringUtils.isBlank(exception.getMessage())) {
-                            throw new ApplicationParameterException(Type.UnknownParameterTypes, "The parameter " + parameterId + " has unknown parameter types. Check your set method for compatible parameter types.");
-                        }
-                        if (exception.getType() == Type.SyntaxFormat) {
-                            final StringBuilder message = new StringBuilder("The parameter " + parameterId + " has a syntax error. Check that your arguments match the parameter requirements.");
-                            if (!StringUtils.isBlank(exception.getMessage())) {
-                                message.append(" The specific error message is:\n\n").append(exception.getMessage());
-                            }
-                            throw new ApplicationParameterException(Type.SyntaxFormat, parameterId, message.toString());
-                        }
-                        throw exception;
-                    }
-                }
-            } catch (IllegalAccessException exception) {
-                throw new ApplicationParameterException(Type.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
-            } catch (InvocationTargetException exception) {
-                throw new ApplicationParameterException(Type.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
-            }
-        }
-    }
-
-    private Object[] coerceArguments(final Method method, final List<String> arguments) throws ApplicationParameterException {
-        Class<?>[] types = method.getParameterTypes();
-        if (types == null || types.length == 0) {
-            throw new ApplicationParameterException(Type.UnknownParameterTypes);
-        }
-        final boolean isArrayParameter = types.length == 1 && types[0].isArray();
-        if (types.length != arguments.size() && !isArrayParameter) {
-            throw new ApplicationParameterException(Type.SyntaxFormat);
-        }
-        Class<?> type = isArrayParameter ? types[0].getComponentType() : null;
-        final List<Object> coercedArguments = new ArrayList<Object>(types.length);
-        for (int index = 0; index < arguments.size(); index++) {
-            if (!isArrayParameter) {
-                type = types[index];
-            }
-            coercedArguments.add(convertStringToType(type, arguments.get(index)));
-        }
-
-        return isArrayParameter ? new Object[] { coercedArguments.toArray((Object[]) Array.newInstance(types[0].getComponentType(), coercedArguments.size())) } : coercedArguments.toArray();
-    }
-
-    private Object convertStringToType(final Class<?> type, final String argument) throws ApplicationParameterException {
+    protected Object convertStringToType(final Class<?> type, final String argument) throws PintoException {
         Object object;
         if (type == String.class) {
             object = argument;
@@ -246,27 +153,149 @@ public abstract class AbstractApplicationLauncher {
             try {
                 object = new URI(argument);
             } catch (URISyntaxException exception) {
-                throw new ApplicationParameterException(Type.SyntaxFormat, "The value " + argument + " is not a valid URI.", exception);
+                throw new PintoException(PintoExceptionType.SyntaxFormat, "The value " + argument + " is not a valid URI.", exception);
             }
         } else {
-            throw new ApplicationParameterException(Type.UnknownParameterTypes, "I don't know how to convert to the type " + type.getName());
+            throw new PintoException(PintoExceptionType.UnknownParameterTypes, "I don't know how to convert to the type " + type.getName());
         }
 
         return object;
     }
 
-    private void validateArgCount(final ParameterData parameter, final List<String> arguments) throws ApplicationParameterException {
+    /**
+     * Scans the bean class for configured parameters. Parameters are configured by adding the {@link Parameter}
+     * annotation to the setter method. Associated getter methods are marked with the {@link Value} annotation.
+     */
+    private void scan() throws PintoException {
+        Method[] methods = getClass().getMethods();
+        for (Method method : methods) {
+            Parameter annotation = method.getAnnotation(Parameter.class);
+            if (annotation != null) {
+                if (_log.isDebugEnabled()) {
+                    _log.debug("Found command-line parameter annotation " + annotation.value() + " on " + getClass().getName() + "." + method.getName() + "() method");
+                }
+                final ParameterData parameter = new ParameterData(method, annotation);
+                if (_parametersByShortOption.containsKey(parameter.getShortOption())) {
+                    throw new PintoException(PintoExceptionType.DuplicateParameter, "Your application has multiple declarations of the short option " + parameter.getShortOption());
+                }
+                _parametersByShortOption.put(parameter.getShortOption(), parameter);
+                final String longOption = parameter.getLongOption();
+                if (!StringUtils.isBlank(longOption)) {
+                    if (_parametersByLongOption.containsKey(parameter.getLongOption())) {
+                        throw new PintoException(PintoExceptionType.DuplicateParameter, "Your application has multiple declarations of the long option " + parameter.getLongOption());
+                    }
+                    _parametersByLongOption.put(longOption, parameter);
+                }
+            }
+        }
+    }
+
+    /**
+     * Harvests the command-line parameters and sorts them along with their arguments. Any trailing
+     * arguments are assigned to the last found parameter. Trailing arguments that occur without
+     * parameters are stashed in the {@link #getTrailingArguments()} property.
+     * @throws PintoException
+     */
+    private void harvest() throws PintoException {
+        ParameterData parameter = null;
+        for (String argument : _arguments) {
+            // Is this argument a parameter?
+            if (isParameter(argument)) {
+                // If there are trailing arguments, then something is wrong.
+                if (_trailing.size() > 0) {
+                    throw new PintoException(PintoExceptionType.SyntaxFormat, argument, "Trailing arguments were found prior to the parameter " + argument + ". Check that you've supplied only the expected number of arguments to each parameter.");
+                }
+
+                // Try to get the data for the indicated parameter.
+                parameter = getParameterData(argument);
+
+                // Now store the parameter option in the map of parameter data and initialize the argument cache.
+                _parameters.put(parameter.getShortOption(), new ArrayList<String>());
+            } else if (parameter == null) {
+                // This is a fail-safe catch for situations with no parameters, e.g., ls file1 file2 file3
+                _trailing.add(argument);
+            } else {
+                // Add the argument to the current parameter. The last parameter will harvest all trailing data.
+                // We'll handle that situation when we prune the parameter list.
+                _parameters.get(parameter.getShortOption()).add(argument);
+            }
+        }
+    }
+
+    /**
+     * Prunes the parameters and arguments. This includes validating the arguments passed in against
+     * the accepted arguments for each parameter, as well as removing trailing arguments.
+     */
+    private void prune() throws PintoException {
+        for (String parameterId : _parameters.keySet()) {
+            ParameterData parameter = _parametersByShortOption.get(parameterId);
+            List<String> arguments = _parameters.get(parameterId);
+
+            validateArgCount(parameter, arguments);
+
+            final Method method = parameter.getMethod();
+            try {
+                if (parameter.getArgCount() == ArgCount.StandAlone) {
+                    method.invoke(this, true);
+                } else {
+                    try {
+                        Object[] coercedArguments = coerceArguments(method, arguments);
+                        method.invoke(this, coercedArguments);
+                    } catch (PintoException exception) {
+                        if (exception.getType() == PintoExceptionType.UnknownParameterTypes && StringUtils.isBlank(exception.getMessage())) {
+                            throw new PintoException(PintoExceptionType.UnknownParameterTypes, "The parameter " + parameterId + " has unknown parameter types. Check your set method for compatible parameter types.");
+                        }
+                        if (exception.getType() == PintoExceptionType.SyntaxFormat) {
+                            final StringBuilder message = new StringBuilder("The parameter " + parameterId + " has a syntax error. Check that your arguments match the parameter requirements.");
+                            if (!StringUtils.isBlank(exception.getMessage())) {
+                                message.append(" The specific error message is:\n\n").append(exception.getMessage());
+                            }
+                            throw new PintoException(PintoExceptionType.SyntaxFormat, parameterId, message.toString());
+                        }
+                        throw exception;
+                    }
+                }
+            } catch (IllegalAccessException exception) {
+                throw new PintoException(PintoExceptionType.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
+            } catch (InvocationTargetException exception) {
+                throw new PintoException(PintoExceptionType.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
+            }
+        }
+    }
+
+    private Object[] coerceArguments(final Method method, final List<String> arguments) throws PintoException {
+        Class<?>[] types = method.getParameterTypes();
+        if (types == null || types.length == 0) {
+            throw new PintoException(PintoExceptionType.UnknownParameterTypes);
+        }
+        final boolean isArrayParameter = types.length == 1 && types[0].isArray();
+        if (types.length != arguments.size() && !isArrayParameter) {
+            throw new PintoException(PintoExceptionType.SyntaxFormat);
+        }
+        Class<?> type = isArrayParameter ? types[0].getComponentType() : null;
+        final List<Object> coercedArguments = new ArrayList<Object>(types.length);
+        for (int index = 0; index < arguments.size(); index++) {
+            if (!isArrayParameter) {
+                type = types[index];
+            }
+            coercedArguments.add(convertStringToType(type, arguments.get(index)));
+        }
+
+        return isArrayParameter ? new Object[] { coercedArguments.toArray((Object[]) Array.newInstance(types[0].getComponentType(), coercedArguments.size())) } : coercedArguments.toArray();
+    }
+
+    private void validateArgCount(final ParameterData parameter, final List<String> arguments) throws PintoException {
         final String parameterId = parameter.getShortOption();
         final int argCount = arguments.size();
-        final AcceptedArguments acceptedArguments = parameter.getAcceptedArguments();
+        final ArgCount ArgCount = parameter.getArgCount();
 
-        switch (acceptedArguments) {
+        switch (ArgCount) {
             case StandAlone:
                 if (_log.isDebugEnabled()) {
                     _log.debug("Found parameter " + parameterId + " specified as StandAlone parameter, comes with " + argCount + " arguments");
                 }
                 if (argCount > 0) {
-                    throw new ApplicationParameterException(Type.SyntaxFormat, "The parameter " + parameterId + " does not accept any arguments.");
+                    throw new PintoException(PintoExceptionType.SyntaxFormat, "The parameter " + parameterId + " does not accept any arguments.");
                 }
                 break;
             case OneArgument:
@@ -274,7 +303,7 @@ public abstract class AbstractApplicationLauncher {
                     _log.debug("Found parameter " + parameterId + " specified as OneArgument parameter, comes with " + argCount + " arguments");
                 }
                 if (argCount != 1) {
-                    throw new ApplicationParameterException(Type.SyntaxFormat, "The parameter " + parameterId + " only accepts a single argument.");
+                    throw new PintoException(PintoExceptionType.SyntaxFormat, "The parameter " + parameterId + " only accepts a single argument.");
                 }
                 break;
             case OneToN:
@@ -282,16 +311,16 @@ public abstract class AbstractApplicationLauncher {
                     _log.debug("Found parameter " + parameterId + " specified as OneToN parameter, comes with " + argCount + " arguments");
                 }
                 if (argCount == 0) {
-                    throw new ApplicationParameterException(Type.SyntaxFormat, "The parameter " + parameterId + " requires one or more arguments.");
+                    throw new PintoException(PintoExceptionType.SyntaxFormat, "The parameter " + parameterId + " requires one or more arguments.");
                 }
                 break;
             case SpecificCount:
-                int acceptedArgCount = parameter.getArgCount();
+                int acceptedArgCount = parameter.getExactArgCount();
                 if (_log.isDebugEnabled()) {
                     _log.debug("Found parameter " + parameterId + " specified as SpecificCount parameter with " + acceptedArgCount + " arguments required, comes with " + argCount + " arguments");
                 }
                 if (argCount != acceptedArgCount) {
-                    throw new ApplicationParameterException(Type.SyntaxFormat, "The parameter " + parameterId + " requires exactly " + acceptedArgCount + " arguments.");
+                    throw new PintoException(PintoExceptionType.SyntaxFormat, "The parameter " + parameterId + " requires exactly " + acceptedArgCount + " arguments.");
                 }
                 break;
             case ZeroToN:
@@ -301,7 +330,7 @@ public abstract class AbstractApplicationLauncher {
         }
     }
 
-    private ParameterData getParameterData(String parameter) throws ApplicationParameterException {
+    private ParameterData getParameterData(String parameter) throws PintoException {
         if (parameter.startsWith(LONG_OPTION_DELIMITER)) {
             parameter = parameter.substring(LONG_OPTION_DELIMITER.length());
             if (_parametersByLongOption.containsKey(parameter)) {
@@ -315,14 +344,14 @@ public abstract class AbstractApplicationLauncher {
             }
         }
         // We didn't find it.
-        throw new ApplicationParameterException(Type.UnknownParameter, parameter, "The parameter " + parameter + " is not a valid parameter.");
+        throw new PintoException(PintoExceptionType.UnknownParameter, parameter, "The parameter " + parameter + " is not a valid parameter.");
     }
 
     private boolean isParameter(final String argument) {
         return StringUtils.startsWithAny(argument, OPTION_DELIMITERS);
     }
 
-    private static final Log _log = LogFactory.getLog(AbstractApplicationLauncher.class);
+    private static final Log _log = LogFactory.getLog(AbstractPintoBean.class);
     /**
      * This is the text to place before each option in the help text.
      */
@@ -346,14 +375,15 @@ public abstract class AbstractApplicationLauncher {
      * The overall format width for the help text.
      */
     private static final int WIDTH = 80;
-    /**
-     * The print stream for help text and user messages.
-     */
-    private static PrintStream OUT = System.out;
 
     private static final String SHORT_OPTION_DELIMITER = "-";
     private static final String LONG_OPTION_DELIMITER = "--";
     private static final String[] OPTION_DELIMITERS = new String[] { LONG_OPTION_DELIMITER, SHORT_OPTION_DELIMITER };
+
+    /**
+     * The print stream for help text and user messages.
+     */
+    private PrintStream _printStream = System.out;
 
     private boolean _help;
     private List<String> _arguments;
@@ -364,7 +394,7 @@ public abstract class AbstractApplicationLauncher {
 
     private final class ParameterData {
 
-        public ParameterData(final Method method, CommandLineParameter parameter) {
+        public ParameterData(final Method method, Parameter parameter) {
             if (_log.isDebugEnabled()) {
                 _log.debug("Creating new parameter data object:");
                 _log.debug(" *** Short option:  " + parameter.value());
@@ -376,8 +406,8 @@ public abstract class AbstractApplicationLauncher {
             _method = method;
             _shortOption = parameter.value();
             _longOption = parameter.longOption();
-            _acceptedArguments = parameter.arguments();
             _argCount = parameter.argCount();
+            _exactArgCount = parameter.exactArgCount();
             _help = parameter.help();
         }
 
@@ -397,12 +427,12 @@ public abstract class AbstractApplicationLauncher {
             return _longOption;
         }
 
-        public AcceptedArguments getAcceptedArguments() {
-            return _acceptedArguments;
+        public ArgCount getArgCount() {
+            return _argCount;
         }
 
-        public int getArgCount() {
-            return _argCount;
+        public int getExactArgCount() {
+            return _exactArgCount;
         }
 
         public String getHelp() {
@@ -412,8 +442,8 @@ public abstract class AbstractApplicationLauncher {
         private final Method _method;
         private final String _shortOption;
         private final String _longOption;
-        private final AcceptedArguments _acceptedArguments;
-        private final int _argCount;
+        private final ArgCount _argCount;
+        private final int _exactArgCount;
         private final String _help;
     }
 }

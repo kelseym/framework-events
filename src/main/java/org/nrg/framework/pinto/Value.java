@@ -7,7 +7,7 @@
  *
  * Created on 10/26/12 by rherri01
  */
-package org.nrg.framework.annotations;
+package org.nrg.framework.pinto;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -22,7 +22,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RUNTIME)
-public @interface CommandLineParameterValue {
+public @interface Value {
     /**
      * Specifies the short option for this command-line parameter.
      * @return The value of the short option.
