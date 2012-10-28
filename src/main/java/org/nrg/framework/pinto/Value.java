@@ -1,5 +1,5 @@
 /**
- * CommandLineParameterValue
+ * Value
  * (C) 2012 Washington University School of Medicine
  * All Rights Reserved
  *

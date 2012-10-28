@@ -1,5 +1,5 @@
 /**
- * AcceptedArguments
+ * ArgCount
  * (C) 2012 Washington University School of Medicine
  * All Rights Reserved
  *

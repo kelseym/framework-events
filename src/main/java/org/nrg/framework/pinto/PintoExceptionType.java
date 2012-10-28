@@ -1,3 +1,12 @@
+/**
+ * PintoExceptionType
+ * (C) 2012 Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD License
+ *
+ * Created on 12 October, 2012 by Rick Herrick <rick.herrick@wustl.edu>
+ */
 package org.nrg.framework.pinto;
 
 import java.util.HashMap;
