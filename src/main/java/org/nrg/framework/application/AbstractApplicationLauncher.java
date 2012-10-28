@@ -19,6 +19,7 @@ import org.nrg.framework.application.ApplicationParameterException.Type;
 
 import java.io.PrintStream;
 import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -192,7 +193,9 @@ public abstract class AbstractApplicationLauncher {
                         throw exception;
                     }
                 }
-            } catch (ReflectiveOperationException exception) {
+            } catch (IllegalAccessException exception) {
+                throw new ApplicationParameterException(Type.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
+            } catch (InvocationTargetException exception) {
                 throw new ApplicationParameterException(Type.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
             }
         }
