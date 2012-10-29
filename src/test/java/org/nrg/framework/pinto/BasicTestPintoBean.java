@@ -13,8 +13,19 @@ import java.net.URI;
 
 public class BasicTestPintoBean extends AbstractPintoBean {
 
-    public BasicTestPintoBean(String[] arguments) throws PintoException {
-        super(arguments);
+    public BasicTestPintoBean(Object parent, String[] arguments) throws PintoException {
+        super(parent, arguments);
+    }
+
+    /**
+     * Provides an opportunity for subclasses to validate the processed parameters and their arguments.
+     *
+     * @throws org.nrg.framework.pinto.PintoException
+     *
+     */
+    @Override
+    public void validate() throws PintoException {
+        // Nothing here.
     }
 
     @Parameter(value = "h", longOption = "help", help = "Show the help text for the various options available for this application.")

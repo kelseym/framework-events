@@ -14,6 +14,7 @@ import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -30,20 +31,36 @@ import java.util.*;
  */
 public abstract class AbstractPintoBean {
 
-    protected AbstractPintoBean(String[] arguments) {
-        this(arguments, System.out);
+    /**
+     * Processes the incoming arguments, setting the bean's print stream to {@link System#out}.
+     * @param arguments    Incoming parameter arguments to process.
+     */
+    protected AbstractPintoBean(Object parent, String[] arguments) {
+        this(parent, arguments, System.out);
     }
-    protected AbstractPintoBean(String[] arguments, PrintStream printStream) {
+
+    /**
+     * Processes the incoming arguments, setting the bean's print stream to the submitted parameter.
+     * @param arguments    Incoming parameter arguments to process.
+     * @param printStream  Indicates the print stream to be used for printing output.
+     */
+    protected AbstractPintoBean(Object parent, String[] arguments, PrintStream printStream) {
+        assert parent != null : "You must specify the parent for your pinto bean.";
+
         _arguments = Arrays.asList(Arrays.copyOfRange(arguments, 1, arguments.length));
         _printStream = printStream;
+        _parent = parent;
 
         try {
             scan();
             harvest();
             prune();
+
             if (getHelp()) {
                 throw new PintoException(PintoExceptionType.HelpRequested);
             }
+
+            validate();
         } catch (PintoException exception) {
             if (!StringUtils.isBlank(exception.getMessage())) {
                 _log.warn(exception.getMessage());
@@ -51,6 +68,12 @@ public abstract class AbstractPintoBean {
             displayHelp();
         }
     }
+
+    /**
+     * Provides an opportunity for subclasses to validate the processed parameters and their arguments.
+     * @throws PintoException
+     */
+    abstract public void validate() throws PintoException;
 
     public void setPrintStream(PrintStream printStream) {
         _printStream = printStream;
@@ -75,6 +98,7 @@ public abstract class AbstractPintoBean {
      *
      * @return Gets the value for the help option.
      */
+    @Value("h")
     public boolean getHelp() {
         return _help;
     }
@@ -94,10 +118,29 @@ public abstract class AbstractPintoBean {
      */
     public void displayHelp() {
         if (_parametersByShortOption == null || _parametersByShortOption.size() == 0) {
-            _printStream.println("No parameters found for this application!");
+            getPrintStream().println("No parameters found for this application!");
         } else {
             // TODO: Add an annotation to put application name, copyright info, and introductory help text on the class level.
-            _printStream.println(getClass().getSimpleName() + " help:\n");
+            String appName, copyright, introduction;
+            PintoApplication application = _parent.getClass().getAnnotation(PintoApplication.class);
+            if (application == null) {
+                appName = _parent.getClass().getSimpleName();
+                copyright = introduction = null;
+            } else {
+                appName = application.value();
+                copyright = application.copyright();
+                introduction = application.introduction();
+            }
+
+            getPrintStream().println(appName);
+            if (!StringUtils.isBlank(copyright)) {
+                getPrintStream().println(copyright);
+            }
+            if (!StringUtils.isBlank(introduction)) {
+                getPrintStream().println(introduction);
+            }
+            getPrintStream().println();
+
             for(ParameterData parameter : _parametersByShortOption.values()) {
                 StringBuilder parameterText = new StringBuilder(PREFIX);
                 parameterText.append(SHORT_OPTION_DELIMITER).append(parameter.getShortOption());
@@ -106,7 +149,7 @@ public abstract class AbstractPintoBean {
                 }
 
                 // If our parameter text is so long that it will either run into the hanging indent text or directly up
-                // to the hanging in¡dent text (i.e., no space left between them)...
+                // to the hanging indent text (i.e., no space left between them)...
                 final int length = parameterText.length();
                 if (length > HANGING_INDENT - 1) {
                     // Then add a new line
@@ -116,7 +159,7 @@ public abstract class AbstractPintoBean {
                 }
 
                 parameterText.append(WordUtils.wrap(parameter.getHelp(), WIDTH - HANGING_INDENT, INDENT_FILLER, true));
-                _printStream.println(parameterText.toString());
+                getPrintStream().println(parameterText.toString());
             }
         }
     }
@@ -149,6 +192,8 @@ public abstract class AbstractPintoBean {
             object = Short.parseShort(argument);
         } else if (type == Boolean.class || type == boolean.class) {
             object = Boolean.parseBoolean(argument);
+        } else if (type == File.class) {
+            object = new File(argument);
         } else if (type == URI.class) {
             try {
                 object = new URI(argument);
@@ -384,7 +429,7 @@ public abstract class AbstractPintoBean {
      * The print stream for help text and user messages.
      */
     private PrintStream _printStream = System.out;
-
+    private final Object _parent;
     private boolean _help;
     private List<String> _arguments;
     private Map<String, List<String>> _parameters = new LinkedHashMap<String, List<String>>();

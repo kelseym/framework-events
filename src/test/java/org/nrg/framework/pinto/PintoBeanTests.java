@@ -29,7 +29,7 @@ public class PintoBeanTests {
 
     @Test
     public void testBasicTestApplication() throws PintoException, URISyntaxException {
-        BasicTestPintoBean bean = new BasicTestPintoBean(TEST_PARAMS);
+        BasicTestPintoBean bean = new BasicTestPintoBean(this, TEST_PARAMS);
         assertNotNull(bean);
         assertTrue(bean.getHelp());
         assertFalse(StringUtils.isBlank(bean.getName()));
