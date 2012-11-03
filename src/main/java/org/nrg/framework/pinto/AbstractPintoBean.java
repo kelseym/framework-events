@@ -33,25 +33,27 @@ public abstract class AbstractPintoBean {
 
     /**
      * Processes the incoming arguments, setting the bean's print stream to {@link System#out}.
-     * @param arguments    Incoming parameter arguments to process.
+     *
+     * @param arguments Incoming parameter arguments to process.
      */
-    protected AbstractPintoBean(Object parent, String[] arguments) {
+    protected AbstractPintoBean(Object parent, String[] arguments) throws PintoException {
         this(parent, arguments, System.out);
     }
 
     /**
      * Processes the incoming arguments, setting the bean's print stream to the submitted parameter.
-     * @param arguments    Incoming parameter arguments to process.
-     * @param printStream  Indicates the print stream to be used for printing output.
+     *
+     * @param arguments   Incoming parameter arguments to process.
+     * @param printStream Indicates the print stream to be used for printing output.
      */
-    protected AbstractPintoBean(Object parent, String[] arguments, PrintStream printStream) {
-        assert parent != null : "You must specify the parent for your pinto bean.";
-
-        _arguments = Arrays.asList(Arrays.copyOfRange(arguments, 1, arguments.length));
-        _printStream = printStream;
-        _parent = parent;
-
+    protected AbstractPintoBean(Object parent, String[] arguments, PrintStream printStream) throws PintoException {
         try {
+            assert parent != null : "You must specify the parent for your pinto bean.";
+
+            _arguments = Arrays.asList(arguments);
+            _printStream = printStream;
+            _parent = parent;
+
             scan();
             harvest();
             prune();
@@ -62,15 +64,22 @@ public abstract class AbstractPintoBean {
 
             validate();
         } catch (PintoException exception) {
-            if (!StringUtils.isBlank(exception.getMessage())) {
-                _log.warn(exception.getMessage());
+            if (exception.getType() != PintoExceptionType.HelpRequested) {
+                String parameter = exception.getParameter();
+                if (!StringUtils.isBlank(parameter)) {
+                    printStream.println("Found error with parameter: " + parameter + ":");
+                }
+                printStream.println("Error type: " + exception.getType());
+                printStream.println(exception.getMessage());
             }
             displayHelp();
+            throw exception;
         }
     }
 
     /**
      * Provides an opportunity for subclasses to validate the processed parameters and their arguments.
+     *
      * @throws PintoException
      */
     abstract public void validate() throws PintoException;
@@ -105,6 +114,7 @@ public abstract class AbstractPintoBean {
 
     /**
      * Returns any arguments that are posted on the end of the list of arguments but aren't associated with a parameter.
+     *
      * @return Any arguments on the end of the list of arguments not associated with a parameter.
      */
     public List<String> getTrailingArguments() {
@@ -141,7 +151,7 @@ public abstract class AbstractPintoBean {
             }
             getPrintStream().println();
 
-            for(ParameterData parameter : _parametersByShortOption.values()) {
+            for (ParameterData parameter : _parametersByShortOption.values()) {
                 StringBuilder parameterText = new StringBuilder(PREFIX);
                 parameterText.append(SHORT_OPTION_DELIMITER).append(parameter.getShortOption());
                 if (parameter.hasLongOption()) {
@@ -167,8 +177,9 @@ public abstract class AbstractPintoBean {
     /**
      * Converts a string to the type indicated by the <b>type</b> parameter. The ability of a pinto bean to convert
      * strings to any arbitrary type can be extended by overriding and extending this method.
-     * @param type        Indicates the type to which the argument should be converted.
-     * @param argument    The argument to be converted.
+     *
+     * @param type     Indicates the type to which the argument should be converted.
+     * @param argument The argument to be converted.
      * @return An object of the indicated type from the given value.
      * @throws PintoException
      */
@@ -239,6 +250,7 @@ public abstract class AbstractPintoBean {
      * Harvests the command-line parameters and sorts them along with their arguments. Any trailing
      * arguments are assigned to the last found parameter. Trailing arguments that occur without
      * parameters are stashed in the {@link #getTrailingArguments()} property.
+     *
      * @throws PintoException
      */
     private void harvest() throws PintoException {
@@ -326,7 +338,7 @@ public abstract class AbstractPintoBean {
             coercedArguments.add(convertStringToType(type, arguments.get(index)));
         }
 
-        return isArrayParameter ? new Object[] { coercedArguments.toArray((Object[]) Array.newInstance(types[0].getComponentType(), coercedArguments.size())) } : coercedArguments.toArray();
+        return isArrayParameter ? new Object[]{coercedArguments.toArray((Object[]) Array.newInstance(types[0].getComponentType(), coercedArguments.size()))} : coercedArguments.toArray();
     }
 
     private void validateArgCount(final ParameterData parameter, final List<String> arguments) throws PintoException {
@@ -403,12 +415,12 @@ public abstract class AbstractPintoBean {
     private static final String PREFIX = " ";
     /**
      * This is the width of the hanging indent in the help text. Illustration ('|' is the left margin):
-     *
+     * <p/>
      * <div style='font-family: "Courier New", Courier, monospace'>
      * | -h, --help         Show this help text.
      * |12345678901234567890
      * </div>
-     *
+     * <p/>
      * Above shows a 20-character hanging indent.
      */
     private static final int HANGING_INDENT = 20;
@@ -423,7 +435,7 @@ public abstract class AbstractPintoBean {
 
     private static final String SHORT_OPTION_DELIMITER = "-";
     private static final String LONG_OPTION_DELIMITER = "--";
-    private static final String[] OPTION_DELIMITERS = new String[] { LONG_OPTION_DELIMITER, SHORT_OPTION_DELIMITER };
+    private static final String[] OPTION_DELIMITERS = new String[]{LONG_OPTION_DELIMITER, SHORT_OPTION_DELIMITER};
 
     /**
      * The print stream for help text and user messages.

@@ -49,10 +49,10 @@ public @interface Parameter {
     /**
      * The number of accepted arguments for this parameter. This is specified using the {@link ArgCount} enumeration. In
      * the cause of {@link ArgCount#SpecificCount}, you can set the specific count to be used with the {@link #argCount()}
-     * attribute.
+     * attribute. The default value for this is {@link ArgCount#OneArgument}.
      * @return The number of accepted arguments for this parameter.
      */
-    public ArgCount argCount() default ArgCount.StandAlone;
+    public ArgCount argCount() default ArgCount.OneArgument;
 
     /**
      * Whe the {@link #argCount()} attribute is set to {@link ArgCount#SpecificCount}, this attribute
