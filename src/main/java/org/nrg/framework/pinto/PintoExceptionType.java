@@ -13,13 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum PintoExceptionType {
-    HelpRequested(0),
-    UnknownParameter(1),
-    SyntaxFormat(2),
-    UnsupportedFeature(3),
-    DuplicateParameter(4),
-    Configuration(5),
-    UnknownParameterTypes(6);
+    UnknownParameter(0),
+    SyntaxFormat(1),
+    UnsupportedFeature(2),
+    DuplicateParameter(3),
+    Configuration(4),
+    UnknownParameterTypes(5);
 
     PintoExceptionType(int code) {
         _code = code;

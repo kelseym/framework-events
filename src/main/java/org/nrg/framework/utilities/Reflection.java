@@ -121,4 +121,15 @@ public class Reflection {
 
         return classes;
     }
+
+    public static Properties getPropertiesForClass(final Class<? extends Object> parent) {
+        final String bundle = "/" + parent.getName().replace(".", "/") + ".properties";
+        Properties properties = new Properties();
+        try {
+            properties.load(parent.getResourceAsStream(bundle));
+        } catch (IOException e) {
+            properties = null;
+        }
+        return properties;
+    }
 }

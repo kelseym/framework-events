@@ -30,6 +30,12 @@ public @interface PintoApplication {
     public String value();
 
     /**
+     * Provides application version.
+     * @return Application version information.
+     */
+    public String version() default "";
+
+    /**
      * Provides any required application copyright information.
      * @return Application copyright information.
      */

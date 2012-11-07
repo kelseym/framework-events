@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nrg.framework.utilities.Reflection;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -59,20 +60,19 @@ public abstract class AbstractPintoBean {
             prune();
 
             if (getHelp()) {
-                throw new PintoException(PintoExceptionType.HelpRequested);
+                displayHelp();
+            } else if (getVersion()) {
+                displayVersion();
+            } else {
+                validate();
             }
-
-            validate();
         } catch (PintoException exception) {
-            if (exception.getType() != PintoExceptionType.HelpRequested) {
-                String parameter = exception.getParameter();
-                if (!StringUtils.isBlank(parameter)) {
-                    printStream.println("Found error with parameter: " + parameter + ":");
-                }
-                printStream.println("Error type: " + exception.getType());
-                printStream.println(exception.getMessage());
+            String parameter = exception.getParameter();
+            if (!StringUtils.isBlank(parameter)) {
+                printStream.println("Found error with parameter: " + parameter + ":");
             }
-            displayHelp();
+            printStream.println("Error type: " + exception.getType());
+            printStream.println(exception.getMessage());
             throw exception;
         }
     }
@@ -113,6 +113,26 @@ public abstract class AbstractPintoBean {
     }
 
     /**
+     * The setter for the version option.
+     *
+     * @param version Incoming parameter.
+     */
+    @Parameter(value = "v", longOption = "version", argCount = ArgCount.StandAlone, help = "Displays the version of this application.")
+    public void setVersion(boolean version) {
+        _version = version;
+    }
+
+    /**
+     * The getter for the version option.
+     *
+     * @return Gets the value for the version option.
+     */
+    @Value("v")
+    public boolean getVersion() {
+        return _version;
+    }
+
+    /**
      * Returns any arguments that are posted on the end of the list of arguments but aren't associated with a parameter.
      *
      * @return Any arguments on the end of the list of arguments not associated with a parameter.
@@ -122,11 +142,20 @@ public abstract class AbstractPintoBean {
     }
 
     /**
+     * Indicates whether application execution should continue based on submitted parameters. Common reasons for not
+     * continuing include specifying help or version parameters.
+     * @return Whether application execution should continue once the pinto bean has been constructed.
+     */
+    public boolean getShouldContinue() {
+        return !_help && !_version;
+    }
+
+    /**
      * Display the help for each of the available command-line parameters supported by this bean. The help is printed to
      * the stream specified by the {@link #setPrintStream(java.io.PrintStream)} property or passed in through the
      * {@link AbstractPintoBean(String[], PrintStream)} constructor.
      */
-    public void displayHelp() {
+    protected void displayHelp() {
         if (_parametersByShortOption == null || _parametersByShortOption.size() == 0) {
             getPrintStream().println("No parameters found for this application!");
         } else {
@@ -171,6 +200,34 @@ public abstract class AbstractPintoBean {
                 parameterText.append(WordUtils.wrap(parameter.getHelp(), WIDTH - HANGING_INDENT, INDENT_FILLER, true));
                 getPrintStream().println(parameterText.toString());
             }
+        }
+    }
+
+    /**
+     * Displays the version from the {@link PintoApplication annotation} on the parent class if available. If the
+     * annotation is not available, this method tries to find a <b>getVersion()</b> method on the parent class and call
+     * that, along with displaying the application name as the class name.
+     */
+    protected void displayVersion() throws PintoException {
+        String appName, version, copyright;
+        PintoApplication application = _parent.getClass().getAnnotation(PintoApplication.class);
+        if (application == null) {
+            appName = _parent.getClass().getSimpleName();
+            version = getVersionFromParent();
+            copyright = null;
+        } else {
+            appName = resolveAttribute(application.value());
+            version = application.version();
+            if (StringUtils.isBlank(version)) {
+                version = getVersionFromParent();
+            } else {
+                version = resolveAttribute(version);
+            }
+            copyright = resolveAttribute(application.copyright());
+        }
+        getPrintStream().println(appName + ", version " + version);
+        if (!StringUtils.isBlank(copyright)) {
+            getPrintStream().println(copyright);
         }
     }
 
@@ -223,6 +280,7 @@ public abstract class AbstractPintoBean {
      * annotation to the setter method. Associated getter methods are marked with the {@link Value} annotation.
      */
     private void scan() throws PintoException {
+        // TODO: For now this doesn't detect duplication in parameters when subclass method hides base class method. Maybe that's OK?
         Method[] methods = getClass().getMethods();
         for (Method method : methods) {
             Parameter annotation = method.getAnnotation(Parameter.class);
@@ -408,6 +466,63 @@ public abstract class AbstractPintoBean {
         return StringUtils.startsWithAny(argument, OPTION_DELIMITERS);
     }
 
+    private String getVersionFromParent() throws PintoException {
+        Method getVersion = null;
+        try {
+            getVersion = _parent.getClass().getMethod("getVersion");
+        } catch (NoSuchMethodException ignored) {
+            // If it doesn't exist, so be it.
+        }
+        if (getVersion != null) {
+            try {
+                return (String) getVersion.invoke(_parent);
+            } catch (Exception exception) {
+                throw new PintoException(PintoExceptionType.Configuration, "v", "Version method was found, but throws an error", exception);
+            }
+        }
+        return getVersionFromParentProperties();
+    }
+
+    private String getVersionFromParentProperties() throws PintoException {
+        final String version = getPropertyFromParentProperties("version");
+        return StringUtils.isBlank(version) ? "Unknown" : version;
+    }
+
+    private String getPropertyFromParentProperties(String property) throws PintoException {
+        Properties properties = null;
+        Method getProperties = null;
+
+        try {
+            getProperties = _parent.getClass().getMethod("getProperties");
+        } catch (NoSuchMethodException ignored) {
+            // If it doesn't exist, so be it.
+        }
+
+        if (getProperties != null) {
+            try {
+                properties = (Properties) getProperties.invoke(_parent);
+            } catch (Exception exception) {
+                throw new PintoException(PintoExceptionType.Configuration, "v", "Properties method was found, but throws an error", exception);
+            }
+        }
+
+        if (properties == null) {
+            properties = Reflection.getPropertiesForClass(_parent.getClass());
+        }
+
+        return properties == null ? null : properties.getProperty(property);
+    }
+
+    private String resolveAttribute(final String value) {
+        if (value.startsWith(PROPERTY_INDICATOR)) {
+            try {
+                return getPropertyFromParentProperties(value.substring(PROPERTY_INDICATOR.length()));
+            } catch (PintoException ignored) {
+            }
+        }
+        return value;
+    }
+
     private static final Log _log = LogFactory.getLog(AbstractPintoBean.class);
     /**
      * This is the text to place before each option in the help text.
@@ -436,13 +551,17 @@ public abstract class AbstractPintoBean {
     private static final String SHORT_OPTION_DELIMITER = "-";
     private static final String LONG_OPTION_DELIMITER = "--";
     private static final String[] OPTION_DELIMITERS = new String[]{LONG_OPTION_DELIMITER, SHORT_OPTION_DELIMITER};
+    public static final String PROPERTY_INDICATOR = "property:";
 
     /**
      * The print stream for help text and user messages.
      */
     private PrintStream _printStream = System.out;
     private final Object _parent;
+
     private boolean _help;
+    private boolean _version = false;
+
     private List<String> _arguments;
     private Map<String, List<String>> _parameters = new LinkedHashMap<String, List<String>>();
     private List<String> _trailing = new ArrayList<String>();

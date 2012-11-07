@@ -28,15 +28,6 @@ public class BasicTestPintoBean extends AbstractPintoBean {
         // Nothing here.
     }
 
-    @Parameter(value = "h", longOption = "help", help = "Show the help text for the various options available for this application.")
-    public void setHelp(boolean showHelp) {
-        _showHelp = showHelp;
-    }
-
-    public boolean getHelp() {
-        return _showHelp;
-    }
-
     @Parameter(value = "n", longOption = "name", argCount = ArgCount.OneArgument, help = "Sets the name for the operation.")
     public void setName(String name) {
         _name = name;
