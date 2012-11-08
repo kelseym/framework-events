@@ -18,7 +18,8 @@ public enum PintoExceptionType {
     UnsupportedFeature(2),
     DuplicateParameter(3),
     Configuration(4),
-    UnknownParameterTypes(5);
+    UnknownParameterTypes(5),
+    InvalidOutputStreamAdapter(6);
 
     PintoExceptionType(int code) {
         _code = code;

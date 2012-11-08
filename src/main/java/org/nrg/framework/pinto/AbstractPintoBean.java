@@ -52,12 +52,13 @@ public abstract class AbstractPintoBean {
             assert parent != null : "You must specify the parent for your pinto bean.";
 
             _arguments = Arrays.asList(arguments);
-            _printStream = printStream;
             _parent = parent;
 
             scan();
             harvest();
             prune();
+
+            _printStream = getOutputStream();
 
             if (getHelp()) {
                 displayHelp();
@@ -130,6 +131,26 @@ public abstract class AbstractPintoBean {
     @Value("v")
     public boolean getVersion() {
         return _version;
+    }
+
+    /**
+     * The setter for the outputStreamAdapter option.
+     *
+     * @param outputStreamAdapter Incoming parameter.
+     */
+    @Parameter(value = "osa", longOption = "outputStreamAdapter", help = "Specifies an output stream adapter implementation to handle redirecting the output from your application.")
+    public void setOutputStreamAdapter(String outputStreamAdapter) {
+        _outputStreamAdapter = outputStreamAdapter;
+    }
+
+    /**
+     * The getter for the outputStreamAdapter option.
+     *
+     * @return Gets the value for the outputStreamAdapter option.
+     */
+    @Value("osa")
+    public String getOutputStreamAdapter() {
+        return _outputStreamAdapter;
     }
 
     /**
@@ -523,6 +544,24 @@ public abstract class AbstractPintoBean {
         return value;
     }
 
+    private PrintStream getOutputStream() throws PintoException {
+        final String outputStreamAdapter = getOutputStreamAdapter();
+        if (StringUtils.isBlank(outputStreamAdapter)) {
+            return System.out;
+        }
+        try {
+            Class<?> clazz = getClass().getClassLoader().loadClass(outputStreamAdapter);
+            PintoStreamAdapter adapter = (PintoStreamAdapter) clazz.newInstance();
+            return adapter.getOutputStream();
+        } catch (ClassNotFoundException e) {
+            throw new PintoException(PintoExceptionType.InvalidOutputStreamAdapter, "Couldn't find output stream adapter class: " + outputStreamAdapter);
+        } catch (InstantiationException e) {
+            throw new PintoException(PintoExceptionType.InvalidOutputStreamAdapter, "Couldn't create new instance of output stream adapter class: " + outputStreamAdapter);
+        } catch (IllegalAccessException e) {
+            throw new PintoException(PintoExceptionType.InvalidOutputStreamAdapter, "Can't access constructor of output stream adapter class: " + outputStreamAdapter);
+        }
+    }
+
     private static final Log _log = LogFactory.getLog(AbstractPintoBean.class);
     /**
      * This is the text to place before each option in the help text.
@@ -561,6 +600,7 @@ public abstract class AbstractPintoBean {
 
     private boolean _help;
     private boolean _version = false;
+    private String _outputStreamAdapter;
 
     private List<String> _arguments;
     private Map<String, List<String>> _parameters = new LinkedHashMap<String, List<String>>();
