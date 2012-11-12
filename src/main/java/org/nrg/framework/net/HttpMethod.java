@@ -38,10 +38,6 @@ public enum HttpMethod {
         return _methods.get(method);
     }
 
-    public static HttpRequestBase getHttpRequestObject(org.springframework.http.HttpMethod method) {
-        return getHttpRequestObject(HttpMethod.method(method.toString()));
-    }
-
     public static HttpRequestBase getHttpRequestObject(String method) {
         return getHttpRequestObject(HttpMethod.method(method));
     }
