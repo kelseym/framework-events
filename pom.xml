@@ -105,6 +105,24 @@
             <artifactId>cglib</artifactId>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- Hibernate test code seems to need this  -->
+			<groupId>org.javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+	         <!-- This routes logging in Hibernate to ACL/JCL -->
+	         <!-- Without it, Hibernate bootstrapping (e.g. entity scanning) fails silently -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jcl</artifactId>
+			<scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
