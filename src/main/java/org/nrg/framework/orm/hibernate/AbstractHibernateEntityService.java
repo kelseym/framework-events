@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 // For example, in the exclusion service, you can save a System-scoped object with a target ID. This is worth a warning, but not worth
 // an error. However, you can NOT save a Project- or DataType-scoped object WITHOUT a target ID, since you need something to relate with
 // the scope. That should be an error or fatal or something.
+//
+// See javadoc comments on the validate method regarding Hibernate Validator.
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E> {
 
     public AbstractHibernateEntityService() {
@@ -167,10 +169,15 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
-     * Provides a default validation method that can be overridden in specific implementations.
-     * This implementation always returns <b>null</b>, i.e. entities are always considered to
-     * be in a valid state. Overriding implementations should return a non-null string message
-     * for entities that are in an invalid state, but otherwise return null.
+     * Provides a default validation method that can be overridden in specific implementations. This implementation
+     * always returns <b>null</b>, i.e. entities are always considered to be in a valid state. Overriding
+     * implementations should return a non-null string message for entities that are in an invalid state, but otherwise
+     * return null.
+     * 
+     * Note, though, that Hibernate will automatically validate entities that are annotated with validation criteria if
+     * it finds a validation provider on the classpath (it is in XNAT builder, so all XNAT entities will be validated on
+     * save). Given that, there may not be much need for this method, but we'll leave it here for now. Someday there may
+     * be need for validation in the business layer (here) as well.
      */
     @Override
     public String validate(E entity) {
