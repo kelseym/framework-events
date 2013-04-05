@@ -176,7 +176,7 @@ public abstract class AbstractPintoBean {
      * the stream specified by the {@link #setPrintStream(java.io.PrintStream)} property or passed in through the
      * {@link AbstractPintoBean(String[], PrintStream)} constructor.
      */
-    protected void displayHelp() {
+    public void displayHelp() {
         if (_parametersByShortOption == null || _parametersByShortOption.size() == 0) {
             getPrintStream().println("No parameters found for this application!");
         } else {
