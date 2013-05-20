@@ -14,7 +14,8 @@ public enum NrgServiceError {
 	AlreadyInitialized, 
 	ChannelRendererNotFound, 
 	ChannelRendererProcessingError,
-	DuplicateDefinition,
+    DuplicateCategory,
+    DuplicateDefinition,
 	DuplicateSubscriber,
 	GenericMailError,
 	InvalidChannelRenderer,
@@ -23,8 +24,10 @@ public enum NrgServiceError {
 	InvalidRestServiceParameters,
 	NoMatchingCategory,
 	NoMatchingDefinition,
+    PermissionsViolation,
+    SecurityViolation,
 	UnknownChannelRendererError,
-	UnsupportedFeature, DuplicateCategory;
+	UnsupportedFeature;
 	
 	public static NrgServiceError Default = Unknown;
 }
