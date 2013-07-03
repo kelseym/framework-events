@@ -174,7 +174,7 @@ public abstract class AbstractPintoBean {
     /**
      * Display the help for each of the available command-line parameters supported by this bean. The help is printed to
      * the stream specified by the {@link #setPrintStream(java.io.PrintStream)} property or passed in through the
-     * {@link AbstractPintoBean(String[], PrintStream)} constructor.
+     * {@link AbstractPintoBean#AbstractPintoBean(Object, String[], PrintStream)} constructor.
      */
     public void displayHelp() {
         if (_parametersByShortOption == null || _parametersByShortOption.size() == 0) {
@@ -343,17 +343,63 @@ public abstract class AbstractPintoBean {
                 }
 
                 // Try to get the data for the indicated parameter.
-                parameter = getParameterData(argument);
+                ParameterData foundParameter = getParameterData(argument);
+
+                // Before we finish with an existing parameter...
+                if (parameter != null) {
+                    ArgCount argCount = parameter.getArgCount();
+                    int argSize = _parameters.get(parameter.getShortOption()).size();
+
+                    // It's OK to have a new parameter now, so bail out.
+                    if (argSize == 0 && (argCount == ArgCount.ZeroToN || argCount == ArgCount.StandAlone)) {
+                        break;
+                    }
+
+                    if (argCount == ArgCount.OneArgument && argSize != 1) {
+                        throw new PintoException(PintoExceptionType.SyntaxFormat, "Not enough arguments specified for parameter " + parameter.getShortOption() + ", requires exactly one");
+                    } else if (argCount == ArgCount.OneToN && argSize == 0) {
+                        throw new PintoException(PintoExceptionType.SyntaxFormat, "Not enough arguments specified for parameter " + parameter.getShortOption() + ", requires one or more");
+                    } else if (argCount == ArgCount.SpecificCount && argSize != parameter.getExactArgCount()) {
+                        throw new PintoException(PintoExceptionType.SyntaxFormat, "Not enough arguments specified for parameter " + parameter.getShortOption() + ", requires " + parameter.getExactArgCount());
+                    }
+                }
+
+                parameter = foundParameter;
 
                 // Now store the parameter option in the map of parameter data and initialize the argument cache.
                 _parameters.put(parameter.getShortOption(), new ArrayList<String>());
+
+                // If the parameter takes no args, there's no reason to keep it around.  The next tokens have to be
+                // either another parameter or trailing arguments.
+                if (parameter.getArgCount() == ArgCount.StandAlone) {
+                    parameter = null;
+                }
             } else if (parameter == null) {
                 // This is a fail-safe catch for situations with no parameters, e.g., ls file1 file2 file3
                 _trailing.add(argument);
             } else {
                 // Add the argument to the current parameter. The last parameter will harvest all trailing data.
                 // We'll handle that situation when we prune the parameter list.
-                _parameters.get(parameter.getShortOption()).add(argument);
+                List<String> args = _parameters.get(parameter.getShortOption());
+                args.add(argument);
+
+                ArgCount argCount = parameter.getArgCount();
+                // Note that we don't handle ArgCount.StandAlone here because that's cut off when the
+                // stand-alone parameter is detected earlier. We also don't deal with ZeroToN and OneToN,
+                // since they should be cut off by end of command or the next parameter.
+                switch (argCount) {
+                    case OneArgument:
+                        // Really we shouldn't ever get this since we're going to cut it off after this.
+                        if (args.size() > 1) {
+                            throw new PintoException(PintoExceptionType.SyntaxFormat, "Too many arguments specified for parameter " + parameter.getShortOption());
+                        }
+                        parameter = null;
+                        break;
+                    case SpecificCount:
+                        if (args.size() > parameter.getExactArgCount()) {
+                            throw new PintoException(PintoExceptionType.SyntaxFormat, "Too many arguments specified for parameter " + parameter.getShortOption());
+                        }
+                }
             }
         }
     }
