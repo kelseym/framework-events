@@ -32,7 +32,9 @@ public class PacsEntityServiceTest {
     @Test
     @ExpectedException(value = ConstraintViolationException.class)
     public void testNullPacs() {
-	pacsEntityService.create(new Pacs());
+        Pacs entity = pacsEntityService.newEntity();
+        entity.setAeTitle("testNullPacs");
+        pacsEntityService.create(entity);
     }
 
     @Test
