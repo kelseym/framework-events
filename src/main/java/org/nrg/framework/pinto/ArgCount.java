@@ -9,10 +9,6 @@
  */
 package org.nrg.framework.pinto;
 
-/**
- * Provides enums for specifying the expected arguments for {@link Parameter command-line parameters}.
- * This sets the expectations for the data that comes after the parameter specifier, if any.
- */
 public enum ArgCount {
     /**
      * Indicates that the parameter has no accompanying arguments. This can be something like verbose or help

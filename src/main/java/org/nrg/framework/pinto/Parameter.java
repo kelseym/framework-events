@@ -16,9 +16,6 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Designates a setter property as a command-line parameter for an application.
- */
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RUNTIME)

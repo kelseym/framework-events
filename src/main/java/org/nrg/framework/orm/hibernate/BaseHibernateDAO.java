@@ -14,10 +14,6 @@ import java.util.List;
 
 import org.hibernate.SessionFactory;
 
-/**
- * @param <E>
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
 
     public abstract void setSessionFactory(SessionFactory factory);

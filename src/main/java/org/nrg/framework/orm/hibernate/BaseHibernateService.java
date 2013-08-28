@@ -13,11 +13,6 @@ import java.util.List;
 
 import org.nrg.framework.services.NrgService;
 
-/**
- * Defines the basic operations for service classes in the framework. 
- *
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 public interface BaseHibernateService<E extends BaseHibernateEntity> extends NrgService {
 
     /**

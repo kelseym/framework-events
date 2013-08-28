@@ -25,11 +25,6 @@ import java.net.URISyntaxException;
 import java.nio.CharBuffer;
 import java.util.*;
 
-/**
- * Defines the base functionality for a parameter interface object (PIntO) bean. Scan a bean class and extract the
- * command-line parameters from methods annotated with the {@link Parameter} annotation. These parameters and any
- * accompanying arguments are stored in the bean object.
- */
 public abstract class AbstractPintoBean {
 
     /**

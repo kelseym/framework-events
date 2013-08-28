@@ -16,9 +16,6 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Identifies an application as one that uses pinto beans for parameter processing.
- */
 @Documented
 @Target({ElementType.TYPE})
 @Retention(RUNTIME)

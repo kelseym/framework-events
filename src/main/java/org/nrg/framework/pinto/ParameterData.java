@@ -15,9 +15,6 @@ import org.apache.commons.logging.LogFactory;
 
 import java.lang.reflect.Method;
 
-/**
- * Encapsulates all the data about a particular parameter extracted from a pinto bean instance.
- */
 public class ParameterData {
 
     public ParameterData(final Method method, Parameter parameter) {

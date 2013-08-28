@@ -1,9 +1,12 @@
 /*
- * DlqListener
- * Copyright (c) 2013. Washington University School of Medicine
+ * org.nrg.framework.messaging.DlqListener
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2013, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
+ * Released under the Simplified BSD.
+ *
+ * Last modified 7/1/13 5:30 PM
  */
 
 package org.nrg.framework.messaging;
@@ -16,20 +19,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * DlqListener
- *
- * @author rherri01
- * @since 4/4/13
- */
-
-/**
- * I couldn't get the ActiveMQ configuration to work for multiple DLQs. So this one will triage the requests and forward
- * appropriately.
- *
- * @author ehaas01
- *
- */
 public class DlqListener {
 
     public void onReceiveDeadLetter(final Object object) throws Exception {

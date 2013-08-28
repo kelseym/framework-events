@@ -11,11 +11,6 @@ package org.nrg.framework.orm.hibernate;
 
 import java.util.Date;
 
-/**
- * Represents the base functionality for a data entity.
- *
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 public interface BaseHibernateEntity {
     /**
      * Returns the ID of the data entity. This usually maps to the entity's primary

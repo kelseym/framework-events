@@ -15,10 +15,6 @@ import java.lang.reflect.TypeVariable;
 
 import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClassUsageException;
 
-/**
- * 
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity> {
 
     @SuppressWarnings("unchecked")

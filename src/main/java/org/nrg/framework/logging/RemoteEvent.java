@@ -21,9 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Provides a flexible map for setting event properties without enforcing any particular model.
- */
 public class RemoteEvent extends HashMap<String, String> {
     /**
      * This is used to retrieve the remote logging from configuration.

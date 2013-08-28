@@ -9,11 +9,6 @@
  */
 package org.nrg.framework.services;
 
-/**
- * Provides the basic interface for NRG service classes.
- *
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 public interface NrgService {
     public static String SERVICE_NAME = "NrgService";
 }

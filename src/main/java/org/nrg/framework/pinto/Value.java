@@ -16,9 +16,6 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Indicates that a method is the value for a command-line parameter, mapped by the short option to the parameter.
- */
 @Documented
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RUNTIME)

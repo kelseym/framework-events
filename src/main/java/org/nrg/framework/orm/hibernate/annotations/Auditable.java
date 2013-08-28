@@ -19,13 +19,6 @@ import java.lang.annotation.Target;
 import org.nrg.framework.orm.hibernate.BaseHibernateEntity;
 
 
-/**
- * This annotation indicates that the associated {@link BaseHibernateEntity entity} is auditable.
- * This means that the type will not actually be deleted upon a delete operation, but instead will
- * be disabled via calling the {@link BaseHibernateEntity#setEnabled(boolean)} with a value of
- * <b>false</b>.
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 @Documented
 @Target(TYPE)
 @Retention(RUNTIME)

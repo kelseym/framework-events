@@ -12,13 +12,6 @@ package org.nrg.framework.orm.hibernate;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
 
-/**
- * Based on the {@link ImprovedNamingStrategy} class, this class creates table names
- * with the same strategy, but also allowing a prefix to be prepended onto the table
- * names to allow for better namespacing of Hibernate tables in an existing database
- * or schema.
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 public class PrefixedTableNamingStrategy extends ImprovedNamingStrategy {
     /**
      * A convenient singleton instance

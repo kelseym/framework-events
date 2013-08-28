@@ -11,10 +11,6 @@ package org.nrg.framework.orm.hibernate;
 
 import org.nrg.framework.orm.hibernate.annotations.Auditable;
 
-/**
- * 
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 public class HibernateUtils {
     /**
      * Tests whether the entity is auditable. Auditable entities are not deleted in delete operations,

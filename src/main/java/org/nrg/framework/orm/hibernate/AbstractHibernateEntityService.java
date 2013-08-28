@@ -15,20 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Implements a generic service functionality to provide default entity management
- * functionality. In the generic terminology, E is the entity class and D is the
- * DAO class.
- * 
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
-// TODO: Integrate calls to the validate() method in the methods that commit objects to the database. Currently that returns a String,
-// but this should probably be modified to either throw an exception or return a more complex object that has a severity and message.
-// For example, in the exclusion service, you can save a System-scoped object with a target ID. This is worth a warning, but not worth
-// an error. However, you can NOT save a Project- or DataType-scoped object WITHOUT a target ID, since you need something to relate with
-// the scope. That should be an error or fatal or something.
-//
-// See javadoc comments on the validate method regarding Hibernate Validator.
+
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E> {
 
     public AbstractHibernateEntityService() {

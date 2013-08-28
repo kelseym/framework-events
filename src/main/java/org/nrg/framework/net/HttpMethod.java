@@ -14,10 +14,6 @@ import org.apache.http.client.methods.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Provides enums for mapping HTTP request methods, as well as a static for retrieving the appropriate subclass of the
- * {@link HttpRequestBase} class for an indicated method.
- */
 public enum HttpMethod {
     GET("GET"),
     PUT("PUT"),

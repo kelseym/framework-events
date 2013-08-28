@@ -26,16 +26,6 @@ import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * Sets the base class for notification service DAOs. A basic DAO for any entity type can
- * be easily created just by extending this class, setting the entity class as the parameterized
- * type.
- * 
- * <b>Note:</b> This uses some handy convenience functions that are described in details on the
- * <a href=http://community.jboss.org/wiki/GenericDataAccessObjects">JBoss wiki</a>.
- *
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateDAO<E> {
     protected AbstractHibernateDAO()
     {

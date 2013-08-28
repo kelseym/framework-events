@@ -9,10 +9,6 @@
  */
 package org.nrg.framework.exceptions;
 
-/**
- * This is the base class for exceptions in the NRG framework.
- * @author rherri01
- */
 public class NrgException extends Exception {
 
     /**

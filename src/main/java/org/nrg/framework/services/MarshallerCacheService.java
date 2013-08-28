@@ -16,10 +16,6 @@ import org.springframework.oxm.Marshaller;
 import org.springframework.oxm.Unmarshaller;
 import org.w3c.dom.Document;
 
-// TODO: This has been done before with the Spring OXM classes, how about the javax.xml.bind classes?
-/**
- * The Interface MarshallerCacheService.
- */
 public interface MarshallerCacheService extends Marshaller, Unmarshaller {
     
     /**

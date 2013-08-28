@@ -19,13 +19,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
-/**
- * This provides a static initializer and means of access to the Spring context
- * for classes that may not otherwise have access to them, e.g. from Turbine or
- * restlet code.
- *
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 @Service
 public class ContextService implements NrgService, ApplicationContextAware, ApplicationListener {
     public static String SERVICE_NAME = "ContextService";

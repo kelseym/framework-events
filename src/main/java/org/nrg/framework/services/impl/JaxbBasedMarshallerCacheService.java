@@ -59,10 +59,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
-// TODO: Auto-generated Javadoc
-/**
- * The Class JaxbBasedMarshallerCacheService.
- */
 @Service
 public final class JaxbBasedMarshallerCacheService implements MarshallerCacheService {
     /**

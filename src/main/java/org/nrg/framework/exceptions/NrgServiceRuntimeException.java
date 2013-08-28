@@ -11,13 +11,6 @@ package org.nrg.framework.exceptions;
 
 import org.nrg.framework.services.NrgService;
 
-/**
- * Provides an exception for throwing exceptions from services implementing the {@link NrgService}
- * interface. This includes a {@link NrgServiceError service error code} to make it easier to
- * determine the severity or nature of the service exception.
- *  
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 public class NrgServiceRuntimeException extends NrgRuntimeException {
 
 	/**
