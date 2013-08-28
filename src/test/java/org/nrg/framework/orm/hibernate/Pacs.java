@@ -1,3 +1,13 @@
+/*
+ * org.nrg.framework.orm.hibernate.Pacs
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2013, Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD.
+ *
+ * Last modified 7/1/13 5:30 PM
+ */
 package org.nrg.framework.orm.hibernate;
 
 import javax.persistence.Entity;
@@ -6,12 +16,13 @@ import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {
-    "aeTitle"
-}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = { "aeTitle" }))
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "nrgFramework")
 public class Pacs extends AbstractHibernateEntity {
 
     private String aeTitle;

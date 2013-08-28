@@ -11,10 +11,6 @@ package org.nrg.framework.utilities;
 
 import java.text.ParseException;
 
-/**
- * Provides generic utility functions for handling localized messages.
- * TODO: This would be great to have as an abstract base to support localization functions.
- */
 public class Messages {
     private Messages() {
         // No instantiation.

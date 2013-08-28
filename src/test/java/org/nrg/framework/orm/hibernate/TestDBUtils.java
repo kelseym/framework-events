@@ -1,3 +1,13 @@
+/*
+ * org.nrg.framework.orm.hibernate.TestDBUtils
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2013, Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD.
+ *
+ * Last modified 8/25/13 9:11 PM
+ */
 package org.nrg.framework.orm.hibernate;
 
 import org.h2.constant.ErrorCode;
