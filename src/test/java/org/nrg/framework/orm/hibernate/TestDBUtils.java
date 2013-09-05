@@ -24,17 +24,17 @@ import java.sql.Statement;
 public final class TestDBUtils {
 
     public void cleanDb() throws SQLException {
-	Connection connection = _dataSource.getConnection();
-	Statement statement = connection.createStatement();
+        Connection connection = _dataSource.getConnection();
+        Statement statement = connection.createStatement();
         try {
-	statement.execute("DELETE FROM XHBM_PACS;");
+            statement.execute("DELETE FROM XHBM_PACS;");
         } catch (SQLException exception) {
             // If we didn't find the table, that's OK, because it just may not have been created yet.
             if (exception.getErrorCode() != ErrorCode.TABLE_OR_VIEW_NOT_FOUND_1) {
                 throw exception;
             }
         }
-	statement.close();
+        statement.close();
     }
 
     @Inject

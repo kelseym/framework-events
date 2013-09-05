@@ -23,11 +23,11 @@ public class HibernatePacsEntityService extends AbstractHibernateEntityService<P
 
     @Override
     public Pacs newEntity() {
-	return new Pacs();
+        return new Pacs();
     }
 
     @Override
     protected PacsDAO getDao() {
-	return _dao;
+        return _dao;
     }
 }

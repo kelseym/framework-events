@@ -15,12 +15,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Criteria;
-import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
-import org.hibernate.LockOptions;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
@@ -66,10 +61,12 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      */
     @Override
     public Serializable create(E entity) {
-        // TODO: When JPA persistence lifecycle support is working, remove these.
-        Date created = new Date();
-        entity.setCreated(created);
-        entity.setTimestamp(created);
+        // TODO: Setting all of these things would be best done in an EntityListener class, but that doesn't work for some reason.
+        Date now = new Date();
+        entity.setCreated(now);
+        entity.setTimestamp(now);
+        entity.setEnabled(true);
+        entity.setDisabled(new Date(0));
         return getSession().save(entity);
     }
 
@@ -90,9 +87,8 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      */
     @Override
     public void update(E entity) {
-        // TODO: When JPA persistence lifecycle support is working, remove these.
-        Date updated = new Date();
-        entity.setTimestamp(updated);
+        // TODO: When JPA persistence lifecycle support is working, remove explicit timestamp update.
+        entity.setTimestamp(new Date());
         getSession().update(entity);
     }
 
@@ -124,7 +120,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     @Override
     @SuppressWarnings("unchecked")
     public List<E> findAllEnabled() {
-        Criteria criteria = getSession().createCriteria(getParameterizedType());
+        Criteria criteria = getCriteriaForType();
         criteria.add(Restrictions.eq("enabled", true));
         return criteria.list();
     }
@@ -135,13 +131,13 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     @Override
     @SuppressWarnings("unchecked")
     public List<E> findByExample(E exampleInstance, String[] excludeProperty) {
-        Criteria crit = getSession().createCriteria(getParameterizedType());
+        Criteria criteria = getCriteriaForType();
         Example example =  Example.create(exampleInstance);
         for (String exclude : excludeProperty) {
             example.excludeProperty(exclude);
         }
-        crit.add(example);
-        return crit.list();
+        criteria.add(example);
+        return criteria.list();
     }
  
     /**
@@ -206,17 +202,44 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      */
     @SuppressWarnings("unchecked")
     protected List<E> findByCriteria(Criterion... criterion) {
-        Criteria crit = getSession().createCriteria(getParameterizedType());
+        Criteria criteria = getCriteriaForType();
         for (Criterion c : criterion) {
-            crit.add(c);
+            criteria.add(c);
         }
-        return crit.list();
+        return criteria.list();
+    }
+
+    /**
+     * Gets a {@link Criteria Criteria object} for the parameterized type of the concrete definition. Default standard
+     * values are set for the criteria object, including {@link Criteria#setCacheable(boolean)} set to <b>true</b>.
+     * @return An initialized {@link Criteria Criteria object}.
+     */
+    protected Criteria getCriteriaForType() {
+        Criteria criteria = getSession().createCriteria(getParameterizedType());
+        criteria.setCacheable(true);
+        return criteria;
+    }
+
+    /**
+     * Add a {@link Restrictions} {@link Criterion criterion} to the {@link Criteria} object for the name/value pair. If
+     * the value is null, the criterion is set to {@link Restrictions#isNull(String)} for the indicated name, otherwise
+     * it's set to the given value.
+     * @param c        The {@link Criteria} object to which the restriction should be added.
+     * @param name     The name of the property.
+     * @param value    The value of the property. May be null.
+     */
+    protected void addNullableCriteria(Criteria c, String name, Object value) {
+        if(value == null){
+            c.add(Restrictions.isNull(name));
+        } else {
+            c.add(Restrictions.eq(name, value));
+        }
     }
 
     private static final Log _log = LogFactory.getLog(AbstractHibernateDAO.class);
 
     @Autowired
     private SessionFactory _factory;
-    
+
     private boolean _isAuditable;
 }

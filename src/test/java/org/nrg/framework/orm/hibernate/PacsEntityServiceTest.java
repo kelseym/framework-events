@@ -36,7 +36,7 @@ public class PacsEntityServiceTest {
 
     @Before
     public void before() throws SQLException {
-	testDbUtils.cleanDb();
+        testDbUtils.cleanDb();
     }
 
     @Test
@@ -49,25 +49,25 @@ public class PacsEntityServiceTest {
 
     @Test
     public void testAllServiceMethods() {
-	assertEquals(0, pacsEntityService.getAll().size());
-	Pacs pacs = buildTestPacs();
-	pacsEntityService.create(pacs);
-	assertEquals(1, pacsEntityService.getAll().size());
-	pacs.setAeTitle("FOO");
-	pacsEntityService.update(pacs);
-	pacs = pacsEntityService.retrieve(pacs.getId());
-	assertEquals("FOO", pacs.getAeTitle());
-	pacsEntityService.delete(pacs);
-	assertEquals(0, pacsEntityService.getAll().size());
+        assertEquals(0, pacsEntityService.getAll().size());
+        Pacs pacs = buildTestPacs();
+        pacsEntityService.create(pacs);
+        assertEquals(1, pacsEntityService.getAll().size());
+        pacs.setAeTitle("FOO");
+        pacsEntityService.update(pacs);
+        pacs = pacsEntityService.retrieve(pacs.getId());
+        assertEquals("FOO", pacs.getAeTitle());
+        pacsEntityService.delete(pacs);
+        assertEquals(0, pacsEntityService.getAll().size());
     }
 
     private Pacs buildTestPacs() {
-	Pacs pacs = new Pacs();
-	pacs.setAeTitle("TIP-DEV-PACS");
-	pacs.setHost("10.28.16.215");
-	pacs.setStoragePort(11112);
-	pacs.setQueryRetrievePort(11112);
-	pacs.setOrmStrategySpringBeanId("dicomOrmStrategy");
-	return pacs;
+        Pacs pacs = new Pacs();
+        pacs.setAeTitle("TIP-DEV-PACS");
+        pacs.setHost("10.28.16.215");
+        pacs.setStoragePort(11112);
+        pacs.setQueryRetrievePort(11112);
+        pacs.setOrmStrategySpringBeanId("dicomOrmStrategy");
+        return pacs;
     }
 }

@@ -9,42 +9,33 @@
  */
 package org.nrg.framework.orm.hibernate;
 
+import java.io.Serializable;
 import java.util.Date;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 
 /**
- * 
+ *
  *
  * @author Rick Herrick <rick.herrick@wustl.edu>
  */
-@Entity
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS) 
-abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
+@MappedSuperclass
+abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Serializable {
+
+    private static final long serialVersionUID = 4796688226139769618L;
 
     /**
      * Returns the ID of the data entity. This usually maps to the entity's primary
      * key in the appropriate database table.
      * @return The ID of the data entity.
      */
-    // TODO: @GeneratedValue won't work with H2, but @SequenceGenerator will. Why?
-    // @SequenceGenerator(name="seq", initialValue=1, allocationSize=100)
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Override
     public long getId() {
         return _id;
     }
-        
+
     /**
      * Sets the ID of the data entity. This usually maps to the entity's primary
      * key in the appropriate database table and, as such, should rarely be used
@@ -65,6 +56,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
      * @return <b>true</b> if the entity is currently enabled, <b>false</b> otherwise.
      * @see BaseHibernateEntity#isEnabled()
      */
+    @Column(columnDefinition = "boolean default true")
     @Override
     public boolean isEnabled() {
         return _enabled;
@@ -79,7 +71,6 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
     @Override
     public void setEnabled(boolean enabled) {
         _enabled = enabled;
-        _disabled = enabled ? null : new Date();
     }
 
     /**
@@ -87,6 +78,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
      * @return The timestamp of the data entity's creation.
      */
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     @Override
     public Date getCreated() {
         return _created;
@@ -105,6 +97,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
      * @return The timestamp of the last update to the data entity.
      */
     @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     @Override
     public Date getTimestamp() {
         return _timestamp;
@@ -114,57 +107,34 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity {
      * Sets the timestamp of the last update to the data entity.
      * @param timestamp The timestamp to set for the last update to the data entity.
      */
-    @Temporal(TemporalType.TIMESTAMP)
     @Override
     public void setTimestamp(Date timestamp) {
         _timestamp = timestamp;
     }
-    
+
     /**
      * Returns the timestamp of the data entity's disabling.
      * @return The timestamp of the data entity's disabling.
      */
-    @Temporal(TemporalType.TIMESTAMP)    
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     @Override
     public Date getDisabled() {
         return _disabled;
     }
-    
+
     /**
      * Sets the timestamp of the data entity's disabling.
      * @param disabled The timestamp to set for the data entity's disabling.
      */
-    @Temporal(TemporalType.TIMESTAMP)    
     @Override
     public void setDisabled(Date disabled) {
         _disabled = disabled;
     }
-    
-    /**
-     * Handles the pre-persist event, which occurs as the object is first persisted
-     * to the database, i.e. at creation. This sets the created and timestamp properties
-     * to the current date and time.
-     */
-    // TODO: Need to move to JPA instead of Hibernate to take advantage of persistence lifecycle annotations.
-    @PrePersist
-    protected void onCreate() {
-        _created = _timestamp = new Date();
-    }
 
-    /**
-     * Handles the pre-update event, which occurs as the object is updated and pushed
-     * to the database, i.e. at modification. This sets the timestamp property to the
-     * current date and time.
-     */
-    // TODO: Need to move to JPA instead of Hibernate to take advantage of persistence lifecycle annotations.
-    @PreUpdate
-    protected void onUpdate() {
-        _timestamp = new Date();
-    }
-
-    private long _id = 0;
-    private boolean _enabled = true;
+    private long _id;
+    private boolean _enabled;
     private Date _created;
     private Date _timestamp;
-    private Date _disabled = new Date(0);
+    private Date _disabled;
 }
