@@ -9,17 +9,17 @@
  */
 package org.nrg.framework.orm.hibernate;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.inject.Inject;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateDAO<E> {
     protected AbstractHibernateDAO()
@@ -217,6 +217,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     protected Criteria getCriteriaForType() {
         Criteria criteria = getSession().createCriteria(getParameterizedType());
         criteria.setCacheable(true);
+        criteria.setCacheRegion(getCacheRegion());
         return criteria;
     }
 
@@ -238,7 +239,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
 
     private static final Log _log = LogFactory.getLog(AbstractHibernateDAO.class);
 
-    @Autowired
+    @Inject
     private SessionFactory _factory;
 
     private boolean _isAuditable;

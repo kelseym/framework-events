@@ -30,7 +30,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
      * @return The ID of the data entity.
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Override
     public long getId() {
         return _id;

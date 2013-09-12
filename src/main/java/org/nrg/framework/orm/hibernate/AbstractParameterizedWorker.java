@@ -13,6 +13,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 
+import org.hibernate.annotations.Cache;
 import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClassUsageException;
 
 abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity> {
@@ -36,15 +37,28 @@ abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity>
             }
         }
         _parameterizedType = (Class<E>) parameterizedType.getActualTypeArguments()[0];
+        _cacheRegion = extractCacheRegion(_parameterizedType);
     }
 
     protected AbstractParameterizedWorker(Class<E> clazz) {
         _parameterizedType = clazz;
+        _cacheRegion = extractCacheRegion(_parameterizedType);
     }
 
-        protected Class<E> getParameterizedType() {
+    protected Class<E> getParameterizedType() {
         return _parameterizedType;
     }
 
+    protected String getCacheRegion() {
+        return _cacheRegion;
+    }
+
+    private String extractCacheRegion(Class<E> type) {
+        return type.isAnnotationPresent(Cache.class)
+            ? type.getAnnotation(Cache.class).region()
+            : null;
+    }
+
     private final Class<E> _parameterizedType;
+    private final String _cacheRegion;
 }
