@@ -18,6 +18,8 @@ import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClas
 
 abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity> {
 
+    public static final String DEFAULT_CACHE_REGION = "nrg";
+
     @SuppressWarnings("unchecked")
     protected AbstractParameterizedWorker() {
         ParameterizedType parameterizedType = null;
@@ -56,7 +58,7 @@ abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity>
     private String extractCacheRegion(Class<E> type) {
         return type.isAnnotationPresent(Cache.class)
             ? type.getAnnotation(Cache.class).region()
-            : null;
+            : DEFAULT_CACHE_REGION;
     }
 
     private final Class<E> _parameterizedType;
