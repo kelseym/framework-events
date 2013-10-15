@@ -6,7 +6,8 @@ syntax: glob
 *.DS_Store
 .settings
 Thumbs.db
-glob:target*
+doc
+target*
 
 syntax: regexp
 .*\.log
