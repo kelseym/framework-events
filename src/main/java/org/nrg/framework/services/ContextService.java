@@ -19,6 +19,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
 @Service
 public class ContextService implements NrgService, ApplicationContextAware, ApplicationListener {
     public static String SERVICE_NAME = "ContextService";
@@ -97,6 +99,17 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      */
     public <T> T getBean(String name, Class<T> type) {
         return _context.getBean(name, type);
+    }
+
+    /**
+     * Gets all beans with the indicated type.
+     *
+     *
+     * @param type The class of the bean to be retrieved.
+     * @return An object of the type.
+     */
+    public <T> Map<String, T> getBeansOfType(Class<T> type) {
+        return _context.getBeansOfType(type);
     }
 
     private static ContextService _instance;
