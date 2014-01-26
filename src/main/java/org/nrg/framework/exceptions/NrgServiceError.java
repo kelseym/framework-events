@@ -1,6 +1,6 @@
 /**
  * NrgServiceError
- * (C) 2011 Washington University School of Medicine
+ * (C) 2011,2013 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
@@ -24,10 +24,12 @@ public enum NrgServiceError {
 	InvalidRestServiceParameters,
 	NoMatchingCategory,
 	NoMatchingDefinition,
+	/** attempted access to a resource exceeding caller's permissions */
     PermissionsViolation,
+    /** attempted forbidden action **/
     SecurityViolation,
 	UnknownChannelRendererError,
 	UnsupportedFeature;
 	
-	public static NrgServiceError Default = Unknown;
+	public static final NrgServiceError Default = Unknown;
 }
