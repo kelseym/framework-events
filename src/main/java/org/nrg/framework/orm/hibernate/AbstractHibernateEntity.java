@@ -14,11 +14,6 @@ import java.util.Date;
 
 import javax.persistence.*;
 
-/**
- *
- *
- * @author Rick Herrick <rick.herrick@wustl.edu>
- */
 @MappedSuperclass
 abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Serializable {
 
