@@ -43,12 +43,12 @@ public abstract class AbstractPintoBean {
      * @param printStream Indicates the print stream to be used for printing output.
      */
     protected AbstractPintoBean(Object parent, String[] arguments, PrintStream printStream) throws PintoException {
+        assert parent != null : "You must specify the parent for your pinto bean.";
+
+        _arguments = Arrays.asList(arguments);
+        _parent = parent;
+
         try {
-            assert parent != null : "You must specify the parent for your pinto bean.";
-
-            _arguments = Arrays.asList(arguments);
-            _parent = parent;
-
             scan();
             harvest();
             prune();
@@ -289,6 +289,21 @@ public abstract class AbstractPintoBean {
         }
 
         return object;
+    }
+
+    /**
+     * This can be used by {@link #validate()} implementations to have help displayed if no arguments are specified on
+     * the command line. If this is called and no arguments were passed to the application, this method will set the
+     * help display flag to true.
+     * @return Returns true if help should be displayed. Note that this should terminate further parameter validation.
+     */
+    protected boolean noArgsHelp() {
+        if (_arguments == null || _arguments.size() == 0) {
+            displayHelp();
+            _help = true;
+            return true;
+        }
+        return false;
     }
 
     /**
