@@ -62,7 +62,7 @@ public class Reflection {
      *
      * @param jarFile     the jar file
      * @param packageName the package name
-     * @return the collection<? extends class<?>>
+     * @return the collection of classes in the jar file.
      * @throws IOException    Signals that an I/O exception has occurred.
      * @throws ClassNotFoundException the class not found exception
      */

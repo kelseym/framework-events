@@ -163,9 +163,9 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
-            <plugin>
+            <!-- plugin>
                 <artifactId>maven-jarsigner-plugin</artifactId>
-            </plugin>
+            </plugin -->
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
