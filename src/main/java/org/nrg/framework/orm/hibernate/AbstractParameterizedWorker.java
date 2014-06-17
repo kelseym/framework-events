@@ -47,6 +47,10 @@ abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity>
         _cacheRegion = extractCacheRegion(_parameterizedType);
     }
 
+    public boolean isMatchingType(AbstractParameterizedWorker other) {
+        return getParameterizedType().equals(other.getParameterizedType());
+    }
+
     protected Class<E> getParameterizedType() {
         return _parameterizedType;
     }

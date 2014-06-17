@@ -29,6 +29,8 @@ public enum NrgServiceError {
     /** attempted forbidden action **/
     SecurityViolation,
 	UnknownChannelRendererError,
+    NoMatchingRepositoryForService,
+    Instantiation,
 	UnsupportedFeature;
 	
 	public static final NrgServiceError Default = Unknown;

@@ -9,8 +9,6 @@
  */
 package org.nrg.framework.exceptions;
 
-import org.nrg.framework.services.NrgService;
-
 public class NrgServiceRuntimeException extends NrgRuntimeException {
 
 	/**
@@ -20,6 +18,15 @@ public class NrgServiceRuntimeException extends NrgRuntimeException {
 	public NrgServiceRuntimeException() {
 		super();
 		setServiceError(NrgServiceError.Default);
+	}
+
+	/**
+	 * Default constructor. This sets the {@link #getServiceError() service error}
+	 * property to {@link NrgServiceError#Default}.
+	 */
+	public NrgServiceRuntimeException(NrgServiceException exception) {
+		super(exception);
+		setServiceError(exception.getServiceError());
 	}
 
 	/**

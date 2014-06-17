@@ -9,13 +9,33 @@
   ~
   ~ Last modified 8/26/13 6:15 PM
   -->
-<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xmlns:util="http://www.springframework.org/schema/util"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
 
     <description>Default configuration for the NRG Framework</description>
 
-    <context:component-scan base-package="org.nrg.framework.services" />
+    <context:component-scan base-package="org.nrg.framework.services.impl"/>
+    <context:component-scan base-package="org.nrg.framework.datacache.impl.hibernate" />
+
+    <bean id="frameworkEntityPackages" class="org.nrg.framework.orm.hibernate.HibernateEntityPackageList">
+        <property name="items">
+            <list>
+                <value>org.nrg.framework.datacache</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.nrg.framework.datacache.SerializerRegistry">
+        <constructor-arg>
+            <util:map id="registry">
+                <entry key="org.nrg.framework.logging.RemoteEvent" value="org.nrg.framework.utilities.serializers.RemoteEventJsonSerializer"/>
+            </util:map>
+        </constructor-arg>
+    </bean>
 
 </beans>

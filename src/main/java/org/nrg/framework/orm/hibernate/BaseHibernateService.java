@@ -16,12 +16,10 @@ import org.nrg.framework.services.NrgService;
 public interface BaseHibernateService<E extends BaseHibernateEntity> extends NrgService {
 
     /**
-     * Gets a new empty entity object. There is no guarantee
-     * as to the contents of the entity.
-     * @return A new empty entity object.
+     * Gets a new entity object, using the entity constructor matching the submitted parameters.
+     * @return A new entity object.
      */
-    public abstract E newEntity();
-
+    public abstract E newEntity(Object... parameters);
     /**
      * Adds the submitted entity object to the system. This will always create 
      * an entirely new entity, but if data validation constraints are violated

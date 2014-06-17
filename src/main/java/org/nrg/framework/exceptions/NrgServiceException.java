@@ -9,8 +9,6 @@
  */
 package org.nrg.framework.exceptions;
 
-import org.nrg.framework.services.NrgService;
-
 public class NrgServiceException extends NrgException {
 
 	/**

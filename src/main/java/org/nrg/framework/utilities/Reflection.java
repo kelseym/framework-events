@@ -11,6 +11,8 @@ package org.nrg.framework.utilities;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -80,8 +82,7 @@ public class Reflection {
     }
 
     /**
-     * Recursive method used to find all classes in a given directory and
-     * subdirs.
+     * Recursive method used to find all classes in a given directory and subdirectories.
      *
      * @param directory   The base directory
      * @param packageName The package name for classes found inside the base directory
@@ -98,6 +99,7 @@ public class Reflection {
 
         File[] files = directory.listFiles();
 
+        assert files != null;
         for (File file : files) {
             String fileName = file.getName();
             if (file.isDirectory()) {
@@ -122,7 +124,7 @@ public class Reflection {
         return classes;
     }
 
-    public static Properties getPropertiesForClass(final Class<? extends Object> parent) {
+    public static Properties getPropertiesForClass(final Class<?> parent) {
         final String bundle = "/" + parent.getName().replace(".", "/") + ".properties";
         Properties properties = new Properties();
         try {
@@ -131,5 +133,111 @@ public class Reflection {
             properties = null;
         }
         return properties;
+    }
+
+    /**
+     * This method is to compensate for the fact that the default Java getConstructor() method doesn't match
+     * constructors that have parameters that are superclasses of one of the submitted parameter classes. For example,
+     * if an object submitted for the constructor is an <b>ArrayList</b>, <b>getConstructor()</b> will not match that to
+     * a constructor that takes a <b>List</b>. This method checks for that downcast compatibility via the
+     * <b>isAssignableFrom()</b> method.
+     *
+     * <b>Note:</b> This version of the method returns only publicly accessible constructors. If you need to find
+     * protected or private constructors, call {@link #getConstructorForParameters(Class, int, Class[])}.
+     *
+     * @param target            The class that you want to inspect for compatible constructors.
+     * @param parameterTypes    The parameter types you want to submit to the constructor.
+     * @return A matching constructor, if any, <b>null</b> otherwise.
+     */
+    public static <T> Constructor<T> getConstructorForParameters(final Class<T> target, final Class<?>... parameterTypes) {
+        return getConstructorForParameters(target, Modifier.PUBLIC, parameterTypes);
+    }
+
+    /**
+     * This method is to compensate for the fact that the default Java getConstructor() method doesn't match
+     * constructors that have parameters that are superclasses of one of the submitted parameter classes. For example,
+     * if an object submitted for the constructor is an <b>ArrayList</b>, <b>getConstructor()</b> will not match that to
+     * a constructor that takes a <b>List</b>. This method checks for that downcast compatibility via the
+     * <b>isAssignableFrom()</b> method.
+     *
+     * <b>Note:</b> This version of the method can return public, protected, and private constructors. If you want to
+     * find only publicly accessible constructors, you can call {@link #getConstructorForParameters(Class, Class[])}.
+     * To specify what access level of constructor you want to retrieve, you should specify the appropriate value from
+     * the {@link Modifier} class:
+     *
+     * <ul>
+     *     <li>{@link Modifier#PUBLIC} indicates only publicly accessible constructors</li>
+     *     <li>{@link Modifier#PROTECTED} indicates publicly accessible or protected constructors</li>
+     *     <li>{@link Modifier#PRIVATE} indicates public, protected, or private constructors</li>
+     * </ul>
+     *
+     * @param target            The class that you want to inspect for compatible constructors.
+     * @param requestedAccess   Indicates the desired access level.
+     * @param parameterTypes    The parameter types you want to submit to the constructor.
+     * @return A matching constructor, if any, <b>null</b> otherwise.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> Constructor<T> getConstructorForParameters(final Class<T> target, final int requestedAccess, final Class<?>... parameterTypes) {
+        // If there are no parameters specified, return the default constructor.
+        if (parameterTypes == null || parameterTypes.length == 0) {
+            try {
+                Constructor<T> constructor = target.getConstructor();
+                // If the default constructor isn't accessible
+                return isAccessible(requestedAccess, constructor.getModifiers()) ? constructor : null;
+            } catch (NoSuchMethodException e) {
+                // If there was no default constructor, then return null.
+                return null;
+            }
+        }
+        final Constructor<T>[] constructors = (Constructor<T>[]) target.getConstructors();
+        // Honestly I don't even think this can happen, but just in case...
+        if (constructors == null || constructors.length == 0) {
+            return null;
+        }
+        // If we got through all the bits where there are no constructors or parameters, we can try to match the
+        // submitted parameter types.
+        for (final Constructor<T> candidate : constructors) {
+            // If it's not accessible, don't even process.
+            if (!isAccessible(requestedAccess, candidate.getModifiers())) {
+                continue;
+            }
+            // Get all of the parameter types for the current candidate constructor.
+            final Class<?>[] candidateParameterTypes = candidate.getParameterTypes();
+            // If the number of parameter types don't match, then this isn't a match.
+            // TODO: Check how this works with vararg constructors. It should be fine (should be Object[]), but still.
+            if (candidateParameterTypes.length != parameterTypes.length) {
+                continue;
+            }
+            // Let's assume the best.
+            boolean match = true;
+            // Now go through all of the parameters.
+            for (int index = 0; index < candidateParameterTypes.length; index++) {
+                // If we can't assign this submitted parameter to the candidate parameter...
+                if (!(candidateParameterTypes[index].isAssignableFrom(parameterTypes[index]))) {
+                    // We don't have a match.
+                    match = false;
+                    break;
+                }
+            }
+            // We made it through all of the candidates... If they all matched, this constructor matches so return it.
+            return match ? candidate : null;
+        }
+        // If we made it through without returning, none of the constructor candidates match.
+        return null;
+    }
+
+    private static boolean isAccessible(final int requestedAccess, final int modifiers) {
+        // If they want private, they can have anything, so just say yes.
+        if (requestedAccess == Modifier.PRIVATE) {
+            return true;
+        }
+
+        // Find out if the target modifier is private or protected.
+        boolean isPrivate = Modifier.isPrivate(modifiers);
+        boolean isProtected = Modifier.isPrivate(modifiers);
+
+        // If requested access is protected, then return true if the modifier is NOT private, otherwise it's public so
+        // return true if the modifier is NOT private or protected.
+        return requestedAccess == Modifier.PROTECTED ? !isPrivate : !(isPrivate || isProtected);
     }
 }

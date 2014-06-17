@@ -10,19 +10,19 @@
  */
 package org.nrg.framework.orm.hibernate;
 
-import static org.junit.Assert.assertEquals;
-
-import java.sql.SQLException;
-
-import javax.inject.Inject;
-import javax.validation.ConstraintViolationException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.annotation.ExpectedException;
+import org.nrg.framework.exceptions.NrgServiceException;
+import org.nrg.framework.services.NrgService;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import javax.inject.Inject;
+import javax.validation.ConstraintViolationException;
+import java.sql.SQLException;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -39,9 +39,8 @@ public class PacsEntityServiceTest {
         testDbUtils.cleanDb();
     }
 
-    @Test
-    @ExpectedException(value = ConstraintViolationException.class)
-    public void testNullPacs() {
+    @Test(expected = ConstraintViolationException.class)
+    public void testNullPacs() throws NrgServiceException {
         Pacs entity = pacsEntityService.newEntity();
         entity.setAeTitle("testNullPacs");
         pacsEntityService.create(entity);

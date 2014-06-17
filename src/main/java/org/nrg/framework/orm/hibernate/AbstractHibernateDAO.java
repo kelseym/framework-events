@@ -139,7 +139,27 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         criteria.add(example);
         return criteria.list();
     }
- 
+
+    @SuppressWarnings("unchecked")
+    public List<E> findByProperty(final String property, final Object value) {
+        Criteria criteria = getCriteriaForType();
+        criteria.add(Restrictions.eq(property, value));
+        if (criteria.list().size() == 0) {
+            return null;
+        } else {
+            return (List<E>) criteria.list();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public E findByUniqueProperty(final String property, final Object value) {
+        List<E> matches = findByProperty(property, value);
+        if (matches != null && matches.size() > 1) {
+            throw new RuntimeException("The specified property " + property + " is not a unique constraint!");
+        }
+        return matches != null ? matches.get(0) : null;
+    }
+
     /**
      * @see BaseHibernateDAO#findById(long)
      */
