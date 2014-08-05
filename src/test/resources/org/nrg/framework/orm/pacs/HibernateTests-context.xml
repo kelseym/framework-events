@@ -17,7 +17,7 @@
     <bean id="testEntityPackages" class="org.nrg.framework.orm.hibernate.HibernateEntityPackageList">
 		<property name="items">
 			<list>
-				<value>org.nrg.framework.orm.hibernate</value>
+				<value>org.nrg.framework.orm.pacs</value>
 			</list>
 		</property>
 	</bean>

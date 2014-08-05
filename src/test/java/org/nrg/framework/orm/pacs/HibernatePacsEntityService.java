@@ -1,5 +1,5 @@
 /*
- * org.nrg.framework.orm.hibernate.HibernatePacsEntityService
+ * HibernatePacsEntityService
  * XNAT http://www.xnat.org
  * Copyright (c) 2014, Washington University School of Medicine
  * All Rights Reserved
@@ -8,8 +8,9 @@
  *
  * Last modified 9/5/13 12:55 PM
  */
-package org.nrg.framework.orm.hibernate;
+package org.nrg.framework.orm.pacs;
 
+import org.nrg.framework.orm.hibernate.AbstractHibernateEntityService;
 import org.springframework.stereotype.Service;
 
 @Service

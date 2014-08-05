@@ -15,9 +15,8 @@ import java.util.Date;
 import javax.persistence.*;
 
 @MappedSuperclass
+@SuppressWarnings("serial")
 abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Serializable {
-
-    private static final long serialVersionUID = 4796688226139769618L;
 
     /**
      * Returns the ID of the data entity. This usually maps to the entity's primary
@@ -108,7 +107,8 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     }
 
     /**
-     * Returns the timestamp of the data entity's disabling.
+     * Returns the timestamp of the data entity's disabling. If this value is the same
+     * as {@link HibernateUtils#DEFAULT_DATE}, the entity hasn't been disabled.
      * @return The timestamp of the data entity's disabling.
      */
     @Temporal(TemporalType.TIMESTAMP)
@@ -131,5 +131,5 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     private boolean _enabled;
     private Date _created;
     private Date _timestamp;
-    private Date _disabled;
+    private Date _disabled = HibernateUtils.DEFAULT_DATE;
 }

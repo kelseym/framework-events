@@ -1,5 +1,5 @@
 /*
- * org.nrg.framework.orm.hibernate.PacsEntityServiceTest
+ * PacsEntityServiceTest
  * XNAT http://www.xnat.org
  * Copyright (c) 2014, Washington University School of Medicine
  * All Rights Reserved
@@ -8,13 +8,13 @@
  *
  * Last modified 9/5/13 12:53 PM
  */
-package org.nrg.framework.orm.hibernate;
+package org.nrg.framework.orm.pacs;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nrg.framework.exceptions.NrgServiceException;
-import org.nrg.framework.services.NrgService;
+import org.nrg.framework.orm.utils.TestDBUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -36,7 +36,7 @@ public class PacsEntityServiceTest {
 
     @Before
     public void before() throws SQLException {
-        testDbUtils.cleanDb();
+        testDbUtils.cleanDb("XHBM_PACS");
     }
 
     @Test(expected = ConstraintViolationException.class)

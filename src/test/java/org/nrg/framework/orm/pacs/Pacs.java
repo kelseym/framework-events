@@ -1,5 +1,5 @@
 /*
- * org.nrg.framework.orm.hibernate.Pacs
+ * Pacs
  * XNAT http://www.xnat.org
  * Copyright (c) 2014, Washington University School of Medicine
  * All Rights Reserved
@@ -8,11 +8,12 @@
  *
  * Last modified 9/4/13 4:37 PM
  */
-package org.nrg.framework.orm.hibernate;
+package org.nrg.framework.orm.pacs;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.nrg.framework.orm.hibernate.AbstractHibernateEntity;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -127,6 +128,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
         if (_isAuditable) {
             entity.setEnabled(false);
+            entity.setDisabled(new Date());
             getDao().update(entity);
         } else {
             getDao().delete(entity);
