@@ -189,6 +189,14 @@ public class Reflection {
                 return null;
             }
         }
+        // Try to return constructor that's an exact match for the parameter types.
+        // If that doesn't exist, ignore the exception. We have more sophisticated
+        // things that we can try to match superclasses, interfaces, etc.
+        try {
+            return target.getConstructor(parameterTypes);
+        } catch (NoSuchMethodException ignored) {
+            //
+        }
         final Constructor<T>[] constructors = (Constructor<T>[]) target.getConstructors();
         // Honestly I don't even think this can happen, but just in case...
         if (constructors == null || constructors.length == 0) {
