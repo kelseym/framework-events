@@ -6,16 +6,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public enum Scope {
     Site("site"),
-    Project("prj"),
-    Subject("subj"),
-    User("user");
+    Project("prj", Site),
+    Subject("subj", Project),
+    User("user", Site);
 
     Scope(final String code) {
         _code = code;
+        _failoverTo = null;
+    }
+    Scope(final String code, Scope failoverTo) {
+        _code = code;
+        _failoverTo = failoverTo;
     }
 
     public String code() {
         return _code;
+    }
+
+    public Scope failoverTo() {
+        return _failoverTo;
     }
 
     public static Scope getScope(final String code) {
@@ -38,4 +47,5 @@ public enum Scope {
 
     private static final Map<String, Scope> _scopes = new ConcurrentHashMap<String, Scope>();
     private final String _code;
+    private final Scope _failoverTo;
 }
