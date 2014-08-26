@@ -31,7 +31,7 @@ public enum NrgServiceError {
 	UnknownChannelRendererError,
     NoMatchingRepositoryForService,
     Instantiation,
-	UnsupportedFeature, UnknownScriptRunner;
+	UnsupportedFeature, UnknownScriptRunner, UnknownEntity;
 	
 	public static final NrgServiceError Default = Unknown;
 }
