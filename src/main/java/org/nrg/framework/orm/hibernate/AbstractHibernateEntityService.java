@@ -40,9 +40,19 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      * Gets a new entity object, using the entity constructor matching the submitted parameters. If the entity class has
      * the method <b>setService()</b>, this will set the service instance on the entity. The service instance should
      * always be declared as {@link javax.persistence.Transient}.
+     *
+     * <p><b>Note:</b> Calling this method with parameters actually calls the {@link #create(BaseHibernateEntity)} method
+     * inline. That means the object has already been persisted to the database when it's returned. Calling this method
+     * without parameters calls the default constructor for the entity. Since the entity is then uninitialized, this
+     * method does not attempt to persist it.
+     *
+     * @param parameters    The parameters to be passed to the entity constructor. Note that the corresponding
+     *                      constructor must already exist on the entity class!
+     *
      * @return A new entity object.
      */
     @Override
+    @Transactional
     public E newEntity(Object... parameters) {
         Class<?>[] types = null;
         try {
@@ -63,6 +73,9 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
                 method.invoke(instance, this);
             } catch (NoSuchMethodException ignored) {
                 // Ignore this here, it just may not have the method.
+            }
+            if (parameters != null && parameters.length > 0) {
+                create(instance);
             }
             return instance;
         } catch (InvocationTargetException e) {

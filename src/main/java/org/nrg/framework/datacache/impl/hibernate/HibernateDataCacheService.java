@@ -55,7 +55,6 @@ public class HibernateDataCacheService extends AbstractHibernateEntityService<Da
             if (_log.isDebugEnabled()) {
                 _log.debug("Creating new entry for key " + key);
             }
-            getDao().create(item);
         }
         return item.getId();
     }
