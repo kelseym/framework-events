@@ -9,8 +9,15 @@
  */
 package org.nrg.framework.orm.hibernate;
 
+import org.hibernate.FetchMode;
 import org.nrg.framework.orm.hibernate.annotations.Auditable;
 
+import javax.persistence.ElementCollection;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Date;
 
 public class HibernateUtils {
@@ -42,6 +49,30 @@ public class HibernateUtils {
     
     public static <E> boolean isAuditable(Class<E> clazz) {
         return clazz.isAnnotationPresent(Auditable.class);
+    }
+
+    public static <E> boolean hasEagerlyFetchedCollection(Class<E> clazz) {
+        for (final Method method : clazz.getMethods()) {
+            final ManyToMany manyToMany = method.getAnnotation(ManyToMany.class);
+            if (manyToMany != null) {
+                if (manyToMany.fetch() == FetchType.EAGER) {
+                    return true;
+                }
+            }
+            final OneToMany oneToMany = method.getAnnotation(OneToMany.class);
+            if (oneToMany != null) {
+                if (oneToMany.fetch() == FetchType.EAGER) {
+                    return true;
+                }
+            }
+            final ElementCollection elementCollection = method.getAnnotation(ElementCollection.class);
+            if (elementCollection != null) {
+                if (elementCollection.fetch() == FetchType.EAGER) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

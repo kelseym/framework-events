@@ -12,6 +12,7 @@ package org.nrg.framework.orm.hibernate;
 import com.google.common.base.Joiner;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Hibernate;
 import org.nrg.framework.exceptions.NrgServiceError;
 import org.nrg.framework.exceptions.NrgServiceRuntimeException;
 import org.nrg.framework.utilities.Reflection;
@@ -24,10 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity, DAO extends BaseHibernateDAO<E>> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E>, ApplicationContextAware, InitializingBean {
 
@@ -111,11 +109,16 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         if (_log.isDebugEnabled()) {
             _log.debug("Retrieving entity for ID: " + id);
         }
+        final E entity;
         if (_isAuditable) {
-            return getDao().findEnabledById(id);
+            entity = getDao().findEnabledById(id);
         } else {
-            return getDao().retrieve(id);
+            entity = getDao().retrieve(id);
         }
+        if (_initialize) {
+            Hibernate.initialize(entity);
+        }
+        return entity;
     }
 
     /**
@@ -164,14 +167,26 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Transactional
     public List<E> getAll() {
         _log.debug("Getting all enabled entities");
-        return getDao().findAllEnabled();
+        final List<E> list = getDao().findAllEnabled();
+        if (_initialize) {
+            for (final E entity : list) {
+                Hibernate.initialize(entity);
+            }
+        }
+        return list;
     }
 
     @Override
     @Transactional
     public List<E> getAllWithDisabled() {
         _log.debug("Getting all enabled and disabled entities");
-        return getDao().findAll();
+        final List<E> list = getDao().findAll();
+        if (_initialize) {
+            for (final E entity : list) {
+                Hibernate.initialize(entity);
+            }
+        }
+        return list;
     }
 
     @Override
@@ -230,6 +245,33 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         return null;
     }
 
+    /**
+     * Indicates whether entities should be initialized before being returned from transactional service methods.
+     * If <b>true</b>, {@link org.hibernate.Hibernate#initialize(Object)} is called before returning entities. This
+     * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
+     * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
+     * a service with the "open session in view" pattern available.
+     * @see org.nrg.framework.orm.hibernate.BaseHibernateService#setInitialize(boolean)
+     * @return Whether the service is set to initialize entities prior to returning them.
+     */
+    @Override
+    public boolean getInitialize() {
+        return _initialize;
+    }
+
+    /**
+     * Sets whether entities should be initialized before being returned from transactional service methods.
+     * If <b>true</b>, {@link org.hibernate.Hibernate#initialize(Object)} is called before returning entities. This
+     * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
+     * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
+     * a service with the "open session in view" pattern available.
+     * @param initialize    Indicates whether the service should initialize entities prior to returning them.
+     * @see BaseHibernateService#getInitialize()
+     */
+    public void setInitialize(final boolean initialize) {
+        _initialize = initialize;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         _context = context;
@@ -252,6 +294,12 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
         if (_dao == null) {
             throw new NrgServiceRuntimeException(NrgServiceError.NoMatchingRepositoryForService, "Couldn't find a repository object for the NRG service " + getClass().getName());
+        }
+        Properties properties = getContext().getBean("hibernateProperties", Properties.class);
+        if (properties != null) {
+            if (properties.containsKey("xnat.initialize_entities")) {
+                setInitialize(Boolean.parseBoolean(properties.getProperty("xnat.initialize_entities")));
+            }
         }
     }
 
@@ -279,4 +327,5 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     private ApplicationContext _context;
     private DAO _dao;
     private boolean _isAuditable;
+    private boolean _initialize = true;
 }

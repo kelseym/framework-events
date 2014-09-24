@@ -69,4 +69,26 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @return A non-null string with a message if the entity has invalid state, null otherwise.
      */
     public abstract String validate(E entity);
+
+    /**
+     * Indicates whether entities should be initialized before being returned from transactional service methods.
+     * If <b>true</b>, {@link org.hibernate.Hibernate#initialize(Object)} is called before returning entities. This
+     * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
+     * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
+     * a service with the "open session in view" pattern available.
+     * @see org.nrg.framework.orm.hibernate.BaseHibernateService#setInitialize(boolean)
+     * @return Whether the service is set to initialize entities prior to returning them.
+     */
+    public abstract boolean getInitialize();
+
+    /**
+     * Sets whether entities should be initialized before being returned from transactional service methods.
+     * If <b>true</b>, {@link org.hibernate.Hibernate#initialize(Object)} is called before returning entities. This
+     * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
+     * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
+     * a service with the "open session in view" pattern available.
+     * @param initialize    Indicates whether the service should initialize entities prior to returning them.
+     * @see BaseHibernateService#getInitialize()
+     */
+    public abstract void setInitialize(final boolean initialize);
 }

@@ -26,14 +26,16 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     {
         super();
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
+        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
 
     protected AbstractHibernateDAO(Class<E> clazz)
     {
         super(clazz);
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
+        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
-    
+
     protected AbstractHibernateDAO(SessionFactory factory)
     {
         if (_log.isDebugEnabled())
@@ -41,6 +43,8 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
             _log.debug("Adding session factory in constructor: " + factory.hashCode());
         }
         _factory = factory;
+        _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
+        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
 
     /**
@@ -113,7 +117,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     public List<E> findAll() {
         return findByCriteria();
     }
- 
+
     /**
      * @see BaseHibernateDAO#findAllEnabled()
      */
@@ -179,10 +183,10 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
             entity = (E) getSession().load(getParameterizedType(), id, LockOptions.UPGRADE);
         else
             entity = (E) getSession().load(getParameterizedType(), id);
- 
+
         return entity;
     }
- 
+
     /**
      * @see BaseHibernateDAO#findEnabledById(long)
      */
@@ -190,7 +194,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     public E findEnabledById(long id) {
         return findEnabledById(id, false);
     }
-    
+
     /**
      * @see BaseHibernateDAO#findEnabledById(long, boolean)
      */
@@ -238,6 +242,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         Criteria criteria = getSession().createCriteria(getParameterizedType());
         criteria.setCacheable(true);
         criteria.setCacheRegion(getCacheRegion());
+        if (_addDistinctRootEntity) {
+            criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+        }
         return criteria;
     }
 
@@ -262,5 +269,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     @Inject
     private SessionFactory _factory;
 
-    private boolean _isAuditable;
+    private final boolean _isAuditable;
+    private final boolean _addDistinctRootEntity;
 }
