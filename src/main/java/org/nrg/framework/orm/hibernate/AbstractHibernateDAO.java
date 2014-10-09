@@ -136,6 +136,26 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     @SuppressWarnings("unchecked")
     public List<E> findByExample(E exampleInstance, String[] excludeProperty) {
         Criteria criteria = getCriteriaForType();
+        if (_isAuditable) {
+            exampleInstance.setEnabled(true);
+        }
+        Example example =  Example.create(exampleInstance);
+        for (String exclude : excludeProperty) {
+            if (!_isAuditable || !exclude.equals("enabled")) {
+                example.excludeProperty(exclude);
+            }
+        }
+        criteria.add(example);
+        return criteria.list();
+    }
+
+   /**
+     * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<E> findAllByExample(E exampleInstance, String[] excludeProperty) {
+        Criteria criteria = getCriteriaForType();
         Example example =  Example.create(exampleInstance);
         for (String exclude : excludeProperty) {
             example.excludeProperty(exclude);
