@@ -22,24 +22,20 @@ import java.util.Date;
 import java.util.List;
 
 abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateDAO<E> {
-    protected AbstractHibernateDAO()
-    {
+    protected AbstractHibernateDAO() {
         super();
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
         _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
 
-    protected AbstractHibernateDAO(Class<E> clazz)
-    {
+    protected AbstractHibernateDAO(Class<E> clazz) {
         super(clazz);
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
         _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
 
-    protected AbstractHibernateDAO(SessionFactory factory)
-    {
-        if (_log.isDebugEnabled())
-        {
+    protected AbstractHibernateDAO(SessionFactory factory) {
+        if (_log.isDebugEnabled()) {
             _log.debug("Adding session factory in constructor: " + factory.hashCode());
         }
         _factory = factory;
@@ -51,10 +47,8 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#setSessionFactory(org.hibernate.SessionFactory)
      */
     @Override
-    public void setSessionFactory(SessionFactory factory)
-    {
-        if (_log.isDebugEnabled())
-        {
+    public void setSessionFactory(SessionFactory factory) {
+        if (_log.isDebugEnabled()) {
             _log.debug("Setting session factory in setter: " + factory.hashCode());
         }
         _factory = factory;
@@ -129,7 +123,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return criteria.list();
     }
 
-   /**
+    /**
      * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
      */
     @Override
@@ -139,7 +133,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         if (_isAuditable) {
             exampleInstance.setEnabled(true);
         }
-        Example example =  Example.create(exampleInstance);
+        Example example = Example.create(exampleInstance);
         for (String exclude : excludeProperty) {
             if (!_isAuditable || !exclude.equals("enabled")) {
                 example.excludeProperty(exclude);
@@ -149,14 +143,14 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return criteria.list();
     }
 
-   /**
+    /**
      * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
      */
     @Override
     @SuppressWarnings("unchecked")
     public List<E> findAllByExample(E exampleInstance, String[] excludeProperty) {
         Criteria criteria = getCriteriaForType();
-        Example example =  Example.create(exampleInstance);
+        Example example = Example.create(exampleInstance);
         for (String exclude : excludeProperty) {
             example.excludeProperty(exclude);
         }
@@ -168,6 +162,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     public List<E> findByProperty(final String property, final Object value) {
         Criteria criteria = getCriteriaForType();
         criteria.add(Restrictions.eq(property, value));
+        if (_isAuditable) {
+            criteria.add(Restrictions.eq("enabled", true));
+        }
         if (criteria.list().size() == 0) {
             return null;
         } else {
@@ -232,6 +229,11 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         }
     }
 
+    /**
+     * Returns the current Hibernate session object.
+     *
+     * @return The current Hibernate session object if available.
+     */
     protected Session getSession() {
         try {
             return _factory.getCurrentSession();
@@ -256,6 +258,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     /**
      * Gets a {@link Criteria Criteria object} for the parameterized type of the concrete definition. Default standard
      * values are set for the criteria object, including {@link Criteria#setCacheable(boolean)} set to <b>true</b>.
+     *
      * @return An initialized {@link Criteria Criteria object}.
      */
     protected Criteria getCriteriaForType() {
@@ -272,12 +275,13 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * Add a {@link Restrictions} {@link Criterion criterion} to the {@link Criteria} object for the name/value pair. If
      * the value is null, the criterion is set to {@link Restrictions#isNull(String)} for the indicated name, otherwise
      * it's set to the given value.
-     * @param c        The {@link Criteria} object to which the restriction should be added.
-     * @param name     The name of the property.
-     * @param value    The value of the property. May be null.
+     *
+     * @param c     The {@link Criteria} object to which the restriction should be added.
+     * @param name  The name of the property.
+     * @param value The value of the property. May be null.
      */
     protected void addNullableCriteria(Criteria c, String name, Object value) {
-        if(value == null){
+        if (value == null) {
             c.add(Restrictions.isNull(name));
         } else {
             c.add(Restrictions.eq(name, value));
