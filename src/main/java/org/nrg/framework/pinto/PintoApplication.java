@@ -43,4 +43,10 @@ public @interface PintoApplication {
      * @return Introductory help paragraph.
      */
     public String introduction() default "";
+
+    /**
+     * Indicates the width of the display page for help display.
+     * @return The width to use when formatting information and help displays.
+     */
+    public int pageWidth() default 80;
 }

@@ -80,6 +80,7 @@ public abstract class AbstractPintoBean {
      */
     abstract public void validate() throws PintoException;
 
+    @SuppressWarnings("unused")
     public void setPrintStream(PrintStream printStream) {
         _printStream = printStream;
     }
@@ -149,7 +150,8 @@ public abstract class AbstractPintoBean {
     }
 
     /**
-     * Returns any arguments that are posted on the end of the list of arguments but aren't associated with a parameter.
+     * Returns any arguments that are posted on the end of the list of arguments but aren't associated with a
+     * parameter.
      *
      * @return Any arguments on the end of the list of arguments not associated with a parameter.
      */
@@ -160,6 +162,7 @@ public abstract class AbstractPintoBean {
     /**
      * Indicates whether application execution should continue based on submitted parameters. Common reasons for not
      * continuing include specifying help or version parameters.
+     *
      * @return Whether application execution should continue once the pinto bean has been constructed.
      */
     public boolean getShouldContinue() {
@@ -168,8 +171,8 @@ public abstract class AbstractPintoBean {
 
     /**
      * Display the help for each of the available command-line parameters supported by this bean. The help is printed to
-     * the stream specified by the {@link #setPrintStream(java.io.PrintStream)} property or passed in through the
-     * {@link AbstractPintoBean#AbstractPintoBean(Object, String[], PrintStream)} constructor.
+     * the stream specified by the {@link #setPrintStream(java.io.PrintStream)} property or passed in through the {@link
+     * AbstractPintoBean#AbstractPintoBean(Object, String[], PrintStream)} constructor.
      */
     public void displayHelp() {
         if (_parametersByShortOption == null || _parametersByShortOption.size() == 0) {
@@ -177,22 +180,26 @@ public abstract class AbstractPintoBean {
         } else {
             // TODO: Add an annotation to put application name, copyright info, and introductory help text on the class level.
             String appName, copyright, introduction;
+            int pageWidth;
             PintoApplication application = _parent.getClass().getAnnotation(PintoApplication.class);
             if (application == null) {
                 appName = _parent.getClass().getSimpleName();
                 copyright = introduction = null;
+                pageWidth = WIDTH;
             } else {
                 appName = application.value();
                 copyright = application.copyright();
                 introduction = application.introduction();
+                pageWidth = application.pageWidth();
             }
 
-            getPrintStream().println(appName);
+            getPrintStream().println(WordUtils.wrap(appName, pageWidth));
             if (!StringUtils.isBlank(copyright)) {
-                getPrintStream().println(copyright);
+                getPrintStream().println(WordUtils.wrap(copyright, pageWidth));
             }
             if (!StringUtils.isBlank(introduction)) {
-                getPrintStream().println(introduction);
+                getPrintStream().println();
+                getPrintStream().println(WordUtils.wrap(introduction, pageWidth));
             }
             getPrintStream().println();
 
@@ -213,7 +220,7 @@ public abstract class AbstractPintoBean {
                     parameterText.append(CharBuffer.allocate(HANGING_INDENT - length).toString().replace('\0', ' '));
                 }
 
-                parameterText.append(WordUtils.wrap(parameter.getHelp(), WIDTH - HANGING_INDENT, INDENT_FILLER, true));
+                parameterText.append(WordUtils.wrap(parameter.getHelp(), pageWidth - HANGING_INDENT, INDENT_FILLER, true));
                 getPrintStream().println(parameterText.toString());
             }
         }
@@ -248,11 +255,63 @@ public abstract class AbstractPintoBean {
     }
 
     /**
+     * Splits the key-value argument and adds it to the parameters map.
+     *
+     * @param keyValues  A list of key-value arguments, with key and value separated by the default '=' delimiter.
+     */
+    protected Map<String, String> addKeyValueListToParameter(final List<String> keyValues) {
+        return addKeyValueListToParameter(keyValues, "=");
+    }
+
+    /**
+     * Splits the key-value argument and adds it to the parameters map.
+     *
+     * @param keyValues  A list of key-value arguments, with key and value separated by the default '=' delimiter.
+     */
+    protected Map<String, String> addKeyValueListToParameter(final List<String> keyValues, final String delimiter) {
+        final Map<String, String> parameters = new HashMap<String, String>();
+        for (final String keyValue : keyValues) {
+            parameters.putAll(addKeyValueToParameter(keyValue, delimiter));
+        }
+        return parameters;
+    }
+
+    /**
+     * Splits the key-value argument and adds it to the parameters map.
+     *
+     * @param keyValue   The key-value argument, with key and value separated by the default '=' delimiter.
+     */
+    protected Map<String, String> addKeyValueToParameter(final String keyValue) {
+        return addKeyValueToParameter(keyValue, "=");
+    }
+
+    /**
+     * Splits the key-value argument and adds it to the parameters map.
+     *
+     * @param keyValue   The key-value argument, with key and value separated by the specified delimiter.
+     * @param delimiter  The delimiter between the key and value in the submitted argument. This can be any compatible
+     *                   regex.
+     */
+    protected Map<String, String> addKeyValueToParameter(final String keyValue, final String delimiter) {
+        final Map<String, String> parameters = new HashMap<String, String>();
+        if (!StringUtils.isBlank(keyValue)) {
+            String[] atoms = keyValue.split(delimiter, 2);
+            if (atoms.length == 1 && parameters.containsKey(atoms[0])) {
+                parameters.remove(atoms[0]);
+            } else {
+                parameters.put(atoms[0], atoms[1]);
+            }
+        }
+        return parameters;
+    }
+
+    /**
      * Converts a string to the type indicated by the <b>type</b> parameter. The ability of a pinto bean to convert
      * strings to any arbitrary type can be extended by overriding and extending this method.
      *
      * @param type     Indicates the type to which the argument should be converted.
      * @param argument The argument to be converted.
+     *
      * @return An object of the indicated type from the given value.
      * @throws PintoException
      */
@@ -295,6 +354,7 @@ public abstract class AbstractPintoBean {
      * This can be used by {@link #validate()} implementations to have help displayed if no arguments are specified on
      * the command line. If this is called and no arguments were passed to the application, this method will set the
      * help display flag to true.
+     *
      * @return Returns true if help should be displayed. Note that this should terminate further parameter validation.
      */
     protected boolean noArgsHelp() {
@@ -336,9 +396,9 @@ public abstract class AbstractPintoBean {
     }
 
     /**
-     * Harvests the command-line parameters and sorts them along with their arguments. Any trailing
-     * arguments are assigned to the last found parameter. Trailing arguments that occur without
-     * parameters are stashed in the {@link #getTrailingArguments()} property.
+     * Harvests the command-line parameters and sorts them along with their arguments. Any trailing arguments are
+     * assigned to the last found parameter. Trailing arguments that occur without parameters are stashed in the {@link
+     * #getTrailingArguments()} property.
      *
      * @throws PintoException
      */
@@ -377,7 +437,13 @@ public abstract class AbstractPintoBean {
                 parameter = foundParameter;
 
                 // Now store the parameter option in the map of parameter data and initialize the argument cache.
-                _parameters.put(parameter.getShortOption(), new ArrayList<String>());
+                if (_parameters.containsKey(parameter.getShortOption())) {
+                    if (!parameter.getMultiplesAllowed()) {
+                        throw new PintoException(PintoExceptionType.SyntaxFormat, "You can only specify the " + parameter.getShortOption() + "/" + parameter.getLongOption() + " parameter once on the command line.");
+                    }
+                } else {
+                    _parameters.put(parameter.getShortOption(), new ArrayList<String>());
+                }
 
                 // If the parameter takes no args, there's no reason to keep it around.  The next tokens have to be
                 // either another parameter or trailing arguments.
@@ -400,7 +466,7 @@ public abstract class AbstractPintoBean {
                 switch (argCount) {
                     case OneArgument:
                         // Really we shouldn't ever get this since we're going to cut it off after this.
-                        if (args.size() > 1) {
+                        if (args.size() > 1 && !parameter.getMultiplesAllowed()) {
                             throw new PintoException(PintoExceptionType.SyntaxFormat, "Too many arguments specified for parameter " + parameter.getShortOption());
                         }
                         parameter = null;
@@ -415,8 +481,8 @@ public abstract class AbstractPintoBean {
     }
 
     /**
-     * Prunes the parameters and arguments. This includes validating the arguments passed in against
-     * the accepted arguments for each parameter, as well as removing trailing arguments.
+     * Prunes the parameters and arguments. This includes validating the arguments passed in against the accepted
+     * arguments for each parameter, as well as removing trailing arguments.
      */
     private void prune() throws PintoException {
         for (String parameterId : _parameters.keySet()) {
@@ -461,16 +527,21 @@ public abstract class AbstractPintoBean {
             throw new PintoException(PintoExceptionType.UnknownParameterTypes);
         }
         final boolean isArrayParameter = types.length == 1 && types[0].isArray();
-        if (types.length != arguments.size() && !isArrayParameter) {
+        final boolean isListParameter = types.length == 1 && List.class.isAssignableFrom(types[0]);
+        if (types.length != arguments.size() && !isArrayParameter && !isListParameter) {
             throw new PintoException(PintoExceptionType.SyntaxFormat);
         }
         Class<?> type = isArrayParameter ? types[0].getComponentType() : null;
         final List<Object> coercedArguments = new ArrayList<Object>(types.length);
-        for (int index = 0; index < arguments.size(); index++) {
-            if (!isArrayParameter) {
-                type = types[index];
+        if (!isListParameter) {
+            for (int index = 0; index < arguments.size(); index++) {
+                if (!isArrayParameter) {
+                    type = types[index];
+                }
+                coercedArguments.add(convertStringToType(type, arguments.get(index)));
             }
-            coercedArguments.add(convertStringToType(type, arguments.get(index)));
+        } else {
+            coercedArguments.add(arguments);
         }
 
         return isArrayParameter ? new Object[]{coercedArguments.toArray((Object[]) Array.newInstance(types[0].getComponentType(), coercedArguments.size()))} : coercedArguments.toArray();
@@ -494,7 +565,7 @@ public abstract class AbstractPintoBean {
                 if (_log.isDebugEnabled()) {
                     _log.debug("Found parameter " + parameterId + " specified as OneArgument parameter, comes with " + argCount + " arguments");
                 }
-                if (argCount != 1) {
+                if (argCount != 1 && !parameter.getMultiplesAllowed()) {
                     throw new PintoException(PintoExceptionType.SyntaxFormat, "The parameter " + parameterId + " only accepts a single argument.");
                 }
                 break;
@@ -626,10 +697,8 @@ public abstract class AbstractPintoBean {
     /**
      * This is the width of the hanging indent in the help text. Illustration ('|' is the left margin):
      * <p/>
-     * <div style='font-family: "Courier New", Courier, monospace'>
-     * | -h, --help         Show this help text.
-     * |12345678901234567890
-     * </div>
+     * <div style='font-family: "Courier New", Courier, monospace'> | -h, --help         Show this help text.
+     * |12345678901234567890 </div>
      * <p/>
      * Above shows a 20-character hanging indent.
      */

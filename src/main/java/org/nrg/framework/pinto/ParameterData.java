@@ -17,7 +17,7 @@ import java.lang.reflect.Method;
 
 public class ParameterData {
 
-    public ParameterData(final Method method, Parameter parameter) {
+public ParameterData(final Method method, Parameter parameter) {
         if (_log.isDebugEnabled()) {
             _log.debug("Creating new parameter data object:");
             _log.debug(" *** Short option:  " + parameter.value());
@@ -31,6 +31,7 @@ public class ParameterData {
         _longOption = parameter.longOption();
         _argCount = parameter.argCount();
         _exactArgCount = parameter.exactArgCount();
+        _multiplesAllowed = parameter.multiplesAllowed();
         _help = parameter.help();
     }
 
@@ -58,6 +59,10 @@ public class ParameterData {
         return _exactArgCount;
     }
 
+    public boolean getMultiplesAllowed() {
+        return _multiplesAllowed;
+    }
+
     public String getHelp() {
         return _help;
     }
@@ -69,6 +74,7 @@ public class ParameterData {
     private final String _longOption;
     private final ArgCount _argCount;
     private final int _exactArgCount;
+    private final boolean _multiplesAllowed;
     private final String _help;
 }
 

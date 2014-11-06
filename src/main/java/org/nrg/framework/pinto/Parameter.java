@@ -52,6 +52,12 @@ public @interface Parameter {
     public ArgCount argCount() default ArgCount.OneArgument;
 
     /**
+     * Indicates whether multiple instances of this parameter are allowed. This defaults to false.
+     * @return Whether this parameter can be specified multiple times on the command line.
+     */
+    public boolean multiplesAllowed() default false;
+
+    /**
      * Whe the {@link #argCount()} attribute is set to {@link ArgCount#SpecificCount}, this attribute
      * specifies the value for the specific number of arguments for this parameter.
      * @return The specific number of arguments for this parameter.
