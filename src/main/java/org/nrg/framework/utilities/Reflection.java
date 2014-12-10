@@ -11,6 +11,7 @@ package org.nrg.framework.utilities;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
@@ -127,8 +128,13 @@ public class Reflection {
     public static Properties getPropertiesForClass(final Class<?> parent) {
         final String bundle = "/" + parent.getName().replace(".", "/") + ".properties";
         Properties properties = new Properties();
+        final InputStream inputStream = parent.getResourceAsStream(bundle);
         try {
-            properties.load(parent.getResourceAsStream(bundle));
+            try {
+                properties.load(inputStream);
+            } finally {
+                inputStream.close();
+            }
         } catch (IOException e) {
             properties = null;
         }
