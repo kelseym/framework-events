@@ -9,6 +9,8 @@
  */
 package org.nrg.framework.services;
 
+/**
+ * Defines the basic operations for an NRG service implementation.
+ */
 public interface NrgService {
-    public static String SERVICE_NAME = "NrgService";
 }

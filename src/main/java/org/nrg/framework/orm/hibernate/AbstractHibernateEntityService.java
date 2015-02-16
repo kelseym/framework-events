@@ -76,11 +76,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
                 create(instance);
             }
             return instance;
-        } catch (InvocationTargetException e) {
-            throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, e);
-        } catch (IllegalAccessException e) {
-            throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, e);
-        } catch (InstantiationException e) {
+        } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
             throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, e);
         }
     }

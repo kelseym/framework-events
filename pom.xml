@@ -88,7 +88,7 @@
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
+            <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -123,7 +123,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>postgresql</groupId>
+            <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>test</scope>
         </dependency>
@@ -149,10 +149,8 @@
 			<scope>test</scope>
 		</dependency>
         <dependency>
-	         <!-- This routes logging in Hibernate to ACL/JCL -->
-	         <!-- Without it, Hibernate bootstrapping (e.g. entity scanning) fails silently -->
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jcl</artifactId>
+            <artifactId>slf4j-simple</artifactId>
 			<scope>test</scope>
         </dependency>
     </dependencies>

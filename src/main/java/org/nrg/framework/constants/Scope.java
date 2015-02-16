@@ -9,6 +9,7 @@ public enum Scope {
     Site("site"),
     Project("prj"),
     Subject("subj"),
+    Experiment("experiment"),
     User("user"),
     DataType("datatype");
 
@@ -18,6 +19,10 @@ public enum Scope {
 
     public String code() {
         return _code;
+    }
+
+    public static Scope getDefaultScope() {
+        return Site;
     }
 
     public static Scope getScope(final String code) {
@@ -38,15 +43,13 @@ public enum Scope {
         return _scopes.keySet();
     }
 
-    private static final Map<String, Scope> _scopes = new ConcurrentHashMap<String, Scope>();
-    private final String _code;
-
     public static String encode(final Scope scope, final String entityId) {
         if (scope == Site) {
             return Site.code();
         }
         return String.format("%s:%s", scope.code(), entityId);
     }
+
     public static Map<String, String> decode(final String association) {
         final String[] atoms = association.split(":", 2);
         final Scope scope = Scope.getScope(atoms[0]);
@@ -56,4 +59,7 @@ public enum Scope {
         items.put("entityId", entityId);
         return items;
     }
+
+    private static final Map<String, Scope> _scopes = new ConcurrentHashMap<String, Scope>();
+    private final String _code;
 }

@@ -9,10 +9,9 @@
  */
 package org.nrg.framework.orm.hibernate;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-
-import javax.persistence.*;
 
 @MappedSuperclass
 @SuppressWarnings("serial")
@@ -132,4 +131,6 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     private Date _created;
     private Date _timestamp;
     private Date _disabled = HibernateUtils.DEFAULT_DATE;
+
+
 }

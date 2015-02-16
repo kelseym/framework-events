@@ -9,9 +9,9 @@
  */
 package org.nrg.framework.orm.hibernate;
 
-import java.util.List;
-
 import org.nrg.framework.services.NrgService;
+
+import java.util.List;
 
 public interface BaseHibernateService<E extends BaseHibernateEntity> extends NrgService {
 
@@ -51,15 +51,65 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param entity The entity to be deleted.
      */
     public abstract void delete(E entity);
-    
+
+    /**
+     * Gets all active enabled objects of the service's parameterized type.
+     * @return A list of all of the active enabled objects of the service's parameterized type.
+     */
     public abstract List<E> getAll();
+    /**
+     * Gets all objects of the service's parameterized type, including those that are inactive or disabled.
+     * @return A list of all of the objects of the service's parameterized type, including those that are inactive or disabled.
+     */
     public abstract List<E> getAllWithDisabled();
-    
+
+    /**
+     * Refreshes the submitted entity. If the entity's properties have been changed elsewhere, the submitted instance
+     * is updated appropriately.
+     * @param entity    The entity to be refreshed.
+     */
     public abstract void refresh(E entity);
+
+    /**
+     * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
+     * instances in the list are updated appropriately.
+     * @param entities    The entities to be refreshed.
+     */
     public abstract void refresh(List<E> entities);
+    /**
+     * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
+     * instances in the list are updated appropriately.
+     * @param entities    The entities to be refreshed.
+     */
+    @SuppressWarnings ({"unchecked", "varargs"})
     public abstract void refresh(E... entities);
+    /**
+     * Refreshes the submitted entity. If the entity's properties have been changed elsewhere, the submitted instance
+     * is updated appropriately. The initialize parameter indicates whether the entity should be initialized prior to
+     * being returned. Initialization populates any lazily initialized properties of the entity so that those properties
+     * can be referenced after the Hibernate session has gone out of scope.
+     * @param initialize    Indicates whether the entity should be initialized prior to being returned.
+     * @param entity        The entity to be refreshed.
+     */
     public abstract void refresh(boolean initialize, E entity);
+    /**
+     * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
+     * instances in the list are updated appropriately. The initialize parameter indicates whether the entities should
+     * be initialized prior to being returned. Initialization populates any lazily initialized properties of the entity
+     * so that those properties can be referenced after the Hibernate session has gone out of scope.
+     * @param initialize    Indicates whether the entity should be initialized prior to being returned.
+     * @param entities      The entities to be refreshed.
+     */
     public abstract void refresh(boolean initialize, List<E> entities);
+    /**
+     * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
+     * instances in the list are updated appropriately. The initialize parameter indicates whether the entities should
+     * be initialized prior to being returned. Initialization populates any lazily initialized properties of the entity
+     * so that those properties can be referenced after the Hibernate session has gone out of scope.
+     * @param initialize    Indicates whether the entity should be initialized prior to being returned.
+     * @param entities      The entities to be refreshed.
+     */
+    @SuppressWarnings ({"unchecked", "varargs"})
     public abstract void refresh(boolean initialize, E... entities);
     
     /**
