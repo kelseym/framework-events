@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The most basic entity reslver. This will always resolve to a single item hierarchy and returns some default value
+ * The most basic entity resolver. This will always resolve to a single item hierarchy and returns some default value
  * when resolving.
  */
 public class NoOpEntityResolver implements EntityResolver {

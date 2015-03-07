@@ -12,7 +12,6 @@ package org.nrg.framework.pinto;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.springframework.test.annotation.ExpectedException;
 
 import java.net.URI;
 import java.net.URISyntaxException;

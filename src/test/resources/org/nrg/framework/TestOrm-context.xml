@@ -6,7 +6,7 @@
   ~ Copyright (c) 2014, Washington University School of Medicine
   ~ All Rights Reserved
   ~
-  ~ Released under the Simplified BSD.
+  ~ Released under the Simplified BSD.                                      :q
   ~
   ~ Last modified 6/11/14 3:13 PM
   -->
@@ -36,7 +36,7 @@
         </property>
     </bean>
 
-    <bean id="cacheRegionFactory" class="net.sf.ehcache.hibernate.SingletonEhCacheRegionFactory">
+    <bean id="cacheRegionFactory" class="org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory">
         <constructor-arg index="0" ref="hibernateProperties" />
     </bean>
 
@@ -44,7 +44,7 @@
           p:cacheRegionFactory-ref="cacheRegionFactory" p:dataSource-ref="dataSource"
           p:hibernateProperties-ref="hibernateProperties" p:namingStrategy-ref="namingStrategy" />
 
-    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager" p:sessionFactory-ref="sessionFactory" />
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager" p:sessionFactory-ref="sessionFactory" />
 
     <tx:annotation-driven />
 

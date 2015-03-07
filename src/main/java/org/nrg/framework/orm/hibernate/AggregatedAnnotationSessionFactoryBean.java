@@ -9,15 +9,15 @@
  */
 package org.nrg.framework.orm.hibernate;
 
-import org.hibernate.cfg.AnnotationConfiguration;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean;
+import org.springframework.orm.hibernate4.LocalSessionFactoryBean;
 
+import java.io.IOException;
 import java.util.*;
 
-public class AggregatedAnnotationSessionFactoryBean extends AnnotationSessionFactoryBean implements ApplicationContextAware {
+public class AggregatedAnnotationSessionFactoryBean extends LocalSessionFactoryBean implements ApplicationContextAware {
     @Override
     public void setPackagesToScan(String[] packagesToScan) {
         _packagesToScan.addAll(Arrays.asList(packagesToScan));
@@ -29,16 +29,15 @@ public class AggregatedAnnotationSessionFactoryBean extends AnnotationSessionFac
         _context = context;
     }
 
-    @Override
-    protected void scanPackages(AnnotationConfiguration configuration) {
+    public void afterPropertiesSet() throws IOException {
         String[] packages = getHibernateEntityPackages();
         setPackagesToScan(packages);
-        super.scanPackages(configuration);
+        super.afterPropertiesSet();
     }
-    
+
     private String[] getHibernateEntityPackages() {
         Map<String, ?> beans = _context.getBeansOfType(HibernateEntityPackageList.class);
-        List<String> packages = new ArrayList<String>();
+        List<String> packages = new ArrayList<>();
         if (beans != null) {
             for (Object item : beans.values()) {
                 if (item instanceof HibernateEntityPackageList) {
@@ -50,5 +49,5 @@ public class AggregatedAnnotationSessionFactoryBean extends AnnotationSessionFac
     }
 
     private ApplicationContext _context;
-    private Set<String> _packagesToScan = new HashSet<String>();
+    private final Set<String> _packagesToScan = new HashSet<>();
 }
