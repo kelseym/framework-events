@@ -9,6 +9,9 @@
  */
 package org.nrg.framework.utilities;
 
+import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +23,7 @@ import java.net.URLDecoder;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 
 public class Reflection {
     /**
@@ -36,9 +40,9 @@ public class Reflection {
         assert loader != null;
 
         Enumeration<URL> resources = loader.getResources(packageName.replace('.', '/'));
-        List<File> directories = new ArrayList<File>();
-        List<URL> jarFiles = new ArrayList<URL>();
-        ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
+        List<File> directories = new ArrayList<>();
+        List<URL> jarFiles = new ArrayList<>();
+        ArrayList<Class<?>> classes = new ArrayList<>();
 
         while (resources.hasMoreElements()) {
             URL resource = resources.nextElement();
@@ -70,7 +74,7 @@ public class Reflection {
      * @throws ClassNotFoundException the class not found exception
      */
     public static Collection<? extends Class<?>> findClassesInJarFile(URL jarFile, String packageName) throws IOException, ClassNotFoundException {
-        List<Class<?>> classes = new ArrayList<Class<?>>();
+        List<Class<?>> classes = new ArrayList<>();
         JarURLConnection connection = (JarURLConnection) jarFile.openConnection();
         JarFile jar = connection.getJarFile();
         for (JarEntry entry : Collections.list(jar.entries())) {
@@ -92,7 +96,7 @@ public class Reflection {
      * @throws IOException    Signals that an I/O exception has occurred.
      */
     public static List<Class<?>> findClasses(File directory, String packageName) throws ClassNotFoundException, IOException {
-        List<Class<?>> classes = new ArrayList<Class<?>>();
+        List<Class<?>> classes = new ArrayList<>();
 
         if (!directory.exists()) {
             return classes;
@@ -128,12 +132,9 @@ public class Reflection {
     public static Properties getPropertiesForClass(final Class<?> parent) {
         final String bundle = "/" + parent.getName().replace(".", "/") + ".properties";
         Properties properties = new Properties();
-        final InputStream inputStream = parent.getResourceAsStream(bundle);
         try {
-            try {
+            try (InputStream inputStream = parent.getResourceAsStream(bundle)) {
                 properties.load(inputStream);
-            } finally {
-                inputStream.close();
             }
         } catch (IOException e) {
             properties = null;
@@ -254,4 +255,22 @@ public class Reflection {
         // return true if the modifier is NOT private or protected.
         return requestedAccess == Modifier.PROTECTED ? !isPrivate : !(isPrivate || isProtected);
     }
+
+    public static Set<String> findResources(final String resourcePackage, final String resourcePattern) {
+        return findResources(resourcePackage, Pattern.compile(resourcePattern));
+    }
+
+    public static Set<String> findResources(final String resourcePackage, final Pattern resourcePattern) {
+        final Reflections reflections = Reflection.getReflectionsForPackage(resourcePackage);
+        return reflections.getResources(resourcePattern);
+    }
+
+    private static Reflections getReflectionsForPackage(final String resourcePackage) {
+        if (!_reflectionsCache.containsKey(resourcePackage)) {
+            _reflectionsCache.put(resourcePackage, new Reflections(resourcePackage, new ResourcesScanner()));
+        }
+        return _reflectionsCache.get(resourcePackage);
+    }
+
+    private static final Map<String, Reflections> _reflectionsCache = Collections.synchronizedMap(new HashMap<String, Reflections>());
 }
