@@ -22,6 +22,7 @@ public enum NrgServiceError {
 	InvalidDirectParameterizedClassUsage,
 	InvalidMailAttachment,
 	InvalidRestServiceParameters,
+	InvalidScript,
 	NoMatchingCategory,
 	NoMatchingDefinition,
 	/** attempted access to a resource exceeding caller's permissions */
@@ -31,7 +32,10 @@ public enum NrgServiceError {
 	UnknownChannelRendererError,
     NoMatchingRepositoryForService,
     Instantiation,
-	UnsupportedFeature, UnknownScriptRunner, UnknownEntity, Uninitialized;
+	UnsupportedFeature,
+	UnknownScriptRunner,
+	UnknownEntity,
+	Uninitialized;
 	
 	public static final NrgServiceError Default = Unknown;
 }
