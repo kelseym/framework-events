@@ -17,11 +17,24 @@ import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 public class Reflection {
+    public static Map<String,List<Class<?>>> CACHED_CLASSES_BY_PACKAGE=Maps.newHashMap();
     /**
      * Scans all classes accessible from the context class loader which belong
      * to the given package and subpackages.
@@ -32,30 +45,35 @@ public class Reflection {
      * @throws IOException    Signals that an I/O exception has occurred.
      */
     public static List<Class<?>> getClassesForPackage(String packageName) throws ClassNotFoundException, IOException {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        assert loader != null;
-
-        Enumeration<URL> resources = loader.getResources(packageName.replace('.', '/'));
-        List<File> directories = new ArrayList<File>();
-        List<URL> jarFiles = new ArrayList<URL>();
-        ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
-
-        while (resources.hasMoreElements()) {
-            URL resource = resources.nextElement();
-
-            if (resource.getProtocol().equalsIgnoreCase("jar")) {
-                jarFiles.add(resource);
-            } else {
-                directories.add(new File(URLDecoder.decode(resource.getFile(), "UTF-8")));
-            }
-        }
-
-        for (URL jarFile : jarFiles) {
-            classes.addAll(findClassesInJarFile(jarFile, packageName));
-        }
-        for (File directory : directories) {
-            classes.addAll(findClasses(directory, packageName));
-        }
+    	List<Class<?>> classes=CACHED_CLASSES_BY_PACKAGE.get(packageName);
+    	if(classes==null){
+    		_log.info("Identifying classes for "+packageName);
+	        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+	        assert loader != null;
+	
+	        Enumeration<URL> resources = loader.getResources(packageName.replace('.', '/'));
+	        List<File> directories = new ArrayList<File>();
+	        List<URL> jarFiles = new ArrayList<URL>();
+	        classes = Lists.newArrayList();
+	
+	        while (resources.hasMoreElements()) {
+	            URL resource = resources.nextElement();
+	
+	            if (resource.getProtocol().equalsIgnoreCase("jar")) {
+	                jarFiles.add(resource);
+	            } else {
+	                directories.add(new File(URLDecoder.decode(resource.getFile(), "UTF-8")));
+	            }
+	        }
+	
+	        for (URL jarFile : jarFiles) {
+	            classes.addAll(findClassesInJarFile(jarFile, packageName));
+	        }
+	        for (File directory : directories) {
+	            classes.addAll(findClasses(directory, packageName));
+	        }
+    		CACHED_CLASSES_BY_PACKAGE.put(packageName, classes);
+    	}
 
         return classes;
     }
@@ -254,4 +272,6 @@ public class Reflection {
         // return true if the modifier is NOT private or protected.
         return requestedAccess == Modifier.PROTECTED ? !isPrivate : !(isPrivate || isProtected);
     }
+    
+    private static final Log _log = LogFactory.getLog(Reflection.class);
 }
