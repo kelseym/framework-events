@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -72,10 +73,50 @@ public class Reflection {
 	        for (File directory : directories) {
 	            classes.addAll(findClasses(directory, packageName));
 	        }
-    		CACHED_CLASSES_BY_PACKAGE.put(packageName, classes);
+    		CACHED_CLASSES_BY_PACKAGE.put(packageName.intern(), classes);
     	}
 
         return classes;
+    }
+    
+    public static void injectDynamicImplementations(final String _package, final boolean failOnException, Map<String,Object> params) throws Exception{
+    	List<Class<?>> classes = Reflection.getClassesForPackage(_package);
+    	if(params==null){
+    		params=Maps.newHashMap();
+    	}
+		if(classes!=null && classes.size()>0){
+			for(Class<?> clazz: classes){
+			    try {
+					if(InjectableI.class.isAssignableFrom(clazz)){			
+						InjectableI action=(InjectableI)clazz.newInstance();
+					    action.execute(params);
+					}else{
+						_log.error("Reflection: "+ _package + "." + clazz.getName() + " is NOT an implementation of InjectableI");
+					}
+				} catch (Throwable e) {
+					if(failOnException){
+						throw e;
+					}else{
+						_log.error("",e);
+					}
+				}
+			}
+		}
+    }
+    
+    public static void injectDynamicImplementations(final String _package, final Map<String,Object> params){
+    	try {
+			injectDynamicImplementations(_package, false, params);
+		} catch (Throwable e) {
+		}
+    }
+    
+    public static void injectDynamicImplementationsWExceptions(final String _package, final Map<String,Object> params) throws Throwable{
+    	injectDynamicImplementations(_package, true, params);
+    }
+    
+    public static interface InjectableI{
+    	public void execute(Map<String,Object> params);
     }
 
     /**
