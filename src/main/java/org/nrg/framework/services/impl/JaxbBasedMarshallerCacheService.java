@@ -61,6 +61,10 @@ import org.xml.sax.SAXException;
 
 @Service
 public final class JaxbBasedMarshallerCacheService implements MarshallerCacheService {
+    public JaxbBasedMarshallerCacheService() {
+        _docBuilderFactory.setExpandEntityReferences(false);
+    }
+
     /**
      * Gets the list of packages that can be searched for classes that support
      * submitted XML root element values.
@@ -460,8 +464,8 @@ public final class JaxbBasedMarshallerCacheService implements MarshallerCacheSer
     private static final Log _log = LogFactory.getLog(JaxbBasedMarshallerCacheService.class);
     private static final Map<ContextDescriptor, JAXBContext> cache = new HashMap<ContextDescriptor, JAXBContext>();
     private static final Map<String, ContextDescriptor> contextCache = new HashMap<String, ContextDescriptor>();
-    private DocumentBuilderFactory _docBuilderFactory = DocumentBuilderFactory.newInstance();
-    
+    private final DocumentBuilderFactory _docBuilderFactory = DocumentBuilderFactory.newInstance();
+
     @Autowired(required = false)
     @Qualifier("marshalablePackages")
     private List<String> _packages;

@@ -14,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Example;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 
 import javax.inject.Inject;
@@ -121,6 +122,21 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         Criteria criteria = getCriteriaForType();
         criteria.add(Restrictions.eq("enabled", true));
         return criteria.list();
+    }
+
+    @Override
+    public long countAll() {
+        Criteria criteria = getCriteriaForType();
+        criteria.setProjection(Projections.rowCount());
+        return (long) criteria.uniqueResult();
+    }
+
+    @Override
+    public long countAllEnabled() {
+        Criteria criteria = getCriteriaForType();
+        criteria.setProjection(Projections.rowCount());
+        criteria.add(Restrictions.eq("enabled", true));
+        return (long) criteria.uniqueResult();
     }
 
     /**

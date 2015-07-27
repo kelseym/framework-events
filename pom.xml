@@ -96,8 +96,12 @@
             <artifactId>javax.inject</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -165,9 +169,9 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
-            <!-- plugin>
+            <plugin>
                 <artifactId>maven-jarsigner-plugin</artifactId>
-            </plugin -->
+            </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>

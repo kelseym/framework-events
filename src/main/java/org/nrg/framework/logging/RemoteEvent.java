@@ -9,11 +9,11 @@
  */
 package org.nrg.framework.logging;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.restlet.data.ClientInfo;
 
 import java.io.IOException;
@@ -66,6 +66,7 @@ public class RemoteEvent extends HashMap<String, String> {
         }
     }
 
+    @SuppressWarnings("unused")
     public RemoteEvent(Map<String, Object> map, ClientInfo clientInfo) {
         this(map);
         setClientInfo(clientInfo);
@@ -143,5 +144,5 @@ public class RemoteEvent extends HashMap<String, String> {
     private static final Log _log = LogFactory.getLog(RemoteEvent.class);
     // TODO: This might be the wrong thing to do, since it'll result in a plethora of object mappers.
     private static final ObjectMapper _mapper = new ObjectMapper();
-    private Map<String, String> _properties = new HashMap<String, String>();
+    private Map<String, String> _properties = new HashMap<>();
 }

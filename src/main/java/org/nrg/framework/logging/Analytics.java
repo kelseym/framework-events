@@ -9,12 +9,12 @@
  */
 package org.nrg.framework.logging;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.nrg.framework.analytics.AnalyticsEvent;
 
 import java.io.IOException;
@@ -189,12 +189,7 @@ public class Analytics {
     public static void enter(String tool, Map<String, String> properties) {
         Level level;
         if (properties.containsKey("level")) {
-            Object specifiedLevel = properties.get("level");
-            if (specifiedLevel instanceof Level) {
-                level = (Level) specifiedLevel;
-            } else {
-                level = Level.toLevel((String) specifiedLevel);
-            }
+            level = Level.toLevel(properties.get("level"));
         } else {
             level = DEFAULT_LEVEL;
         }
@@ -238,7 +233,7 @@ public class Analytics {
      * @return A map containing the provided statement mapped to the {@link #KEY_STATEMENT statement key}.
      */
     private static Map<String, String> wrapStatement(final String statement) {
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(KEY_STATEMENT, statement);
         return properties;
     }
@@ -249,7 +244,7 @@ public class Analytics {
      * @return A map containing the provided throwable mapped to the {@link #KEY_THROWABLE throwable key}.
      */
     private static Map<String, String> wrapStatement(final Throwable throwable) {
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put(KEY_THROWABLE, convertThrowable(throwable));
         return properties;
     }
@@ -263,7 +258,7 @@ public class Analytics {
      * provided throwable mapped to the {@link #KEY_THROWABLE throwable key}.
      */
     private static Map<String, String> wrapStatement(final String statement, final Throwable throwable) {
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new HashMap<>();
         properties.put("statement", statement);
         properties.put("throwable", convertThrowable(throwable));
         return properties;
@@ -323,10 +318,5 @@ public class Analytics {
     /**
      * Object mapper for managing JSON serialization. Can be overridden for DI for greater flexibility if necessary later.
      */
-    private static final ObjectMapper _serializer = new ObjectMapper();
-
-    static {
-        _serializer.getSerializationConfig().setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-        _serializer.getSerializationConfig().set(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
-    }
+    private static final ObjectMapper _serializer = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 }

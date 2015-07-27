@@ -19,70 +19,82 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * Gets a new entity object, using the entity constructor matching the submitted parameters.
      * @return A new entity object.
      */
-    public abstract E newEntity(Object... parameters);
+    E newEntity(Object... parameters);
     /**
      * Adds the submitted entity object to the system. This will always create 
      * an entirely new entity, but if data validation constraints are violated
      * for the particular table or schema, an exception will be thrown.
      * @param entity The new entity to be created.
      */
-    public abstract void create(E entity);
+    void create(E entity);
 
     /**
      * Retrieves the entity with the specified ID.
      * @param id The ID of the entity to be retrieved.
      */
-    public abstract E retrieve(long id);
+    E retrieve(long id);
 
     /**
      * Updates the submitted entity.
      * @param entity The entity to update.
      */
-    public abstract void update(E entity);
+    void update(E entity);
 
     /**
      * Deletes the entity with the specified ID from the system.
      * @param id The ID of the entity to be deleted.
      */
-    public abstract void delete(long id);
+    void delete(long id);
 
     /**
      * Deletes the submitted entity from the system.
      * @param entity The entity to be deleted.
      */
-    public abstract void delete(E entity);
+    void delete(E entity);
 
     /**
      * Gets all active enabled objects of the service's parameterized type.
      * @return A list of all of the active enabled objects of the service's parameterized type.
      */
-    public abstract List<E> getAll();
+    List<E> getAll();
     /**
      * Gets all objects of the service's parameterized type, including those that are inactive or disabled.
      * @return A list of all of the objects of the service's parameterized type, including those that are inactive or disabled.
      */
-    public abstract List<E> getAllWithDisabled();
+    List<E> getAllWithDisabled();
+
+    /**
+     * Gives a count of the total number of enabled objects of the service's parameterized type.
+     * @return A count of all of the active enabled objects of the service's parameterized type.
+     */
+    long getCount();
+    /**
+     * Gives a count of the total number of enabled objects of the service's parameterized type, including those that are inactive or disabled.
+     * @return A count of all of the objects of the service's parameterized type, including those that are inactive or disabled.
+     */
+    @SuppressWarnings("unused")
+    long getCountWithDisabled();
 
     /**
      * Refreshes the submitted entity. If the entity's properties have been changed elsewhere, the submitted instance
      * is updated appropriately.
      * @param entity    The entity to be refreshed.
      */
-    public abstract void refresh(E entity);
+    void refresh(E entity);
 
     /**
      * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
      * instances in the list are updated appropriately.
      * @param entities    The entities to be refreshed.
      */
-    public abstract void refresh(List<E> entities);
+    void refresh(List<E> entities);
     /**
      * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
      * instances in the list are updated appropriately.
      * @param entities    The entities to be refreshed.
      */
     @SuppressWarnings ({"unchecked", "varargs"})
-    public abstract void refresh(E... entities);
+    void refresh(E... entities);
     /**
      * Refreshes the submitted entity. If the entity's properties have been changed elsewhere, the submitted instance
      * is updated appropriately. The initialize parameter indicates whether the entity should be initialized prior to
@@ -91,7 +103,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param initialize    Indicates whether the entity should be initialized prior to being returned.
      * @param entity        The entity to be refreshed.
      */
-    public abstract void refresh(boolean initialize, E entity);
+    void refresh(boolean initialize, E entity);
     /**
      * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
      * instances in the list are updated appropriately. The initialize parameter indicates whether the entities should
@@ -100,7 +112,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param initialize    Indicates whether the entity should be initialized prior to being returned.
      * @param entities      The entities to be refreshed.
      */
-    public abstract void refresh(boolean initialize, List<E> entities);
+    void refresh(boolean initialize, List<E> entities);
     /**
      * Refreshes the submitted list of entities. If any of the entities' properties have been changed elsewhere, the
      * instances in the list are updated appropriately. The initialize parameter indicates whether the entities should
@@ -110,7 +122,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param entities      The entities to be refreshed.
      */
     @SuppressWarnings ({"unchecked", "varargs"})
-    public abstract void refresh(boolean initialize, E... entities);
+    void refresh(boolean initialize, E... entities);
     
     /**
      * Provides a hook for programmatically validating entities before committing them
@@ -118,7 +130,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param entity The entity to be validated.
      * @return A non-null string with a message if the entity has invalid state, null otherwise.
      */
-    public abstract String validate(E entity);
+    String validate(E entity);
 
     /**
      * Indicates whether entities should be initialized before being returned from transactional service methods.
@@ -129,7 +141,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @see org.nrg.framework.orm.hibernate.BaseHibernateService#setInitialize(boolean)
      * @return Whether the service is set to initialize entities prior to returning them.
      */
-    public abstract boolean getInitialize();
+    boolean getInitialize();
 
     /**
      * Sets whether entities should be initialized before being returned from transactional service methods.
@@ -140,5 +152,5 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param initialize    Indicates whether the service should initialize entities prior to returning them.
      * @see BaseHibernateService#getInitialize()
      */
-    public abstract void setInitialize(final boolean initialize);
+    void setInitialize(final boolean initialize);
 }
