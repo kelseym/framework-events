@@ -16,10 +16,13 @@ import java.util.List;
 public interface BaseHibernateService<E extends BaseHibernateEntity> extends NrgService {
 
     /**
-     * Gets a new entity object, using the entity constructor matching the submitted parameters.
+     * Gets a new entity object, using the entity constructor matching the submitted parameters. Note
+     * that the new entity is not yet created and added to the system!
+     * @param parameters    The parameters passed to the entity constructor
      * @return A new entity object.
      */
     E newEntity(Object... parameters);
+
     /**
      * Adds the submitted entity object to the system. This will always create 
      * an entirely new entity, but if data validation constraints are violated
@@ -27,6 +30,19 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @param entity The new entity to be created.
      */
     void create(E entity);
+
+    /**
+     * Creates a new entity similar to the {@link #newEntity(Object...)} method, then adds the submitted
+     * entity object to the system. This will always create an entirely new entity, but if data validation
+     * constraints are violated for the particular table or schema, an exception will be thrown.
+     *
+     * This method is a convenience method that combines the functions of the {@link #newEntity(Object...)} and
+     * {@link #create(BaseHibernateEntity)} methods.
+     *
+     * @param parameters    The parameters passed to the entity constructor
+     * @return A new entity object.
+     */
+    E create(Object... parameters);
 
     /**
      * Retrieves the entity with the specified ID.

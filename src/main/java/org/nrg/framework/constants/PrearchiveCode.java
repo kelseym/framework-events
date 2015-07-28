@@ -18,7 +18,7 @@ public enum PrearchiveCode {
     AutoArchiveOverwrite (5);
 
     private final int _code;
-    private static final Map<Integer, PrearchiveCode> _codes = new HashMap<Integer, PrearchiveCode>();
+    private static final Map<Integer, PrearchiveCode> _codes = new HashMap<>();
 
     PrearchiveCode(int code) {
         _code = code;

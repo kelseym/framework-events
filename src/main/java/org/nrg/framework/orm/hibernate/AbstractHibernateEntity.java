@@ -131,6 +131,4 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     private Date _created;
     private Date _timestamp;
     private Date _disabled = HibernateUtils.DEFAULT_DATE;
-
-
 }

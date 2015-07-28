@@ -96,6 +96,25 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
+     * Creates a new entity similar to the {@link #newEntity(Object...)} method, then adds the submitted
+     * entity object to the system. This will always create an entirely new entity, but if data validation
+     * constraints are violated for the particular table or schema, an exception will be thrown.
+     *
+     * This method is a convenience method that combines the functions of the {@link #newEntity(Object...)} and
+     * {@link #create(BaseHibernateEntity)} methods.
+     *
+     * @param parameters    The parameters passed to the entity constructor
+     * @return A new entity object.
+     */
+    @Override
+    @Transactional
+    public E create(Object... parameters) {
+        final E entity = newEntity(parameters);
+        create(entity);
+        return entity;
+    }
+
+    /**
      * 
      * @see BaseHibernateService#retrieve(long)
      */
