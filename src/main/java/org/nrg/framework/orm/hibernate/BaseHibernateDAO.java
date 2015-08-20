@@ -14,6 +14,7 @@ import org.nrg.framework.orm.hibernate.annotations.Auditable;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
 
@@ -34,6 +35,15 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
     long countAll();
 
     long countAllEnabled();
+
+    @SuppressWarnings("unchecked")
+    List<E> findByProperty(String property, Object value);
+
+    @SuppressWarnings("unchecked")
+    List<E> findByProperties(Map<String, Object> properties);
+
+    @SuppressWarnings("unchecked")
+    E findByUniqueProperty(String property, Object value);
 
     E findById(long id);
 
