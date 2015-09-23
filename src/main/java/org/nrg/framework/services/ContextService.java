@@ -40,7 +40,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      *
      * @throws NrgServiceException Thrown when the ContextService is already initialized.
      */
-    public ContextService() throws NrgServiceException {
+    protected ContextService() throws NrgServiceException {
         if (_instance != null) {
             throw new NrgServiceException(NrgServiceError.AlreadyInitialized, "The ContextService is already initialized, try calling getInstance() instead.");
         }
@@ -71,6 +71,14 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
     @Override
     public void setApplicationContext(final ApplicationContext context) throws BeansException {
         _context = context;
+    }
+
+    /**
+     * Indicates whether the context service instance has an application context.
+     * @return <b>true</b> if the service object has an application context.
+     */
+    public boolean hasApplicationContext() {
+        return _context != null;
     }
 
     /**
@@ -178,10 +186,12 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
         return children;
     }
 
+    @SuppressWarnings("unused")
     public URI getConfigurationLocation(final String configuration) {
         return getAppRelativeLocation("WEB-INF", "conf", configuration);
     }
 
+    @SuppressWarnings("unused")
     public InputStream getConfigurationStream(final String configuration) {
         return getAppRelativeStream("WEB-INF", "conf", configuration);
     }

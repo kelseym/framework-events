@@ -55,7 +55,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         Class<?>[] types = null;
         try {
             if (parameters != null && parameters.length > 0) {
-                List<Class<?>> buffer = new ArrayList<Class<?>>();
+                List<Class<?>> buffer = new ArrayList<>();
                 for (Object parameter : parameters) {
                     buffer.add(parameter.getClass());
                 }
@@ -199,7 +199,8 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     
     @Override
     @Transactional
-    public void refresh(E... entities) {
+    @SafeVarargs
+    public final void refresh(E... entities) {
         refresh(true, entities);
     }
     
@@ -219,7 +220,8 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     
     @Override
     @Transactional
-    public void refresh(boolean initialize, E... entities) {
+    @SafeVarargs
+    public final void refresh(boolean initialize, E... entities) {
         for (E entity : entities) {
             getDao().refresh(initialize, entity);
         }

@@ -26,8 +26,7 @@ public final class SortedSets {
 
     /**
      * Creates an immutable, empty SortedSet.
-     * @param <T>
-     * @return
+     * @return An empty sorted set.
      */
     public static <T> SortedSet<T> empty() {
         return new SortedSet<T>() {
@@ -99,11 +98,18 @@ public final class SortedSets {
 
             public Object[] toArray() { return new Object[0]; }
 
-            @SuppressWarnings({ "hiding", "unchecked" })
+            @SuppressWarnings({"unchecked", "TypeParameterHidesVisibleType"})
             public <T> T[] toArray(T[] a) { return (T[]) Array.newInstance(a.getClass(), 0); }          
         };
     }
 
+    /**
+     * Creates a singleton set containing the single object submitted.
+     * @param t             The object to store in the set.
+     * @param comparator    The comparator used for sorting.
+     * @param <T>           The data type of the stored object.
+     * @return A sorted set containing the submitted object.
+     */
     public static <T extends Comparable<T>> SortedSet<T> singleton(final T t, final Comparator<? super T> comparator) {
         return new SortedSet<T>() {
             public Comparator<? super T> comparator() { return comparator; }
@@ -208,7 +214,7 @@ public final class SortedSets {
                 return new Object[]{t};
             }
 
-            @SuppressWarnings({ "hiding", "unchecked" })
+            @SuppressWarnings({"unchecked", "TypeParameterHidesVisibleType"})
             public <T> T[] toArray(T[] a) {
                 final T[] ts = (T[])Array.newInstance(t.getClass(), 1);
                 ts[0] = (T)t;

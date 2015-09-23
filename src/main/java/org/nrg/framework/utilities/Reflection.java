@@ -9,6 +9,7 @@
  */
 package org.nrg.framework.utilities;
 
+import com.google.common.base.Joiner;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
@@ -36,7 +37,7 @@ public class Reflection {
      * @throws IOException    Signals that an I/O exception has occurred.
      */
     public static List<Class<?>> getClassesForPackage(String packageName) throws ClassNotFoundException, IOException {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader loader = getClassLoader();
         assert loader != null;
 
         Enumeration<URL> resources = loader.getResources(packageName.replace('.', '/'));
@@ -119,7 +120,9 @@ public class Reflection {
                     // This happens to classes which depend on Spring to inject
                     // some beans
                     // and fail if dependency is not fulfilled
-                    _class = Class.forName(packageName + '.' + fileName.substring(0, fileName.length() - 6), false, Thread.currentThread().getContextClassLoader());
+                    final ClassLoader classLoader = getClassLoader();
+                    assert classLoader != null;
+                    _class = Class.forName(packageName + '.' + fileName.substring(0, fileName.length() - 6), false, classLoader);
                 }
 
                 classes.add(_class);
@@ -127,6 +130,10 @@ public class Reflection {
         }
 
         return classes;
+    }
+
+    public static ClassLoader getClassLoader() {
+        return Thread.currentThread().getContextClassLoader();
     }
 
     public static Properties getPropertiesForClass(final Class<?> parent) {
@@ -241,6 +248,38 @@ public class Reflection {
         return null;
     }
 
+    public static String findResource(final String resourcePackage, final String resourcePattern) {
+        final Set<String> resources = findResources(resourcePackage, Pattern.compile(resourcePattern));
+        if (resources.size() == 0) {
+            return null;
+        }
+        if (resources.size() > 1) {
+            throw new RuntimeException("You assumed there was only one resource with the package " + resourcePackage + " and the name " + resourcePattern + ", but that's not true: there are " + resources.size() + " of them (make sure your 'pattern' isn't actually a regex pattern but just a standard name): " + Joiner.on(", ").join(resources));
+        }
+        return (String) resources.toArray()[0];
+    }
+
+    public static Set<String> findResources(final String resourcePackage, final String resourcePattern) {
+        return findResources(resourcePackage, Pattern.compile(resourcePattern));
+    }
+
+    public static Set<String> findResources(final String resourcePackage, final Pattern resourcePattern) {
+        final Reflections reflections = getReflectionsForPackage(resourcePackage);
+        return reflections.getResources(resourcePattern);
+    }
+
+    public static InputStream getResourceAsStream(final String resource) {
+        final ClassLoader classLoader = getClassLoader();
+        assert classLoader != null;
+        return classLoader.getResourceAsStream(resource);
+    }
+
+    public static URL getResourceUrl(final String resource) {
+        final ClassLoader classLoader = getClassLoader();
+        assert classLoader != null;
+        return classLoader.getResource(resource);
+    }
+
     private static boolean isAccessible(final int requestedAccess, final int modifiers) {
         // If they want private, they can have anything, so just say yes.
         if (requestedAccess == Modifier.PRIVATE) {
@@ -254,15 +293,6 @@ public class Reflection {
         // If requested access is protected, then return true if the modifier is NOT private, otherwise it's public so
         // return true if the modifier is NOT private or protected.
         return requestedAccess == Modifier.PROTECTED ? !isPrivate : !(isPrivate || isProtected);
-    }
-
-    public static Set<String> findResources(final String resourcePackage, final String resourcePattern) {
-        return findResources(resourcePackage, Pattern.compile(resourcePattern));
-    }
-
-    public static Set<String> findResources(final String resourcePackage, final Pattern resourcePattern) {
-        final Reflections reflections = Reflection.getReflectionsForPackage(resourcePackage);
-        return reflections.getResources(resourcePattern);
     }
 
     private static Reflections getReflectionsForPackage(final String resourcePackage) {
