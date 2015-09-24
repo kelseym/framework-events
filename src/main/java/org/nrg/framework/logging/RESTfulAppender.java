@@ -4,12 +4,12 @@
  */
 package org.nrg.framework.logging;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.nrg.framework.net.AuthenticatedClientHttpRequestFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.*;
@@ -20,13 +20,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class RESTfulAppender extends AppenderSkeleton {
 
     public RESTfulAppender() {
-        _serializer = new ObjectMapper();
-        SerializationConfig config = _serializer.getSerializationConfig();
-        config.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-        config.set(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     /**
@@ -84,7 +81,7 @@ public class RESTfulAppender extends AppenderSkeleton {
     }
 
     private Map<String, Object> convertEventToMap(final LoggingEvent event) {
-        Map<String, Object> eventMap = new HashMap<String, Object>();
+        Map<String, Object> eventMap = new HashMap<>();
         eventMap.put("fqnOfLoggerClass", event.getFQNOfLoggerClass());
         eventMap.put("level", event.getLevel().toString());
         eventMap.put("locationInformation", event.getLocationInformation().toString());
@@ -105,8 +102,8 @@ public class RESTfulAppender extends AppenderSkeleton {
     }
 
     private static final HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[] { new FormHttpMessageConverter(), new StringHttpMessageConverter(), new ResourceHttpMessageConverter(), new ByteArrayHttpMessageConverter() };
+    private static final ObjectMapper _serializer = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
-    private ObjectMapper _serializer;
     private RestTemplate _template;
     private String _serviceAddress;
 }

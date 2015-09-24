@@ -9,17 +9,17 @@
  */
 package org.nrg.framework.orm.hibernate;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Example;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateDAO<E> {
     protected AbstractHibernateDAO() {
@@ -123,6 +123,21 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return criteria.list();
     }
 
+    @Override
+    public long countAll() {
+        Criteria criteria = getCriteriaForType();
+        criteria.setProjection(Projections.rowCount());
+        return (long) criteria.uniqueResult();
+    }
+
+    @Override
+    public long countAllEnabled() {
+        Criteria criteria = getCriteriaForType();
+        criteria.setProjection(Projections.rowCount());
+        criteria.add(Restrictions.eq("enabled", true));
+        return (long) criteria.uniqueResult();
+    }
+
     /**
      * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
      */
@@ -158,6 +173,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return criteria.list();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public List<E> findByProperty(final String property, final Object value) {
         Criteria criteria = getCriteriaForType();
@@ -165,13 +181,34 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         if (_isAuditable) {
             criteria.add(Restrictions.eq("enabled", true));
         }
-        if (criteria.list().size() == 0) {
+        final List list = criteria.list();
+        if (list == null || list.size() == 0) {
             return null;
         } else {
-            return (List<E>) criteria.list();
+            return (List<E>) list;
         }
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<E> findByProperties(final Map<String, Object> properties) {
+        Criteria criteria = getCriteriaForType();
+        for (final String property : properties.keySet()) {
+            final Object value = properties.get(property);
+            criteria.add(Restrictions.eq(property, value));
+        }
+        if (_isAuditable) {
+            criteria.add(Restrictions.eq("enabled", true));
+        }
+        final List list = criteria.list();
+        if (list == null || list.size() == 0) {
+            return null;
+        } else {
+            return (List<E>) list;
+        }
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public E findByUniqueProperty(final String property, final Object value) {
         List<E> matches = findByProperty(property, value);
@@ -262,7 +299,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @return An initialized {@link Criteria Criteria object}.
      */
     protected Criteria getCriteriaForType() {
-        Criteria criteria = getSession().createCriteria(getParameterizedType());
+        Criteria criteria = getSession().createCriteria(getParameterizedType(), StringUtils.uncapitalize(getParameterizedType().getSimpleName()));
         criteria.setCacheable(true);
         criteria.setCacheRegion(getCacheRegion());
         if (_addDistinctRootEntity) {

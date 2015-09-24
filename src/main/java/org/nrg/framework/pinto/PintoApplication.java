@@ -24,29 +24,29 @@ public @interface PintoApplication {
      * Provides the application name.
      * @return The application name.
      */
-    public String value();
+    String value();
 
     /**
      * Provides application version.
      * @return Application version information.
      */
-    public String version() default "";
+    String version() default "";
 
     /**
      * Provides any required application copyright information.
      * @return Application copyright information.
      */
-    public String copyright() default "";
+    String copyright() default "";
 
     /**
      * Provides a introductory help paragraph.
      * @return Introductory help paragraph.
      */
-    public String introduction() default "";
+    String introduction() default "";
 
     /**
      * Indicates the width of the display page for help display.
      * @return The width to use when formatting information and help displays.
      */
-    public int pageWidth() default 80;
+    int pageWidth() default 80;
 }

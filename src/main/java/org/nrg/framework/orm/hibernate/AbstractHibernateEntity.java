@@ -9,6 +9,9 @@
  */
 package org.nrg.framework.orm.hibernate;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.nrg.framework.orm.NrgEntity;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -16,6 +19,15 @@ import java.util.Date;
 @MappedSuperclass
 @SuppressWarnings("serial")
 abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Serializable {
+    /**
+     * Adds the submitted properties to the properties of the base {@link NrgEntity} class to exclude those properties
+     * from search-by-example entity instances.
+     * @param properties    The properties above and beyond the base entity properties to be excluded from a search.
+     * @return The full array of properties to be excluded from a search-by-example.
+     */
+    public static String[] getExcludedProperties(final String... properties) {
+        return (String[]) ArrayUtils.addAll(EXCLUDE_BASE_PROPS, properties);
+    }
 
     /**
      * Returns the ID of the data entity. This usually maps to the entity's primary
@@ -126,11 +138,14 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
         _disabled = disabled;
     }
 
+    /**
+     * Used to exclude the properties of the base {@link NrgEntity} class.
+     */
+    private static final String[] EXCLUDE_BASE_PROPS = new String[] { "id", "enabled", "created", "timestamp", "disabled" };
+
     private long _id;
     private boolean _enabled;
     private Date _created;
     private Date _timestamp;
     private Date _disabled = HibernateUtils.DEFAULT_DATE;
-
-
 }

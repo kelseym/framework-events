@@ -10,6 +10,9 @@
 package org.nrg.framework.utilities;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
@@ -27,6 +30,7 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 public class Reflection {
+    public static Map<String,List<Class<?>>> CACHED_CLASSES_BY_PACKAGE=Maps.newHashMap();
     /**
      * Scans all classes accessible from the context class loader which belong
      * to the given package and subpackages.
@@ -36,14 +40,20 @@ public class Reflection {
      * @throws ClassNotFoundException the class not found exception
      * @throws IOException    Signals that an I/O exception has occurred.
      */
-    public static List<Class<?>> getClassesForPackage(String packageName) throws ClassNotFoundException, IOException {
+    public static List<Class<?>> getClassesForPackage(final String packageName) throws ClassNotFoundException, IOException {
+        if (CACHED_CLASSES_BY_PACKAGE.containsKey(packageName)) {
+            return CACHED_CLASSES_BY_PACKAGE.get(packageName);
+        }
+        if (_log.isInfoEnabled()) {
+            _log.info("Identifying classes for " + packageName);
+        }
         final ClassLoader loader = getClassLoader();
         assert loader != null;
 
         Enumeration<URL> resources = loader.getResources(packageName.replace('.', '/'));
         List<File> directories = new ArrayList<>();
         List<URL> jarFiles = new ArrayList<>();
-        ArrayList<Class<?>> classes = new ArrayList<>();
+        final List<Class<?>> classes = new ArrayList<>();
 
         while (resources.hasMoreElements()) {
             URL resource = resources.nextElement();
@@ -58,11 +68,51 @@ public class Reflection {
         for (URL jarFile : jarFiles) {
             classes.addAll(findClassesInJarFile(jarFile, packageName));
         }
+
         for (File directory : directories) {
             classes.addAll(findClasses(directory, packageName));
         }
 
+        CACHED_CLASSES_BY_PACKAGE.put(packageName, classes);
+
         return classes;
+    }
+    
+    public static void injectDynamicImplementations(final String _package, final boolean failOnException, Map<String,Object> params) throws Exception{
+    	List<Class<?>> classes = Reflection.getClassesForPackage(_package);
+    	if(params==null){
+    		params=Maps.newHashMap();
+    	}
+		if(classes!=null && classes.size()>0){
+			for(Class<?> clazz: classes){
+			    try {
+					if(InjectableI.class.isAssignableFrom(clazz)){			
+						InjectableI action=(InjectableI)clazz.newInstance();
+					    action.execute(params);
+					}else{
+						_log.error("Reflection: "+ _package + "." + clazz.getName() + " is NOT an implementation of InjectableI");
+					}
+				} catch (Throwable e) {
+					if(failOnException){
+						throw e;
+					}else{
+						_log.error("",e);
+					}
+				}
+			}
+		}
+    }
+    
+    public static void injectDynamicImplementations(final String _package, final Map<String,Object> params){
+    	try {
+			injectDynamicImplementations(_package, false, params);
+		} catch (Throwable ignored) {
+            // Nothing to do here...
+		}
+    }
+    
+    public interface InjectableI{
+    	void execute(Map<String,Object> params);
     }
 
     /**
@@ -74,13 +124,13 @@ public class Reflection {
      * @throws IOException    Signals that an I/O exception has occurred.
      * @throws ClassNotFoundException the class not found exception
      */
-    public static Collection<? extends Class<?>> findClassesInJarFile(URL jarFile, String packageName) throws IOException, ClassNotFoundException {
-        List<Class<?>> classes = new ArrayList<>();
-        JarURLConnection connection = (JarURLConnection) jarFile.openConnection();
-        JarFile jar = connection.getJarFile();
-        for (JarEntry entry : Collections.list(jar.entries())) {
+    public static Collection<? extends Class<?>> findClassesInJarFile(final URL jarFile, final String packageName) throws IOException, ClassNotFoundException {
+        final List<Class<?>> classes = new ArrayList<>();
+        final JarURLConnection connection = (JarURLConnection) jarFile.openConnection();
+        final JarFile jar = connection.getJarFile();
+        for (final JarEntry entry : Collections.list(jar.entries())) {
             if (entry.getName().startsWith(packageName.replace('.', '/')) && entry.getName().endsWith(".class") && !entry.getName().contains("$")) {
-                String className = entry.getName().replace("/", ".").substring(0, entry.getName().length() - 6);
+                final String className = entry.getName().replace("/", ".").substring(0, entry.getName().length() - 6);
                 classes.add(Class.forName(className));
             }
         }
@@ -96,36 +146,32 @@ public class Reflection {
      * @throws ClassNotFoundException the class not found exception
      * @throws IOException    Signals that an I/O exception has occurred.
      */
-    public static List<Class<?>> findClasses(File directory, String packageName) throws ClassNotFoundException, IOException {
-        List<Class<?>> classes = new ArrayList<>();
+    public static List<Class<?>> findClasses(final File directory, final String packageName) throws ClassNotFoundException, IOException {
+        final List<Class<?>> classes = new ArrayList<>();
 
         if (!directory.exists()) {
             return classes;
         }
 
-        File[] files = directory.listFiles();
+        final File[] files = directory.listFiles();
 
         assert files != null;
-        for (File file : files) {
-            String fileName = file.getName();
+        for (final File file : files) {
+            final String fileName = file.getName();
             if (file.isDirectory()) {
                 assert !fileName.contains(".");
                 classes.addAll(findClasses(file, packageName + "." + fileName));
             } else if (fileName.endsWith(".class") && !fileName.contains("$")) {
-                Class<?> _class;
-
                 try {
-                    _class = Class.forName(packageName + '.' + fileName.substring(0, fileName.length() - 6));
+                    classes.add(Class.forName(packageName + '.' + fileName.substring(0, fileName.length() - 6)));
                 } catch (ExceptionInInitializerError e) {
                     // This happens to classes which depend on Spring to inject
                     // some beans
                     // and fail if dependency is not fulfilled
                     final ClassLoader classLoader = getClassLoader();
                     assert classLoader != null;
-                    _class = Class.forName(packageName + '.' + fileName.substring(0, fileName.length() - 6), false, classLoader);
+                    classes.add(Class.forName(packageName + '.' + fileName.substring(0, fileName.length() - 6), false, classLoader));
                 }
-
-                classes.add(_class);
             }
         }
 
@@ -248,6 +294,7 @@ public class Reflection {
         return null;
     }
 
+    @SuppressWarnings("unused")
     public static String findResource(final String resourcePackage, final String resourcePattern) {
         final Set<String> resources = findResources(resourcePackage, Pattern.compile(resourcePattern));
         if (resources.size() == 0) {
@@ -274,6 +321,7 @@ public class Reflection {
         return classLoader.getResourceAsStream(resource);
     }
 
+    @SuppressWarnings("unused")
     public static URL getResourceUrl(final String resource) {
         final ClassLoader classLoader = getClassLoader();
         assert classLoader != null;
@@ -303,4 +351,6 @@ public class Reflection {
     }
 
     private static final Map<String, Reflections> _reflectionsCache = Collections.synchronizedMap(new HashMap<String, Reflections>());
+
+    private static final Log _log = LogFactory.getLog(Reflection.class);
 }

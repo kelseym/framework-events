@@ -14,30 +14,44 @@ import org.nrg.framework.orm.hibernate.annotations.Auditable;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
 
-    public abstract void setSessionFactory(SessionFactory factory);
+    void setSessionFactory(SessionFactory factory);
 
-    public abstract Serializable create(E entity);
+    Serializable create(E entity);
 
-    public abstract E retrieve(long id);
+    E retrieve(long id);
 
-    public abstract void update(E entity);
+    void update(E entity);
 
-    public abstract void delete(E entity);
+    void delete(E entity);
 
-    public abstract List<E> findAll();
+    List<E> findAll();
 
-    public abstract List<E> findAllEnabled();
+    List<E> findAllEnabled();
 
-    public abstract E findById(long id);
+    long countAll();
 
-    public abstract E findById(long id, boolean lock);
+    long countAllEnabled();
 
-    public abstract E findEnabledById(long id);
+    @SuppressWarnings("unchecked")
+    List<E> findByProperty(String property, Object value);
 
-    public abstract E findEnabledById(long id, boolean lock);
+    @SuppressWarnings("unchecked")
+    List<E> findByProperties(Map<String, Object> properties);
+
+    @SuppressWarnings("unchecked")
+    E findByUniqueProperty(String property, Object value);
+
+    E findById(long id);
+
+    E findById(long id, boolean lock);
+
+    E findEnabledById(long id);
+
+    E findEnabledById(long id, boolean lock);
 
     /**
      * Finds entities that match the set properties. This excludes disabled instances of {@link Auditable auditable}
@@ -47,7 +61,7 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
      * @param excludeProperty Properties of the example that should be ignored.
      * @return All entities that match the set properties.
      */
-    public abstract List<E> findByExample(E exampleInstance, String[] excludeProperty);
+    List<E> findByExample(E exampleInstance, String[] excludeProperty);
 
     /**
      * Works just like {@link #findByExample(BaseHibernateEntity, String[])}, except that it includes disabled instances
@@ -57,8 +71,9 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
      * @param excludeProperty Properties of the example that should be ignored.
      * @return All entities that match the set properties.
      */
-    public abstract List<E> findAllByExample(E exampleInstance, String[] excludeProperty);
+    @SuppressWarnings("unused")
+    List<E> findAllByExample(E exampleInstance, String[] excludeProperty);
 
-    public abstract void refresh(boolean initialize, E entity);
+    void refresh(boolean initialize, E entity);
 
 }

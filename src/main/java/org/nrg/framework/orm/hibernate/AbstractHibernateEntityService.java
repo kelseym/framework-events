@@ -96,6 +96,25 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
+     * Creates a new entity similar to the {@link #newEntity(Object...)} method, then adds the submitted
+     * entity object to the system. This will always create an entirely new entity, but if data validation
+     * constraints are violated for the particular table or schema, an exception will be thrown.
+     *
+     * This method is a convenience method that combines the functions of the {@link #newEntity(Object...)} and
+     * {@link #create(BaseHibernateEntity)} methods.
+     *
+     * @param parameters    The parameters passed to the entity constructor
+     * @return A new entity object.
+     */
+    @Override
+    @Transactional
+    public E create(Object... parameters) {
+        final E entity = newEntity(parameters);
+        create(entity);
+        return entity;
+    }
+
+    /**
      * 
      * @see BaseHibernateService#retrieve(long)
      */
@@ -187,6 +206,18 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
 
     @Override
     @Transactional
+    public long getCount() {
+        return getDao().countAllEnabled();
+    }
+
+    @Override
+    @Transactional
+    public long getCountWithDisabled() {
+        return getDao().countAll();
+    }
+
+    @Override
+    @Transactional
     public void refresh(E entity) {
         refresh(true, entity);
     }
@@ -197,9 +228,9 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         refresh(true, entities);
     }
     
+    @SafeVarargs
     @Override
     @Transactional
-    @SafeVarargs
     public final void refresh(E... entities) {
         refresh(true, entities);
     }
@@ -218,9 +249,9 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
     }
     
+    @SafeVarargs
     @Override
     @Transactional
-    @SafeVarargs
     public final void refresh(boolean initialize, E... entities) {
         for (E entity : entities) {
             getDao().refresh(initialize, entity);

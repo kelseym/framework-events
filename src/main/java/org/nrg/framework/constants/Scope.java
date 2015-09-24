@@ -54,12 +54,12 @@ public enum Scope {
         final String[] atoms = association.split(":", 2);
         final Scope scope = Scope.getScope(atoms[0]);
         final String entityId = atoms.length == 1 ? null : atoms[1];
-        Map<String, String> items = new HashMap<String, String>();
+        Map<String, String> items = new HashMap<>();
         items.put("scope", scope.code());
         items.put("entityId", entityId);
         return items;
     }
 
-    private static final Map<String, Scope> _scopes = new ConcurrentHashMap<String, Scope>();
+    private static final Map<String, Scope> _scopes = new ConcurrentHashMap<>();
     private final String _code;
 }

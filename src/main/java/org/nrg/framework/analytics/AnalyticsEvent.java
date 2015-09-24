@@ -14,23 +14,15 @@ import org.nrg.framework.logging.RemoteEvent;
 
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
-import java.util.Properties;
 
 @XmlRootElement
 public class AnalyticsEvent extends RemoteEvent implements Serializable {
     public AnalyticsEvent() {
         setLevel(Level.WARN);
         setTimestamp(new Date());
-    }
-    
-    public AnalyticsEvent(String key, Date timestamp, Properties properties) throws IOException {
-        super(properties);
-        setKey(key);
-        setTimestamp(timestamp);
     }
 
     /**

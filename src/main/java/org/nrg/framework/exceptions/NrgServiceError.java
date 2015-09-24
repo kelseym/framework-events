@@ -10,32 +10,33 @@
 package org.nrg.framework.exceptions;
 
 public enum NrgServiceError {
-	AlreadyInitialized, 
-	ChannelRendererNotFound, 
-	ChannelRendererProcessingError,
+    AlreadyInitialized, 
+    ChannelRendererNotFound, 
+    ChannelRendererProcessingError,
     ConfigurationError,
     DuplicateCategory,
     DuplicateDefinition,
-	DuplicateSubscriber,
-	GenericMailError,
+    DuplicateSubscriber,
+    GenericMailError,
     Instantiation,
-	InvalidChannelRenderer,
-	InvalidDirectParameterizedClassUsage,
-	InvalidMailAttachment,
-	InvalidRestServiceParameters,
-	NoMatchingCategory,
-	NoMatchingDefinition,
+    InvalidChannelRenderer,
+    InvalidDirectParameterizedClassUsage,
+    InvalidMailAttachment,
+    InvalidRestServiceParameters,
+    InvalidScript,
+    NoMatchingCategory,
+    NoMatchingDefinition,
     NoMatchingRepositoryForService,
-	/** attempted access to a resource exceeding caller's permissions */
+    /** attempted access to a resource exceeding caller's permissions */
     PermissionsViolation,
     /** attempted forbidden action **/
     SecurityViolation,
     Uninitialized,
-	Unknown,
-	UnknownChannelRendererError,
-    UnknownScriptRunner,
+    Unknown,
+    UnknownChannelRendererError,
     UnknownEntity,
-	UnsupportedFeature;
-	
-	public static final NrgServiceError Default = Unknown;
+    UnknownScriptRunner,
+    UnsupportedFeature;
+
+    public static final NrgServiceError Default = Unknown;
 }
