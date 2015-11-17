@@ -12,15 +12,16 @@ package org.nrg.framework.logging;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.nrg.framework.analytics.AnalyticsEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class Analytics {
     public static final String EVENT_KEY = "key";
     public static final Level DEFAULT_LEVEL = Level.TRACE;
@@ -217,10 +218,8 @@ public class Analytics {
                 _analytics.info(payload);
             } else if (level.equals(Level.WARN)) {
                 _analytics.warn(payload);
-            } else if (level.equals(Level.ERROR)) {
+            } else if (level.equals(Level.ERROR) || level.equals(Level.FATAL)) {
                 _analytics.error(payload);
-            } else if (level.equals(Level.FATAL)) {
-                _analytics.fatal(payload);
             }
         } catch (IOException exception) {
             _log.error("Error during analytics serialization", exception);
@@ -310,11 +309,11 @@ public class Analytics {
     /**
      * This log data member is for analytics functional logging.
      */
-    private static final Log _log  = LogFactory.getLog(Analytics.class);
+    private static final Logger _log = LoggerFactory.getLogger(Analytics.class);
     /**
      * This log data member is for actually dispatching analytics data.
      */
-    private static final Log _analytics  = LogFactory.getLog(ANALYTICS);
+    private static final Logger _analytics = LoggerFactory.getLogger(ANALYTICS);
     /**
      * Object mapper for managing JSON serialization. Can be overridden for DI for greater flexibility if necessary later.
      */

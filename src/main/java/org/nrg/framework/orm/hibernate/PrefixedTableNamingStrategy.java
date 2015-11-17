@@ -10,14 +10,8 @@
 package org.nrg.framework.orm.hibernate;
 
 import org.hibernate.cfg.ImprovedNamingStrategy;
-import org.hibernate.cfg.NamingStrategy;
 
 public class PrefixedTableNamingStrategy extends ImprovedNamingStrategy {
-    /**
-     * A convenient singleton instance
-     */
-    public static final NamingStrategy INSTANCE = new PrefixedTableNamingStrategy();
-
     /**
      * Sets the prefix to be used for naming tables. If the prefix doesn't end with the
      * underscore character, it's automatically added to the end. Thus setting the prefix

@@ -9,7 +9,7 @@
  */
 package org.nrg.framework.orm.hibernate;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.nrg.framework.orm.NrgEntity;
 
 import javax.persistence.*;

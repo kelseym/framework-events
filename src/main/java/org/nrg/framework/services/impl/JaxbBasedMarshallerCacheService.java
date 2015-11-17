@@ -40,10 +40,10 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.nrg.framework.services.MarshallerCacheService;
 import org.nrg.framework.utilities.Reflection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.oxm.MarshallingFailureException;
@@ -461,9 +461,9 @@ public final class JaxbBasedMarshallerCacheService implements MarshallerCacheSer
         return _docBuilderFactory.newDocumentBuilder().newDocument();
     }
 
-    private static final Log _log = LogFactory.getLog(JaxbBasedMarshallerCacheService.class);
-    private static final Map<ContextDescriptor, JAXBContext> cache = new HashMap<ContextDescriptor, JAXBContext>();
-    private static final Map<String, ContextDescriptor> contextCache = new HashMap<String, ContextDescriptor>();
+    private static final Logger _log = LoggerFactory.getLogger(JaxbBasedMarshallerCacheService.class);
+    private static final Map<ContextDescriptor, JAXBContext> cache = new HashMap<>();
+    private static final Map<String, ContextDescriptor> contextCache = new HashMap<>();
     private final DocumentBuilderFactory _docBuilderFactory = DocumentBuilderFactory.newInstance();
 
     @Autowired(required = false)

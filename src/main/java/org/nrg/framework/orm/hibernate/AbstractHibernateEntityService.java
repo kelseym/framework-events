@@ -10,13 +10,13 @@
 package org.nrg.framework.orm.hibernate;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
 import org.nrg.framework.exceptions.NrgServiceError;
 import org.nrg.framework.exceptions.NrgServiceException;
 import org.nrg.framework.exceptions.NrgServiceRuntimeException;
 import org.nrg.framework.utilities.Reflection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -391,7 +391,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         return Joiner.on(", ").join(types);
     }
 
-    private static final Log _log = LogFactory.getLog(AbstractHibernateEntityService.class);
+    private static final Logger _log = LoggerFactory.getLogger(AbstractHibernateEntityService.class);
     private static final List<Class<?>> PRIMITIVES = new ArrayList<>();
 
     static {

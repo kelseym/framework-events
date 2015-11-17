@@ -32,12 +32,15 @@ import java.util.Date;
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "nrg")
 public class AuditableEntity extends AbstractHibernateEntity {
 
-    private static final long serialVersionUID = -5822125156502997491L;
+    public AuditableEntity() {
 
-    private String _field1;
-    private int _field2;
-    private Date _field3;
+    }
 
+    public AuditableEntity(final String field1, final int field2, final Date field3) {
+        setField1(field1);
+        setField2(field2);
+        setField3(field3);
+    }
 
     public String getField1() {
         return _field1;
@@ -62,4 +65,10 @@ public class AuditableEntity extends AbstractHibernateEntity {
     public void setField3(Date field3) {
         _field3 = field3;
     }
+
+    private static final long serialVersionUID = -5822125156502997491L;
+
+    private String _field1;
+    private int _field2;
+    private Date _field3;
 }

@@ -10,9 +10,9 @@
 package org.nrg.framework.services.impl;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.nrg.framework.services.PropertiesService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -47,7 +47,7 @@ public class DefaultPropertiesService implements PropertiesService, ApplicationC
         if (_log.isDebugEnabled()) {
             _log.debug("Found repositories list containing " + repositories.size() + " items.");
         }
-        _repositories = new ArrayList<File>();
+        _repositories = new ArrayList<>();
         for (Object repository : repositories) {
             final File file = new File(repository.toString());
             assert file.exists() : "The repository " + file.getAbsolutePath() + " does not exist!";
@@ -109,7 +109,7 @@ public class DefaultPropertiesService implements PropertiesService, ApplicationC
             handleNoRepositoriesState();
             return;
         }
-        _bundles = new HashMap<String, Properties>();
+        _bundles = new HashMap<>();
         for (File repository : _repositories) {
             // If our repository doesn't exist from the default path and it's not absolute,
             // then maybe it's meant to be relative to a web app? Let's see!
@@ -218,7 +218,7 @@ public class DefaultPropertiesService implements PropertiesService, ApplicationC
         return String.format("%s.%s", module, properties);
     }
 
-    private static final Log _log = LogFactory.getLog(DefaultPropertiesService.class);
+    private static final Logger _log = LoggerFactory.getLogger(DefaultPropertiesService.class);
     private List<File> _repositories;
     private ApplicationContext _context;
     private Map<String, Properties> _bundles;

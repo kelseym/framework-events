@@ -9,11 +9,11 @@
  */
 package org.nrg.framework.pinto;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.WordUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.nrg.framework.utilities.Reflection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -269,7 +269,7 @@ public abstract class AbstractPintoBean {
      * @param keyValues  A list of key-value arguments, with key and value separated by the default '=' delimiter.
      */
     protected Map<String, String> addKeyValueListToParameter(final List<String> keyValues, final String delimiter) {
-        final Map<String, String> parameters = new HashMap<String, String>();
+        final Map<String, String> parameters = new HashMap<>();
         for (final String keyValue : keyValues) {
             parameters.putAll(addKeyValueToParameter(keyValue, delimiter));
         }
@@ -293,7 +293,7 @@ public abstract class AbstractPintoBean {
      *                   regex.
      */
     protected Map<String, String> addKeyValueToParameter(final String keyValue, final String delimiter) {
-        final Map<String, String> parameters = new HashMap<String, String>();
+        final Map<String, String> parameters = new HashMap<>();
         if (!StringUtils.isBlank(keyValue)) {
             String[] atoms = keyValue.split(delimiter, 2);
             if (atoms.length == 1 && parameters.containsKey(atoms[0])) {
@@ -513,9 +513,7 @@ public abstract class AbstractPintoBean {
                         throw exception;
                     }
                 }
-            } catch (IllegalAccessException exception) {
-                throw new PintoException(PintoExceptionType.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
-            } catch (InvocationTargetException exception) {
+            } catch (IllegalAccessException | InvocationTargetException exception) {
                 throw new PintoException(PintoExceptionType.Configuration, parameter.getShortOption(), "Unable to call the " + method.getName() + " method configured for handling parameter", exception);
             }
         }
@@ -532,7 +530,7 @@ public abstract class AbstractPintoBean {
             throw new PintoException(PintoExceptionType.SyntaxFormat);
         }
         Class<?> type = isArrayParameter ? types[0].getComponentType() : null;
-        final List<Object> coercedArguments = new ArrayList<Object>(types.length);
+        final List<Object> coercedArguments = new ArrayList<>(types.length);
         if (!isListParameter) {
             for (int index = 0; index < arguments.size(); index++) {
                 if (!isArrayParameter) {
@@ -689,11 +687,13 @@ public abstract class AbstractPintoBean {
         }
     }
 
-    private static final Log _log = LogFactory.getLog(AbstractPintoBean.class);
+    private static final Logger _log = LoggerFactory.getLogger(AbstractPintoBean.class);
+
     /**
      * This is the text to place before each option in the help text.
      */
     private static final String PREFIX = " ";
+
     /**
      * This is the width of the hanging indent in the help text. Illustration ('|' is the left margin):
      * <p/>
@@ -728,8 +728,8 @@ public abstract class AbstractPintoBean {
     private String _outputStreamAdapter;
 
     private List<String> _arguments;
-    private Map<String, List<String>> _parameters = new LinkedHashMap<String, List<String>>();
-    private List<String> _trailing = new ArrayList<String>();
-    private Map<String, ParameterData> _parametersByShortOption = new HashMap<String, ParameterData>();
-    private Map<String, ParameterData> _parametersByLongOption = new HashMap<String, ParameterData>();
+    private Map<String, List<String>> _parameters = new LinkedHashMap<>();
+    private List<String> _trailing = new ArrayList<>();
+    private Map<String, ParameterData> _parametersByShortOption = new HashMap<>();
+    private Map<String, ParameterData> _parametersByLongOption = new HashMap<>();
 }

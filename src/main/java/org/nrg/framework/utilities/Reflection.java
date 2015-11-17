@@ -11,10 +11,10 @@ package org.nrg.framework.utilities;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -352,5 +352,5 @@ public class Reflection {
 
     private static final Map<String, Reflections> _reflectionsCache = Collections.synchronizedMap(new HashMap<String, Reflections>());
 
-    private static final Log _log = LogFactory.getLog(Reflection.class);
+    private static final Logger _log = LoggerFactory.getLogger(Reflection.class);
 }

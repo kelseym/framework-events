@@ -9,7 +9,7 @@
  */
 package org.nrg.framework.analytics;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.nrg.framework.logging.RemoteEvent;
 
 import javax.xml.bind.annotation.XmlID;
@@ -46,6 +46,7 @@ public class AnalyticsEvent extends RemoteEvent implements Serializable {
      * The timestamp for the analytics event.
      * @return The timestamp for the analytics event.
      */
+    @SuppressWarnings("unused")
     public Date getTimestamp() {
         return _timestamp;
     }

@@ -10,11 +10,11 @@
 package org.nrg.framework.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 import org.restlet.data.ClientInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,12 +25,14 @@ public class RemoteEvent extends HashMap<String, String> {
     /**
      * This is used to retrieve the remote logging from configuration.
      */
+    @SuppressWarnings("unused")
     public static final String REMOTE_LOG = "org.nrg.xnat.remote";
 
     public RemoteEvent() {
         _log.debug("Creating default remote event instance");
     }
 
+    @SuppressWarnings("unused")
     public RemoteEvent(Properties properties) throws IOException {
         _log.debug("Creating remote event instance from properties");
         addProperties(properties);
@@ -141,7 +143,7 @@ public class RemoteEvent extends HashMap<String, String> {
         }
     }
 
-    private static final Log _log = LogFactory.getLog(RemoteEvent.class);
+    private static final Logger _log = LoggerFactory.getLogger(RemoteEvent.class);
     // TODO: This might be the wrong thing to do, since it'll result in a plethora of object mappers.
     private static final ObjectMapper _mapper = new ObjectMapper();
     private Map<String, String> _properties = new HashMap<>();

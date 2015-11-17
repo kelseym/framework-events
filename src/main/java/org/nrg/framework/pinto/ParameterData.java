@@ -9,9 +9,9 @@
  */
 package org.nrg.framework.pinto;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 
@@ -67,7 +67,7 @@ public ParameterData(final Method method, Parameter parameter) {
         return _help;
     }
 
-    private static final Log _log = LogFactory.getLog(ParameterData.class);
+    private static final Logger _log = LoggerFactory.getLogger(ParameterData.class);
 
     private final Method _method;
     private final String _shortOption;

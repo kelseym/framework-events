@@ -1,14 +1,16 @@
 package org.nrg.framework.utilities;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
-
+@SuppressWarnings("unused")
 public class TestProperties {
 
-    private static final Logger _logger = Logger.getLogger(TestProperties.class);
+    private static final Logger _logger = LoggerFactory.getLogger(TestProperties.class);
     private static final String DEFAULT_TEST_CONFIG = "local.properties";
     private static final String TEST_CONFIG_PROP = "test.config";
     private static final String TEST_CONFIG_FOLDER = "/config/";
