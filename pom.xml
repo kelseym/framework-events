@@ -16,26 +16,34 @@
         <groupId>org.nrg</groupId>
         <artifactId>nrg</artifactId>
         <version>1.7.0-SNAPSHOT</version>
-        <relativePath>../nrg/pom.xml</relativePath>
     </parent>
 
     <artifactId>framework</artifactId>
 
     <name>NRG Common Framework</name>
     <description>Defines the common framework for NRG services and libraries.</description>
-    <url>http://nrg.wustl.edu</url>
-
-    <licenses>
-        <license>
-            <name>BSD</name>
-            <url>http://www.opensource.org/licenses/bsd-license.php</url>
-        </license>
-    </licenses>
 
     <scm>
         <connection>scm:hg:https://bitbucket.org/nrg/nrg_framework</connection>
         <url>scm:hg:https://bitbucket.org/nrg/nrg_framework</url>
     </scm>
+
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://issues.xnat.org</url>
+    </issueManagement>
+
+    <licenses>
+        <license>
+            <name>Simplified BSD License</name>
+            <url>http://www.opensource.org/licenses/BSD-2-Clause</url>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>Neuroinformatics Research Group</name>
+        <url>http://nrg.wustl.edu</url>
+    </organization>
 
     <dependencies>
         <dependency>

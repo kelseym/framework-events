@@ -2,9 +2,9 @@
  * AbstractHibernateEntityService
  * (C) 2011 Washington University School of Medicine
  * All Rights Reserved
- *
+ * <p/>
  * Released under the Simplified BSD License
- *
+ * <p/>
  * Created on Aug 29, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.orm.hibernate;
@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
 import org.nrg.framework.exceptions.NrgServiceError;
+import org.nrg.framework.exceptions.NrgServiceException;
 import org.nrg.framework.exceptions.NrgServiceRuntimeException;
 import org.nrg.framework.utilities.Reflection;
 import org.springframework.beans.BeansException;
@@ -52,19 +53,8 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Override
     @Transactional
     public E newEntity(Object... parameters) {
-        Class<?>[] types = null;
         try {
-            if (parameters != null && parameters.length > 0) {
-                List<Class<?>> buffer = new ArrayList<>();
-                for (Object parameter : parameters) {
-                    buffer.add(parameter.getClass());
-                }
-                types = buffer.toArray(new Class<?>[buffer.size()]);
-            }
-            Constructor<E> constructor = Reflection.getConstructorForParameters(getParameterizedType(), types);
-            if (constructor == null) {
-                throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
-            }
+            Constructor<E> constructor = getConstructor(parameters);
             E instance = constructor.newInstance(parameters);
             try {
                 Method method = getParameterizedType().getMethod("setService", AbstractHibernateEntityService.class);
@@ -78,6 +68,56 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
             return instance;
         } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
             throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, e);
+        }
+    }
+
+    private Constructor<E> getConstructor(final Object[] parameters) {
+        try {
+            return getConstructor(parameters, true);
+        } catch (NrgServiceException e) {
+            if (e.getServiceError() == NrgServiceError.Instantiation) {
+                try {
+                    return getConstructor(parameters, false);
+                } catch (NrgServiceException e1) {
+                    final Class<?>[] types = getClassTypes(parameters, false);
+                    throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
+                }
+            } else {
+                throw new NrgServiceRuntimeException(e);
+            }
+        }
+    }
+
+    private Constructor<E> getConstructor(final Object[] parameters, final boolean coercePrimitives) throws NrgServiceException {
+        if (parameters == null || parameters.length == 0) {
+            return Reflection.getConstructorForParameters(getParameterizedType());
+        }
+        final Class<?>[] types = getClassTypes(parameters, coercePrimitives);
+        Constructor<E> constructor = Reflection.getConstructorForParameters(getParameterizedType(), types);
+        if (constructor == null) {
+            throw new NrgServiceException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
+        }
+        return constructor;
+    }
+
+    private Class<?>[] getClassTypes(final Object[] parameters, final boolean coercePrimitives) {
+        final List<Class<?>> buffer = new ArrayList<>();
+        boolean hasPrimitive = false;
+        for (final Object parameter : parameters) {
+            final boolean isPrimitive = PRIMITIVES.contains(parameter.getClass());
+            if (!hasPrimitive && isPrimitive) {
+                hasPrimitive = true;
+            }
+            buffer.add((coercePrimitives && isPrimitive) ? getPrimitiveType(parameter.getClass()) : parameter.getClass());
+        }
+        return buffer.toArray(new Class<?>[buffer.size()]);
+    }
+
+    private Class<?> getPrimitiveType(final Class<?> parameterClass) {
+        try {
+            return (Class<?>) parameterClass.getField("TYPE").get(null);
+        } catch (ReflectiveOperationException e) {
+            return parameterClass;
         }
     }
 
@@ -115,7 +155,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
-     * 
+     *
      * @see BaseHibernateService#retrieve(long)
      */
     @Override
@@ -221,26 +261,26 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     public void refresh(E entity) {
         refresh(true, entity);
     }
-    
+
     @Override
     @Transactional
     public void refresh(List<E> entities) {
         refresh(true, entities);
     }
-    
+
     @SafeVarargs
     @Override
     @Transactional
     public final void refresh(E... entities) {
         refresh(true, entities);
     }
-    
+
     @Override
     @Transactional
     public void refresh(boolean initialize, E entity) {
         getDao().refresh(initialize, entity);
     }
-    
+
     @Override
     @Transactional
     public void refresh(boolean initialize, List<E> entities) {
@@ -248,7 +288,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
             getDao().refresh(initialize, entity);
         }
     }
-    
+
     @SafeVarargs
     @Override
     @Transactional
@@ -263,7 +303,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      * always returns <b>null</b>, i.e. entities are always considered to be in a valid state. Overriding
      * implementations should return a non-null string message for entities that are in an invalid state, but otherwise
      * return null.
-     * 
+     *
      * Note, though, that Hibernate will automatically validate entities that are annotated with validation criteria if
      * it finds a validation provider on the classpath (it is in XNAT builder, so all XNAT entities will be validated on
      * save). Given that, there may not be much need for this method, but we'll leave it here for now. Someday there may
@@ -352,6 +392,18 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     private static final Log _log = LogFactory.getLog(AbstractHibernateEntityService.class);
+    private static final List<Class<?>> PRIMITIVES = new ArrayList<>();
+
+    static {
+        PRIMITIVES.add(Boolean.class);
+        PRIMITIVES.add(Character.class);
+        PRIMITIVES.add(Byte.class);
+        PRIMITIVES.add(Short.class);
+        PRIMITIVES.add(Integer.class);
+        PRIMITIVES.add(Long.class);
+        PRIMITIVES.add(Float.class);
+        PRIMITIVES.add(Double.class);
+    }
 
     private ApplicationContext _context;
     private DAO _dao;
