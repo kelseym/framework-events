@@ -13,6 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HibernateEntityPackageList extends ArrayList<String> {
+    public HibernateEntityPackageList() {
+        super();
+    }
+
+    public HibernateEntityPackageList(final List<String> packages) {
+        super(packages);
+    }
+
     public void setItems(List<String> items) {
         clear();
         addAll(items);
