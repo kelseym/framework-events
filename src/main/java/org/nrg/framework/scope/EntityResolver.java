@@ -15,7 +15,7 @@ public interface EntityResolver<E> {
      * @return A list of entities, starting with the entity corresponding to the indicated entity ID and going to the
      * top of the object hierarchy.
      */
-    public abstract List<EntityId> getHierarchy(EntityId entityId);
+    List<EntityId> getHierarchy(EntityId entityId);
 
     /**
      * This method resolves to the appropriate entity based on the submitted parameters. What to do with those
@@ -30,5 +30,5 @@ public interface EntityResolver<E> {
      *
      * @return The entity ID at which the condition is resolved or null if the condition is not resolved.
      */
-    public abstract E resolve(EntityId entityId, Object... parameters);
+    E resolve(EntityId entityId, Object... parameters);
 }

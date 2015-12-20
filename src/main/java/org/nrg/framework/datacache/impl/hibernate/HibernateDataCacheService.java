@@ -87,7 +87,6 @@ public class HibernateDataCacheService extends AbstractHibernateEntityService<Da
         // TODO: Implement cache maintenance settings to drive the cache persistence parameters.
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends Serializable> String serialize(final T value) throws NrgServiceRuntimeException {
         try {
             JsonSerializer<T> serializer = (JsonSerializer<T>) _serializers.getSerializer(value.getClass());
@@ -107,7 +106,6 @@ public class HibernateDataCacheService extends AbstractHibernateEntityService<Da
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends Serializable> T deserialize(final DataCacheItem item) {
         try {
             return item == null ? null : (T) MAPPER.readValue(item.getValue(), Class.forName(item.getType()));

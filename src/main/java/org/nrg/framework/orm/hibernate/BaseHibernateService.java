@@ -47,6 +47,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
     /**
      * Retrieves the entity with the specified ID.
      * @param id The ID of the entity to be retrieved.
+     * @return The requested entity.
      */
     E retrieve(long id);
 

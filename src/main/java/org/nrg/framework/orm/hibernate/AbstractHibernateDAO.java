@@ -72,7 +72,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#retrieve(long)
      */
     @Override
-    @SuppressWarnings("unchecked")
     public E retrieve(long id) {
         if (_isAuditable) {
             return findEnabledById(id);
@@ -116,7 +115,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findAllEnabled()
      */
     @Override
-    @SuppressWarnings("unchecked")
     public List<E> findAllEnabled() {
         Criteria criteria = getCriteriaForType();
         criteria.add(Restrictions.eq("enabled", true));
@@ -142,7 +140,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
      */
     @Override
-    @SuppressWarnings("unchecked")
     public List<E> findByExample(E exampleInstance, String[] excludeProperty) {
         Criteria criteria = getCriteriaForType();
         if (_isAuditable) {
@@ -162,7 +159,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
      */
     @Override
-    @SuppressWarnings("unchecked")
     public List<E> findAllByExample(E exampleInstance, String[] excludeProperty) {
         Criteria criteria = getCriteriaForType();
         Example example = Example.create(exampleInstance);
@@ -174,7 +170,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<E> findByProperty(final String property, final Object value) {
         Criteria criteria = getCriteriaForType();
         criteria.add(Restrictions.eq(property, value));
@@ -190,7 +185,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<E> findByProperties(final Map<String, Object> properties) {
         Criteria criteria = getCriteriaForType();
         for (final String property : properties.keySet()) {
@@ -209,7 +203,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public E findByUniqueProperty(final String property, final Object value) {
         List<E> matches = findByProperty(property, value);
         if (matches != null && matches.size() > 1) {
@@ -230,7 +223,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findById(long, boolean)
      */
     @Override
-    @SuppressWarnings("unchecked")
     public E findById(long id, boolean lock) {
         E entity;
         if (lock)
@@ -258,6 +250,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return entity != null && entity.isEnabled() ? entity : null;
     }
 
+    /**
+     * @see BaseHibernateDAO#refresh(boolean, BaseHibernateEntity)
+     */
     @Override
     public void refresh(boolean initialize, E entity) {
         getSession().refresh(entity);
@@ -282,8 +277,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
 
     /**
      * Use this inside subclasses as a convenience method.
+     * @param criterion    The criteria on which you want to search.
+     * @return All entities matching the submitted criteria.
      */
-    @SuppressWarnings("unchecked")
     protected List<E> findByCriteria(Criterion... criterion) {
         Criteria criteria = getCriteriaForType();
         for (Criterion c : criterion) {
@@ -313,15 +309,15 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * the value is null, the criterion is set to {@link Restrictions#isNull(String)} for the indicated name, otherwise
      * it's set to the given value.
      *
-     * @param c     The {@link Criteria} object to which the restriction should be added.
-     * @param name  The name of the property.
-     * @param value The value of the property. May be null.
+     * @param criteria    The {@link Criteria} object to which the restriction should be added.
+     * @param name        The name of the property.
+     * @param value       The value of the property. May be null.
      */
-    protected void addNullableCriteria(Criteria c, String name, Object value) {
+    protected void addNullableCriteria(Criteria criteria, String name, Object value) {
         if (value == null) {
-            c.add(Restrictions.isNull(name));
+            criteria.add(Restrictions.isNull(name));
         } else {
-            c.add(Restrictions.eq(name, value));
+            criteria.add(Restrictions.eq(name, value));
         }
     }
 

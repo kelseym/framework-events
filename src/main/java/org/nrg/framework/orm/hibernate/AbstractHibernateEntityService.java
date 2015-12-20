@@ -352,10 +352,9 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      * @throws Exception
      */
     @Override
-    @SuppressWarnings("unchecked")
     public void afterPropertiesSet() throws Exception {
-        Map<String, AbstractHibernateDAO> daos = getContext().getBeansOfType(AbstractHibernateDAO.class);
-        for (AbstractHibernateDAO dao : daos.values()) {
+        final Map<String, AbstractHibernateDAO> daos = getContext().getBeansOfType(AbstractHibernateDAO.class);
+        for (final AbstractHibernateDAO dao : daos.values()) {
             if (isMatchingType(dao)) {
                 _dao = (DAO) dao;
                 break;
