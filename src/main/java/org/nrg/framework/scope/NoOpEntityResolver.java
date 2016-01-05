@@ -1,13 +1,13 @@
 package org.nrg.framework.scope;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * The most basic entity resolver. This will always resolve to a single item hierarchy and returns some default value
  * when resolving.
  */
-public class NoOpEntityResolver implements EntityResolver {
+public class NoOpEntityResolver implements EntityResolver<Object> {
     /**
      * Returns a hierarchy of one.
      * @param entityId    The entity at which to start the hierarchy. This will always be the first entity in the
@@ -16,7 +16,7 @@ public class NoOpEntityResolver implements EntityResolver {
      */
     @Override
     public List<EntityId> getHierarchy(final EntityId entityId) {
-        return Arrays.asList(entityId);
+        return Collections.singletonList(entityId);
     }
 
     /**
