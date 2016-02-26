@@ -11,7 +11,11 @@ package org.nrg.framework.orm.hibernate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.*;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.Criterion;
+import org.hibernate.criterion.Example;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.nrg.framework.generics.AbstractParameterizedWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,16 +25,22 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateDAO<E> {
+
+    public static final String DEFAULT_CACHE_REGION = "nrg";
+
     protected AbstractHibernateDAO() {
         super();
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
+        _cacheRegion = extractCacheRegion(getParameterizedType());
         _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
 
     protected AbstractHibernateDAO(Class<E> clazz) {
         super(clazz);
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
+        _cacheRegion = extractCacheRegion(getParameterizedType());
         _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
 
@@ -40,6 +50,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         }
         _factory = factory;
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
+        _cacheRegion = extractCacheRegion(getParameterizedType());
         _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
     }
 
@@ -321,11 +332,22 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         }
     }
 
+    protected String getCacheRegion() {
+        return _cacheRegion;
+    }
+
+    private String extractCacheRegion(Class<E> type) {
+        return type.isAnnotationPresent(org.hibernate.annotations.Cache.class)
+               ? type.getAnnotation(org.hibernate.annotations.Cache.class).region()
+               : DEFAULT_CACHE_REGION;
+    }
+
     private static final Logger _log = LoggerFactory.getLogger(AbstractHibernateDAO.class);
 
     @Inject
     private SessionFactory _factory;
 
     private final boolean _isAuditable;
+    private final String _cacheRegion;
     private final boolean _addDistinctRootEntity;
 }

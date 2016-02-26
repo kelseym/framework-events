@@ -7,18 +7,15 @@
  *
  * Created on Oct 11, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
-package org.nrg.framework.orm.hibernate;
+package org.nrg.framework.generics;
+
+import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClassUsageException;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 
-import org.hibernate.annotations.Cache;
-import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClassUsageException;
-
-abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity> {
-
-    public static final String DEFAULT_CACHE_REGION = "nrg";
+abstract public class AbstractParameterizedWorker<E> {
 
     @SuppressWarnings("unchecked")
     protected AbstractParameterizedWorker() {
@@ -39,12 +36,10 @@ abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity>
             }
         }
         _parameterizedType = (Class<E>) parameterizedType.getActualTypeArguments()[0];
-        _cacheRegion = extractCacheRegion(_parameterizedType);
     }
 
     protected AbstractParameterizedWorker(Class<E> clazz) {
         _parameterizedType = clazz;
-        _cacheRegion = extractCacheRegion(_parameterizedType);
     }
 
     public boolean isMatchingType(AbstractParameterizedWorker other) {
@@ -55,16 +50,5 @@ abstract public class AbstractParameterizedWorker<E extends BaseHibernateEntity>
         return _parameterizedType;
     }
 
-    protected String getCacheRegion() {
-        return _cacheRegion;
-    }
-
-    private String extractCacheRegion(Class<E> type) {
-        return type.isAnnotationPresent(Cache.class)
-            ? type.getAnnotation(Cache.class).region()
-            : DEFAULT_CACHE_REGION;
-    }
-
     private final Class<E> _parameterizedType;
-    private final String _cacheRegion;
 }

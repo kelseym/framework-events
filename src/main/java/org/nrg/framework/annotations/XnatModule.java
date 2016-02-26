@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 public @interface XnatModule {
     String value();
     String namespace() default "";
-    String name();
+    String name() default "";
     String description() default "";
     String beanName() default "";
     Class<?>[] config() default {};

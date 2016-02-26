@@ -14,6 +14,7 @@ import org.hibernate.Hibernate;
 import org.nrg.framework.exceptions.NrgServiceError;
 import org.nrg.framework.exceptions.NrgServiceException;
 import org.nrg.framework.exceptions.NrgServiceRuntimeException;
+import org.nrg.framework.generics.AbstractParameterizedWorker;
 import org.nrg.framework.utilities.Reflection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
