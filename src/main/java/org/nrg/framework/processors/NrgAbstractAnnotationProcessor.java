@@ -163,13 +163,14 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
         if (mirror == null) {
             return null;
         }
-        final AnnotationValue value = getAnnotationValue(mirror, key);
-        if (value == null) {
+        final AnnotationValue annotationValue = getAnnotationValue(mirror, key);
+        if (annotationValue == null) {
             return null;
         }
         final List<String> elements = new ArrayList<>();
-        if (value.getValue() instanceof List) {
-            final List list = (List) value.getValue();
+        final Object       value    = annotationValue.getValue();
+        if (value instanceof List) {
+            final List list = (List) value;
             if (list.size() == 0) {
                 return null;
             }
@@ -180,11 +181,13 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
                     elements.add(typeElement.toString());
                 }
             }
-        } else {
-            final TypeElement typeElement = convertAnnotationValueToTypeElement((AnnotationValue) value.getValue());
+        } else if (value instanceof AnnotationValue) {
+            final TypeElement typeElement = convertAnnotationValueToTypeElement((AnnotationValue) value);
             if (typeElement != null) {
                 elements.add(typeElement.toString());
             }
+        } else {
+            elements.add(value.toString());
         }
         return elements.size() > 0 ? elements : null;
     }
