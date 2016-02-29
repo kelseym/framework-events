@@ -1,11 +1,9 @@
-/**
+/*
  * AbstractPintoBean
- * (C) 2012 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on 10/16/12 by rherri01
  */
 package org.nrg.framework.pinto;
 
@@ -30,19 +28,23 @@ public abstract class AbstractPintoBean {
     /**
      * Processes the incoming arguments, setting the bean's print stream to {@link System#out}.
      *
+     * @param parent    The parent object.
      * @param arguments Incoming parameter arguments to process.
+     * @throws PintoException When something goes wrong constructing the bean.
      */
-    protected AbstractPintoBean(Object parent, String[] arguments) throws PintoException {
+    protected AbstractPintoBean(final Object parent, final String[] arguments) throws PintoException {
         this(parent, arguments, System.out);
     }
 
     /**
      * Processes the incoming arguments, setting the bean's print stream to the submitted parameter.
      *
+     * @param parent      The parent object.
      * @param arguments   Incoming parameter arguments to process.
      * @param printStream Indicates the print stream to be used for printing output.
+     * @throws PintoException When something goes wrong constructing the bean.
      */
-    protected AbstractPintoBean(Object parent, String[] arguments, PrintStream printStream) throws PintoException {
+    protected AbstractPintoBean(final Object parent, final String[] arguments, final PrintStream printStream) throws PintoException {
         assert parent != null : "You must specify the parent for your pinto bean.";
 
         _arguments = Arrays.asList(arguments);
@@ -76,7 +78,7 @@ public abstract class AbstractPintoBean {
     /**
      * Provides an opportunity for subclasses to validate the processed parameters and their arguments.
      *
-     * @throws PintoException
+     * @throws PintoException When validation fails for some reason.
      */
     abstract public void validate() throws PintoException;
 
@@ -155,6 +157,7 @@ public abstract class AbstractPintoBean {
      *
      * @return Any arguments on the end of the list of arguments not associated with a parameter.
      */
+    @SuppressWarnings("unused")
     public List<String> getTrailingArguments() {
         return _trailing;
     }
@@ -179,8 +182,8 @@ public abstract class AbstractPintoBean {
             getPrintStream().println("No parameters found for this application!");
         } else {
             // TODO: Add an annotation to put application name, copyright info, and introductory help text on the class level.
-            String appName, copyright, introduction;
-            int pageWidth;
+            String           appName, copyright, introduction;
+            int              pageWidth;
             PintoApplication application = _parent.getClass().getAnnotation(PintoApplication.class);
             if (application == null) {
                 appName = _parent.getClass().getSimpleName();
@@ -230,9 +233,11 @@ public abstract class AbstractPintoBean {
      * Displays the version from the {@link PintoApplication annotation} on the parent class if available. If the
      * annotation is not available, this method tries to find a <b>getVersion()</b> method on the parent class and call
      * that, along with displaying the application name as the class name.
+     *
+     * @throws PintoException When an error occurs retrieving the parent version.
      */
     protected void displayVersion() throws PintoException {
-        String appName, version, copyright;
+        String           appName, version, copyright;
         PintoApplication application = _parent.getClass().getAnnotation(PintoApplication.class);
         if (application == null) {
             appName = _parent.getClass().getSimpleName();
@@ -255,51 +260,35 @@ public abstract class AbstractPintoBean {
     }
 
     /**
-     * Splits the key-value argument and adds it to the parameters map.
+     * Splits the key-value argument and adds it to the parameters map. This is a handy way to split lots of "x=y"-style
+     * arguments into a more easily queried and manipulated map.
      *
-     * @param keyValues  A list of key-value arguments, with key and value separated by the default '=' delimiter.
+     * @param keyValues A list of key-value arguments, with key and value separated by the default '=' delimiter.
+     * @return A map with the list items separated into key-value pairs.
      */
+    @SuppressWarnings("unused")
     protected Map<String, String> addKeyValueListToParameter(final List<String> keyValues) {
         return addKeyValueListToParameter(keyValues, "=");
     }
 
     /**
-     * Splits the key-value argument and adds it to the parameters map.
+     * Splits the key-value argument and adds it to the parameters map. This is a handy way to split lots of "x=y"-style
+     * arguments into a more easily queried and manipulated map.
      *
-     * @param keyValues  A list of key-value arguments, with key and value separated by the default '=' delimiter.
+     * @param keyValues A list of key-value arguments, with key and value separated by the indicated delimiter.
+     * @param delimiter The delimiter on which key-value arguments should be split.
+     * @return A map with the list items separated into key-value pairs.
      */
     protected Map<String, String> addKeyValueListToParameter(final List<String> keyValues, final String delimiter) {
         final Map<String, String> parameters = new HashMap<>();
         for (final String keyValue : keyValues) {
-            parameters.putAll(addKeyValueToParameter(keyValue, delimiter));
-        }
-        return parameters;
-    }
-
-    /**
-     * Splits the key-value argument and adds it to the parameters map.
-     *
-     * @param keyValue   The key-value argument, with key and value separated by the default '=' delimiter.
-     */
-    protected Map<String, String> addKeyValueToParameter(final String keyValue) {
-        return addKeyValueToParameter(keyValue, "=");
-    }
-
-    /**
-     * Splits the key-value argument and adds it to the parameters map.
-     *
-     * @param keyValue   The key-value argument, with key and value separated by the specified delimiter.
-     * @param delimiter  The delimiter between the key and value in the submitted argument. This can be any compatible
-     *                   regex.
-     */
-    protected Map<String, String> addKeyValueToParameter(final String keyValue, final String delimiter) {
-        final Map<String, String> parameters = new HashMap<>();
-        if (!StringUtils.isBlank(keyValue)) {
-            String[] atoms = keyValue.split(delimiter, 2);
-            if (atoms.length == 1 && parameters.containsKey(atoms[0])) {
-                parameters.remove(atoms[0]);
-            } else {
-                parameters.put(atoms[0], atoms[1]);
+            if (!StringUtils.isBlank(keyValue)) {
+                String[] atoms = keyValue.split(delimiter, 2);
+                if (atoms.length == 1 && parameters.containsKey(atoms[0])) {
+                    parameters.remove(atoms[0]);
+                } else {
+                    parameters.put(atoms[0], atoms[1]);
+                }
             }
         }
         return parameters;
@@ -311,9 +300,8 @@ public abstract class AbstractPintoBean {
      *
      * @param type     Indicates the type to which the argument should be converted.
      * @param argument The argument to be converted.
-     *
      * @return An object of the indicated type from the given value.
-     * @throws PintoException
+     * @throws PintoException If the argument can't be converted to the indicated type.
      */
     protected Object convertStringToType(final Class<?> type, final String argument) throws PintoException {
         Object object;
@@ -357,6 +345,7 @@ public abstract class AbstractPintoBean {
      *
      * @return Returns true if help should be displayed. Note that this should terminate further parameter validation.
      */
+    @SuppressWarnings("unused")
     protected boolean noArgsHelp() {
         if (_arguments == null || _arguments.size() == 0) {
             displayHelp();
@@ -418,7 +407,7 @@ public abstract class AbstractPintoBean {
                 // Before we finish with an existing parameter...
                 if (parameter != null) {
                     ArgCount argCount = parameter.getArgCount();
-                    int argSize = _parameters.get(parameter.getShortOption()).size();
+                    int      argSize  = _parameters.get(parameter.getShortOption()).size();
 
                     // It's OK to have a new parameter now, so bail out.
                     if (argSize == 0 && (argCount == ArgCount.ZeroToN || argCount == ArgCount.StandAlone)) {
@@ -487,7 +476,7 @@ public abstract class AbstractPintoBean {
     private void prune() throws PintoException {
         for (String parameterId : _parameters.keySet()) {
             ParameterData parameter = _parametersByShortOption.get(parameterId);
-            List<String> arguments = _parameters.get(parameterId);
+            List<String>  arguments = _parameters.get(parameterId);
 
             validateArgCount(parameter, arguments);
 
@@ -525,11 +514,11 @@ public abstract class AbstractPintoBean {
             throw new PintoException(PintoExceptionType.UnknownParameterTypes);
         }
         final boolean isArrayParameter = types.length == 1 && types[0].isArray();
-        final boolean isListParameter = types.length == 1 && List.class.isAssignableFrom(types[0]);
+        final boolean isListParameter  = types.length == 1 && List.class.isAssignableFrom(types[0]);
         if (types.length != arguments.size() && !isArrayParameter && !isListParameter) {
             throw new PintoException(PintoExceptionType.SyntaxFormat);
         }
-        Class<?> type = isArrayParameter ? types[0].getComponentType() : null;
+        Class<?>           type             = isArrayParameter ? types[0].getComponentType() : null;
         final List<Object> coercedArguments = new ArrayList<>(types.length);
         if (!isListParameter) {
             for (int index = 0; index < arguments.size(); index++) {
@@ -546,9 +535,9 @@ public abstract class AbstractPintoBean {
     }
 
     private void validateArgCount(final ParameterData parameter, final List<String> arguments) throws PintoException {
-        final String parameterId = parameter.getShortOption();
-        final int argCount = arguments.size();
-        final ArgCount ArgCount = parameter.getArgCount();
+        final String   parameterId = parameter.getShortOption();
+        final int      argCount    = arguments.size();
+        final ArgCount ArgCount    = parameter.getArgCount();
 
         switch (ArgCount) {
             case StandAlone:
@@ -635,8 +624,8 @@ public abstract class AbstractPintoBean {
     }
 
     private String getPropertyFromParentProperties(String property) throws PintoException {
-        Properties properties = null;
-        Method getProperties = null;
+        Properties properties    = null;
+        Method     getProperties = null;
 
         try {
             getProperties = _parent.getClass().getMethod("getProperties");
@@ -675,7 +664,7 @@ public abstract class AbstractPintoBean {
             return System.out;
         }
         try {
-            Class<?> clazz = getClass().getClassLoader().loadClass(outputStreamAdapter);
+            Class<?>           clazz   = getClass().getClassLoader().loadClass(outputStreamAdapter);
             PintoStreamAdapter adapter = (PintoStreamAdapter) clazz.newInstance();
             return adapter.getOutputStream();
         } catch (ClassNotFoundException e) {
@@ -702,20 +691,20 @@ public abstract class AbstractPintoBean {
      * <p/>
      * Above shows a 20-character hanging indent.
      */
-    private static final int HANGING_INDENT = 20;
+    private static final int    HANGING_INDENT = 20;
     /**
      * Provides the indent filler to format the hanging indent space.
      */
-    private static final String INDENT_FILLER = "\n" + CharBuffer.allocate(HANGING_INDENT).toString().replace('\0', ' ');
+    private static final String INDENT_FILLER  = "\n" + CharBuffer.allocate(HANGING_INDENT).toString().replace('\0', ' ');
     /**
      * The overall format width for the help text.
      */
-    private static final int WIDTH = 80;
+    private static final int    WIDTH          = 80;
 
-    private static final String SHORT_OPTION_DELIMITER = "-";
-    private static final String LONG_OPTION_DELIMITER = "--";
-    private static final String[] OPTION_DELIMITERS = new String[]{LONG_OPTION_DELIMITER, SHORT_OPTION_DELIMITER};
-    public static final String PROPERTY_INDICATOR = "property:";
+    private static final String   SHORT_OPTION_DELIMITER = "-";
+    private static final String   LONG_OPTION_DELIMITER  = "--";
+    private static final String[] OPTION_DELIMITERS      = new String[]{LONG_OPTION_DELIMITER, SHORT_OPTION_DELIMITER};
+    public static final  String   PROPERTY_INDICATOR     = "property:";
 
     /**
      * The print stream for help text and user messages.
@@ -728,8 +717,8 @@ public abstract class AbstractPintoBean {
     private String _outputStreamAdapter;
 
     private List<String> _arguments;
-    private Map<String, List<String>> _parameters = new LinkedHashMap<>();
-    private List<String> _trailing = new ArrayList<>();
+    private Map<String, List<String>>  _parameters              = new LinkedHashMap<>();
+    private List<String>               _trailing                = new ArrayList<>();
     private Map<String, ParameterData> _parametersByShortOption = new HashMap<>();
-    private Map<String, ParameterData> _parametersByLongOption = new HashMap<>();
+    private Map<String, ParameterData> _parametersByLongOption  = new HashMap<>();
 }

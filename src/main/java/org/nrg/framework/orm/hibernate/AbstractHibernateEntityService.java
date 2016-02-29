@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.annotation.Transactional;
@@ -348,22 +349,11 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
-     * Wires up the appropriate repository class based on the parameterized type. When moving to Spring 4.0, this can be
-     * replaced by autowired generics, see here: http://spring.io/blog/2013/12/03/spring-framework-4-0-and-java-generics.
-     * @throws Exception
+     * Checks to see if entities should be initialized before being returned from transactional service methods. See the
+     * {@link #getInitialize()} method for more information.
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
-        final Map<String, AbstractHibernateDAO> daos = getContext().getBeansOfType(AbstractHibernateDAO.class);
-        for (final AbstractHibernateDAO dao : daos.values()) {
-            if (isMatchingType(dao)) {
-                _dao = (DAO) dao;
-                break;
-            }
-        }
-        if (_dao == null) {
-            throw new NrgServiceRuntimeException(NrgServiceError.NoMatchingRepositoryForService, "Couldn't find a repository object for the NRG service " + getClass().getName());
-        }
+    public void afterPropertiesSet() {
         Properties properties = getContext().getBean("hibernateProperties", Properties.class);
         if (properties != null) {
             if (properties.containsKey("xnat.initialize_entities")) {
@@ -405,8 +395,11 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         PRIMITIVES.add(Double.class);
     }
 
-    private ApplicationContext _context;
+    @SuppressWarnings("SpringJavaAutowiringInspection")
+    @Autowired
     private DAO _dao;
+
+    private ApplicationContext _context;
     private boolean _isAuditable;
     private boolean _initialize = true;
 }

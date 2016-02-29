@@ -70,9 +70,6 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
 
     /**
      * {@inheritDoc}
-     *
-     * @param annotations
-     * @param roundEnv
      */
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv) {

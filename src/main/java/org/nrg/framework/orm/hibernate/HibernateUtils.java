@@ -9,14 +9,12 @@
  */
 package org.nrg.framework.orm.hibernate;
 
-import org.hibernate.FetchMode;
 import org.nrg.framework.orm.hibernate.annotations.Auditable;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Date;
 
@@ -38,19 +36,40 @@ public class HibernateUtils {
      * 
      * Classes are by default not auditable. You can declare an entity class to be auditable by adding
      * the {@link Auditable} annotation to the class declaration.
-     * 
+     *
      * @param entity    The entity to check for auditability.
+     * @param <E>       The type of the entity to be checked.
      * @return Whether the class is auditable or not.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unused")
     public static <E> boolean isAuditable(E entity) {
         return isAuditable(entity.getClass());
     }
-    
+
+    /**
+     * Tests whether the entity is auditable. Auditable entities are not deleted in delete operations,
+     * but instead are disabled by calling the {@link BaseHibernateEntity#setEnabled(boolean)} method
+     * with the value <b>false</b>.
+     *
+     * Classes are by default not auditable. You can declare an entity class to be auditable by adding
+     * the {@link Auditable} annotation to the class declaration.
+     *
+     * @param clazz     The class type to check for auditability.
+     * @param <E>       The type of the entity to be checked.
+     * @return Whether the class is auditable or not.
+     */
     public static <E> boolean isAuditable(Class<E> clazz) {
         return clazz.isAnnotationPresent(Auditable.class);
     }
 
+    /**
+     * Indicates whether the indicated class type has eagerly fetched collections.
+     *
+     * @param clazz    The class type to check for eagerly fetched collections.
+     * @param <E>       The type of the entity to be checked.
+     *
+     * @return Returns true if the class has eagerly fetched collections, false otherwise.
+     */
     public static <E> boolean hasEagerlyFetchedCollection(Class<E> clazz) {
         for (final Method method : clazz.getMethods()) {
             final ManyToMany manyToMany = method.getAnnotation(ManyToMany.class);

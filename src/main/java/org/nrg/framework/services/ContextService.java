@@ -1,11 +1,9 @@
-/**
+/*
  * ContextService
- * (C) 2011 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on Sep 6, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.services;
 
@@ -32,8 +30,6 @@ import java.util.Set;
 
 @Service
 public class ContextService implements NrgService, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, ServletContextAware {
-    public static String SERVICE_NAME = "ContextService";
-
     /**
      * Public constructor for use by Spring to initialize the ContextService within the application context. Other
      * classes or applications should not call this constructor and should only call the
@@ -75,6 +71,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
 
     /**
      * Indicates whether the context service instance has an application context.
+     *
      * @return <b>true</b> if the service object has an application context.
      */
     public boolean hasApplicationContext() {
@@ -107,7 +104,6 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      *
      * @param <T>  The type of the bean to be retrieved.
      * @param type The class of the bean to be retrieved.
-     *
      * @return An object of the type.
      */
     public <T> T getBean(final Class<T> type) {
@@ -120,7 +116,6 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      * @param <T>  The type of the bean to be retrieved.
      * @param name The name of the bean to be retrieved.
      * @param type The class of the bean to be retrieved.
-     *
      * @return An object of the type.
      */
     public <T> T getBean(final String name, final Class<T> type) {
@@ -131,9 +126,10 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      * Gets all beans with the indicated type.
      *
      * @param type The class of the bean to be retrieved.
-     *
+     * @param <T>  The parameterized class of the bean to be retrieved.
      * @return An object of the type.
      */
+    @SuppressWarnings("unused")
     public <T> Map<String, T> getBeansOfType(final Class<T> type) {
         return _context.getBeansOfType(type);
     }
@@ -173,12 +169,13 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
     }
 
     public Set<String> getAppRelativeLocationChildren(final FilenameFilter filter, final String... relativePaths) {
-        final Set<String> found = getAppRelativeLocationContents(relativePaths);
+        final Set<String> found    = getAppRelativeLocationContents(relativePaths);
         final Set<String> children = new HashSet<>();
         for (final String current : found) {
             if (!current.endsWith("/")) {
-                if ((filter == null) || (filter.accept(null, getFileName(current))))
+                if ((filter == null) || (filter.accept(null, getFileName(current)))) {
                     children.add(current);
+                }
             } else {
                 children.addAll(getAppRelativeLocationChildren(current));
             }
@@ -207,7 +204,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
         return path;
     }
 
-    private static ContextService _instance;
-    private ApplicationContext _context;
-    private ServletContext _servletContext;
+    private static ContextService     _instance;
+    private        ApplicationContext _context;
+    private        ServletContext     _servletContext;
 }

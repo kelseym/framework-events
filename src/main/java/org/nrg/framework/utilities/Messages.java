@@ -1,16 +1,15 @@
-/**
+/*
  * Messages
- * (C) 2012 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on 1/5/12 by rherri01
  */
 package org.nrg.framework.utilities;
 
 import java.text.ParseException;
 
+@SuppressWarnings("unused")
 public class Messages {
     private Messages() {
         // No instantiation.
@@ -28,6 +27,7 @@ public class Messages {
      * @param message    The message to be formatted.
      * @param width      The width desired for each line.
      * @return The formatted message.
+     * @throws ParseException When tags are nested inside of other tags.
      */
     public static String formatHtml(String message, int width) throws ParseException {
         StringBuilder buffer = new StringBuilder();

@@ -1,131 +1,143 @@
-/**
+/*
  * NrgServiceException
- * (C) 2011 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on Aug 29, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.exceptions;
 
 public class NrgServiceRuntimeException extends NrgRuntimeException {
 
-	/**
-	 * Default constructor. This sets the {@link #getServiceError() service error}
-	 * property to {@link NrgServiceError#Default}.
-	 */
-	public NrgServiceRuntimeException() {
-		super();
-		setServiceError(NrgServiceError.Default);
-	}
+    /**
+     * Default constructor. This sets the {@link #getServiceError() service error}
+     * property to {@link NrgServiceError#Default}.
+     */
+    public NrgServiceRuntimeException() {
+        super();
+        _error = NrgServiceError.Default;
+    }
 
-	/**
-	 * Default constructor. This sets the {@link #getServiceError() service error}
-	 * property to {@link NrgServiceError#Default}.
-	 */
-	public NrgServiceRuntimeException(NrgServiceException exception) {
-		super(exception);
-		setServiceError(exception.getServiceError());
-	}
+    /**
+     * Default constructor. This sets the {@link #getServiceError() service error}
+     * property to {@link NrgServiceError#Default}.
+     *
+     * @param exception The exception to be wrapped in a run-time exception.
+     */
+    public NrgServiceRuntimeException(final NrgServiceException exception) {
+        super(exception);
+        _error = exception.getServiceError();
+    }
 
-	/**
-	 * Message constructor. This sets the {@link #getServiceError() service error}
-	 * property to {@link NrgServiceError#Default}.
-	 */
-	public NrgServiceRuntimeException(String message) {
-		super(message);
-		setServiceError(NrgServiceError.Default);
-	}
+    /**
+     * Message constructor. This sets the {@link #getServiceError() service error}
+     * property to {@link NrgServiceError#Default}.
+     *
+     * @param message The message to set for the exception.
+     */
+    public NrgServiceRuntimeException(final String message) {
+        super(message);
+        _error = NrgServiceError.Default;
+    }
 
-	/**
-	 * Wrapper constructor. This sets the {@link #getServiceError() service error}
-	 * property to {@link NrgServiceError#Default}.
-	 */
-	public NrgServiceRuntimeException(Throwable cause) {
-		super(cause);
-		setServiceError(NrgServiceError.Default);
-	}
+    /**
+     * Wrapper constructor. This sets the {@link #getServiceError() service error}
+     * property to {@link NrgServiceError#Default}.
+     *
+     * @param cause The cause of the exception.
+     */
+    public NrgServiceRuntimeException(final Throwable cause) {
+        super(cause);
+        _error = NrgServiceError.Default;
+    }
 
-	/**
-	 * Message and wrapper constructor. This sets the {@link #getServiceError() service error}
-	 * property to {@link NrgServiceError#Default}.
-	 */
-	public NrgServiceRuntimeException(String message, Throwable cause) {
-		super(message, cause);
-		setServiceError(NrgServiceError.Default);
-	}
+    /**
+     * Message and wrapper constructor. This sets the {@link #getServiceError() service error}
+     * property to {@link NrgServiceError#Default}.
+     *
+     * @param message The message to set for the exception.
+     * @param cause   The cause of the exception.
+     */
+    public NrgServiceRuntimeException(final String message, final Throwable cause) {
+        super(message, cause);
+        _error = NrgServiceError.Default;
+    }
 
-	/**
-	 * Default error code constructor. This sets the {@link #getServiceError() service error}
-	 * property to the submitted {@link NrgServiceError} value.
-	 */
-	public NrgServiceRuntimeException(NrgServiceError error) {
-		super();
-		setServiceError(error);
-	}
-	
-	/**
-	 * Error code message constructor. This sets the {@link #getServiceError() service error}
-	 * property to the submitted {@link NrgServiceError} value.
-	 */
-	public NrgServiceRuntimeException(NrgServiceError error, String message) {
-		super(message);
-		setServiceError(error);
-	}
-	
-	/**
-	 * Error code wrapper constructor. This sets the {@link #getServiceError() service error}
-	 * property to the submitted {@link NrgServiceError} value.
-	 */
-	public NrgServiceRuntimeException(NrgServiceError error, Throwable cause) {
-		super(cause);
-		setServiceError(error);
-	}
-	
-	/**
-	 * Error code and message wrapper constructor. This sets the {@link #getServiceError() service error}
-	 * property to the submitted {@link NrgServiceError} value.
-	 */
-	public NrgServiceRuntimeException(NrgServiceError error, String message, Throwable cause) {
-		super(message, cause);
-		setServiceError(error);
-	}
-	
-	/**
-	 * Gets the {@link NrgServiceError service error code} for the exception.
-	 * @return The service error code.
-	 */
-	public NrgServiceError getServiceError() {
-		return _error;
-	}
+    /**
+     * Default error code constructor. This sets the {@link #getServiceError() service error}
+     * property to the submitted {@link NrgServiceError} value.
+     *
+     * @param error The NRG service error code to set for the exception.
+     */
+    public NrgServiceRuntimeException(final NrgServiceError error) {
+        super();
+        _error = error;
+    }
 
-	/**
-	 * Sets the {@link NrgServiceError service error code} for the exception.
-	 * @param error The service error code to set.
-	 */
-	public void setServiceError(NrgServiceError error) {
-		_error = error;
-	}
+    /**
+     * Error code message constructor. This sets the {@link #getServiceError() service error}
+     * property to the submitted {@link NrgServiceError} value.
+     *
+     * @param error   The NRG service error code to set for the exception.
+     * @param message The message to set for the exception.
+     */
+    public NrgServiceRuntimeException(final NrgServiceError error, final String message) {
+        super(message);
+        _error = error;
+    }
 
-	/**
-	 * Overrides the base {@link Exception#getMessage()} method to add the {@link #getServiceError() service error code}
-	 * to the returned message.
-	 */
-	@Override
-	public String getMessage() {
-		return "Error [" + _error + "]: " + super.getMessage();
-	}
+    /**
+     * Error code wrapper constructor. This sets the {@link #getServiceError() service error}
+     * property to the submitted {@link NrgServiceError} value.
+     *
+     * @param error The NRG service error code to set for the exception.
+     * @param cause The cause of the exception.
+     */
+    public NrgServiceRuntimeException(final NrgServiceError error, final Throwable cause) {
+        super(cause);
+        _error = error;
+    }
 
-	/**
-	 * Overrides the base {@link Exception#getLocalizedMessage()} method to add the {@link #getServiceError() service error code}
-	 * to the returned message.
-	 */
-	@Override
-	public String getLocalizedMessage() {
-		return "Error [" + _error + "]: " + super.getLocalizedMessage();
-	}
-	
-	private static final long serialVersionUID = -2682559327708154539L;
-	private NrgServiceError _error;
+    /**
+     * Error code and message wrapper constructor. This sets the {@link #getServiceError() service error}
+     * property to the submitted {@link NrgServiceError} value.
+     *
+     * @param error   The NRG service error code to set for the exception.
+     * @param message The message to set for the exception.
+     * @param cause   The cause of the exception.
+     */
+    public NrgServiceRuntimeException(final NrgServiceError error, final String message, final Throwable cause) {
+        super(message, cause);
+        _error = error;
+    }
+
+    /**
+     * Gets the {@link NrgServiceError service error code} for the exception.
+     *
+     * @return The service error code.
+     */
+    public NrgServiceError getServiceError() {
+        return _error;
+    }
+
+    /**
+     * Overrides the base {@link Exception#getMessage()} method to add the {@link #getServiceError() service error code}
+     * to the returned message.
+     */
+    @Override
+    public String getMessage() {
+        return "Error [" + _error + "]: " + super.getMessage();
+    }
+
+    /**
+     * Overrides the base {@link Exception#getLocalizedMessage()} method to add the {@link #getServiceError() service error code}
+     * to the returned message.
+     */
+    @Override
+    public String getLocalizedMessage() {
+        return "Error [" + _error + "]: " + super.getLocalizedMessage();
+    }
+
+    private static final long serialVersionUID = -2682559327708154539L;
+    private final NrgServiceError _error;
 }

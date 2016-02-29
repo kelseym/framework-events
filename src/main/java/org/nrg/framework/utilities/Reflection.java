@@ -1,11 +1,9 @@
-/**
+/*
  * Reflection
- * (C) 2011 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on 11/8/11 by rherri01
  */
 package org.nrg.framework.utilities;
 
@@ -207,6 +205,7 @@ public class Reflection {
      *
      * @param target            The class that you want to inspect for compatible constructors.
      * @param parameterTypes    The parameter types you want to submit to the constructor.
+     * @param <T>               The parameterized type for this method.
      * @return A matching constructor, if any, <b>null</b> otherwise.
      */
     public static <T> Constructor<T> getConstructorForParameters(final Class<T> target, final Class<?>... parameterTypes) {
@@ -234,6 +233,7 @@ public class Reflection {
      * @param target            The class that you want to inspect for compatible constructors.
      * @param requestedAccess   Indicates the desired access level.
      * @param parameterTypes    The parameter types you want to submit to the constructor.
+     * @param <T>               The parameterized type for this method.
      * @return A matching constructor, if any, <b>null</b> otherwise.
      */
     @SuppressWarnings("unchecked")
@@ -313,12 +313,6 @@ public class Reflection {
     public static Set<String> findResources(final String resourcePackage, final Pattern resourcePattern) {
         final Reflections reflections = getReflectionsForPackage(resourcePackage);
         return reflections.getResources(resourcePattern);
-    }
-
-    public static InputStream getResourceAsStream(final String resource) {
-        final ClassLoader classLoader = getClassLoader();
-        assert classLoader != null;
-        return classLoader.getResourceAsStream(resource);
     }
 
     @SuppressWarnings("unused")

@@ -25,6 +25,7 @@ public class SerializerRegistry extends HashMap<Class<?>, String> {
         putAll(seed);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> JsonSerializer<? extends T> getSerializer(Class<? extends T> clazz) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
         if (containsKey(clazz)) {
             if (_cache.containsKey(clazz)) {

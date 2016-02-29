@@ -1,11 +1,9 @@
-/**
+/*
  * Parameter
- * (C) 2012 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on 10/12/12 by rherri01
  */
 package org.nrg.framework.pinto;
 
@@ -24,49 +22,50 @@ public @interface Parameter {
      * Specifies the short option for this command-line parameter.
      * @return The value of the short option.
      */
-    public String value();
+    String value();
     /**
      * Specifies the long option for this command-line parameter.
      * @return The value of the long option.
      */
-    public String longOption() default "";
+    String longOption() default "";
 
     /**
      * Sets the help text to display for the parameter.
      * @return The help text.
      */
-    public String help() default "";
+    String help() default "";
 
     /**
      * Indicates whether this command-line parameter is required to be specified. By default, parameters are not
      * required.
+     * @return Returns true if the parameter is required, false otherwise.
      */
-    public boolean required() default false;
+    boolean required() default false;
 
     /**
      * The number of accepted arguments for this parameter. This is specified using the {@link ArgCount} enumeration. In
-     * the cause of {@link ArgCount#SpecificCount}, you can set the specific count to be used with the {@link #argCount()}
-     * attribute. The default value for this is {@link ArgCount#OneArgument}.
+     * the case of {@link ArgCount#SpecificCount}, you can set the specific count to be used with the {@link
+     * #exactArgCount()} attribute. The default value for this is {@link ArgCount#OneArgument}.
      * @return The number of accepted arguments for this parameter.
      */
-    public ArgCount argCount() default ArgCount.OneArgument;
+    ArgCount argCount() default ArgCount.OneArgument;
 
     /**
      * Indicates whether multiple instances of this parameter are allowed. This defaults to false.
      * @return Whether this parameter can be specified multiple times on the command line.
      */
-    public boolean multiplesAllowed() default false;
+    boolean multiplesAllowed() default false;
 
     /**
      * Whe the {@link #argCount()} attribute is set to {@link ArgCount#SpecificCount}, this attribute
      * specifies the value for the specific number of arguments for this parameter.
      * @return The specific number of arguments for this parameter.
      */
-    public int exactArgCount() default 0;
+    int exactArgCount() default 0;
 
     /**
      * The type into which the parameter arguments should be coerced.
      * @return The type into which the parameter arguments should be coerced.
      */
-    public Class<?> type() default boolean.class;
+    Class<?> type() default boolean.class;
 }

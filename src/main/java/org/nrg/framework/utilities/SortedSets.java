@@ -1,6 +1,6 @@
-/**
+/*
  * SortedSets
- * (C) 2015 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
@@ -17,8 +17,9 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * @author Kevin A. Archie <karchie@wustl.edu>
+ * @author Kevin A. Archie
  */
+@SuppressWarnings("Duplicates")
 public final class SortedSets {
     private static final String IMMUTABLE_MESSAGE = "cannot modify immutable set";
     
@@ -26,6 +27,7 @@ public final class SortedSets {
 
     /**
      * Creates an immutable, empty SortedSet.
+     * @param <T>    The parameterized type of the empty sorted set to create.
      * @return An empty sorted set.
      */
     public static <T> SortedSet<T> empty() {

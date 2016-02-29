@@ -89,36 +89,33 @@ public class HibernateDataCacheService extends AbstractHibernateEntityService<Da
 
     private <T extends Serializable> String serialize(final T value) throws NrgServiceRuntimeException {
         try {
-            JsonSerializer<T> serializer = (JsonSerializer<T>) _serializers.getSerializer(value.getClass());
+            JsonSerializer<? extends Serializable> serializer = _serializers.getSerializer(value.getClass());
             // If there's no special serializer for this class...
             if (serializer == null) {
                 return MAPPER.writeValueAsString(value);
             }
-        } catch (ClassNotFoundException e) {
-            throw new NrgServiceRuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new NrgServiceRuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new NrgServiceRuntimeException(e);
-        } catch (JsonProcessingException e) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | JsonProcessingException e) {
             throw new NrgServiceRuntimeException(e);
         }
         return null;
     }
 
     private <T extends Serializable> T deserialize(final DataCacheItem item) {
+        if (item == null) {
+            return null;
+        }
         try {
-            return item == null ? null : (T) MAPPER.readValue(item.getValue(), Class.forName(item.getType()));
-        } catch (IOException e) {
-            throw new NrgServiceRuntimeException(e);
-        } catch (ClassNotFoundException e) {
+            //noinspection unchecked
+            return (T) MAPPER.readValue(item.getValue(), Class.forName(item.getType()));
+        } catch (IOException | ClassNotFoundException e) {
             throw new NrgServiceRuntimeException(e);
         }
     }
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Inject
     private SerializerRegistry _serializers;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final Logger _log = LoggerFactory.getLogger(HibernateDataCacheService.class);
+    private static final Logger       _log   = LoggerFactory.getLogger(HibernateDataCacheService.class);
 }
