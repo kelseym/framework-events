@@ -22,6 +22,13 @@ import java.awt.*;
 @SuppressWarnings("unused")
 public class TraceableGridBagPanel extends JPanel {
     /**
+     * Creates a new traceable grid-bag panel with tracing turned off.
+     */
+    public TraceableGridBagPanel() {
+        this(false);
+    }
+
+    /**
      * Creates a new traceable grid-bag panel with tracing turned on or off based on the <b>trace</b> parameter.
      * @param trace    Indicates whether grid-bag lines should be displayed or not.
      */
