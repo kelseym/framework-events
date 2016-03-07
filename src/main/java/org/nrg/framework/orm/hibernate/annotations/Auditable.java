@@ -16,12 +16,16 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.hibernate.envers.Audited;
 import org.nrg.framework.orm.hibernate.BaseHibernateEntity;
 
-
+/**
+ * @deprecated Use the Hibernate Envers {@link Audited} annotation instead.
+ */
 @Documented
 @Target(TYPE)
 @Retention(RUNTIME)
+@Deprecated
 public @interface Auditable {
 
 }
