@@ -10,7 +10,7 @@
  */
 package org.nrg.framework.orm.utils;
 
-import org.h2.constant.ErrorCode;
+import org.h2.api.ErrorCode;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

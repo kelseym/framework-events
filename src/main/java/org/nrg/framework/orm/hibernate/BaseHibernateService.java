@@ -10,6 +10,7 @@
 package org.nrg.framework.orm.hibernate;
 
 import org.nrg.framework.services.NrgService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -140,7 +141,13 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      */
     @SuppressWarnings ({"unchecked", "varargs"})
     void refresh(boolean initialize, E... entities);
-    
+
+    @Transactional
+    List<Number> getRevisions(long id);
+
+    @Transactional
+    E getRevision(final long id, final Number revision);
+
     /**
      * Provides a hook for programmatically validating entities before committing them
      * to the database. 

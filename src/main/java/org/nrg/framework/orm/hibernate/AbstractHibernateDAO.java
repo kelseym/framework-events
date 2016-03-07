@@ -15,6 +15,8 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.envers.AuditReader;
+import org.hibernate.envers.AuditReaderFactory;
 import org.nrg.framework.generics.AbstractParameterizedWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -272,6 +274,16 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         }
     }
 
+    @Override
+    public List<Number> getRevisions(final long id) {
+        return getAuditReader().getRevisions(getParameterizedType(), id);
+    }
+
+    @Override
+    public E getRevision(final long id, final Number revision) {
+        return getAuditReader().find(getParameterizedType(), id, revision);
+    }
+
     /**
      * Returns the current Hibernate session object.
      *
@@ -334,6 +346,10 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
 
     protected String getCacheRegion() {
         return _cacheRegion;
+    }
+
+    private AuditReader getAuditReader() {
+        return AuditReaderFactory.get(getSession());
     }
 
     private String extractCacheRegion(Class<E> type) {

@@ -59,6 +59,7 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
      *
      * @param exampleInstance The example to use.
      * @param excludeProperty Properties of the example that should be ignored.
+     *
      * @return All entities that match the set properties.
      */
     List<E> findByExample(E exampleInstance, String[] excludeProperty);
@@ -69,6 +70,7 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
      *
      * @param exampleInstance The example to use.
      * @param excludeProperty Properties of the example that should be ignored.
+     *
      * @return All entities that match the set properties.
      */
     @SuppressWarnings("unused")
@@ -76,4 +78,7 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
 
     void refresh(boolean initialize, E entity);
 
+    List<Number> getRevisions(final long id);
+
+    E getRevision(final long id, final Number revision);
 }

@@ -300,6 +300,18 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
     }
 
+    @Override
+    @Transactional
+    public final List<Number> getRevisions(final long id) {
+        return getDao().getRevisions(id);
+    }
+
+    @Override
+    @Transactional
+    public final E getRevision(final long id, final Number revision) {
+        return getDao().getRevision(id, revision);
+    }
+
     /**
      * Provides a default validation method that can be overridden in specific implementations. This implementation
      * always returns <b>null</b>, i.e. entities are always considered to be in a valid state. Overriding
