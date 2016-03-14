@@ -26,7 +26,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
      * @return The full array of properties to be excluded from a search-by-example.
      */
     public static String[] getExcludedProperties(final String... properties) {
-        return (String[]) ArrayUtils.addAll(EXCLUDE_BASE_PROPS, properties);
+        return ArrayUtils.addAll(EXCLUDE_BASE_PROPS, properties);
     }
 
     /**

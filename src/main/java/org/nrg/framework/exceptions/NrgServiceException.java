@@ -7,7 +7,7 @@
  */
 package org.nrg.framework.exceptions;
 
-public class NrgServiceException extends NrgRuntimeException {
+public class NrgServiceException extends NrgException {
 
     /**
      * Default constructor. This sets the {@link #getServiceError() service error}

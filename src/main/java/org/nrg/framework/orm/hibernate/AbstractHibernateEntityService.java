@@ -67,59 +67,9 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
             if (parameters != null && parameters.length > 0) {
                 create(instance);
             }
-            return instance;
+            return postProcessNewEntity(instance);
         } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
             throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, e);
-        }
-    }
-
-    private Constructor<E> getConstructor(final Object[] parameters) {
-        try {
-            return getConstructor(parameters, true);
-        } catch (NrgServiceException e) {
-            if (e.getServiceError() == NrgServiceError.Instantiation) {
-                try {
-                    return getConstructor(parameters, false);
-                } catch (NrgServiceException e1) {
-                    final Class<?>[] types = getClassTypes(parameters, false);
-                    throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
-                }
-            } else {
-                throw new NrgServiceRuntimeException(e);
-            }
-        }
-    }
-
-    private Constructor<E> getConstructor(final Object[] parameters, final boolean coercePrimitives) throws NrgServiceException {
-        if (parameters == null || parameters.length == 0) {
-            return Reflection.getConstructorForParameters(getParameterizedType());
-        }
-        final Class<?>[] types = getClassTypes(parameters, coercePrimitives);
-        Constructor<E> constructor = Reflection.getConstructorForParameters(getParameterizedType(), types);
-        if (constructor == null) {
-            throw new NrgServiceException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
-        }
-        return constructor;
-    }
-
-    private Class<?>[] getClassTypes(final Object[] parameters, final boolean coercePrimitives) {
-        final List<Class<?>> buffer = new ArrayList<>();
-        boolean hasPrimitive = false;
-        for (final Object parameter : parameters) {
-            final boolean isPrimitive = PRIMITIVES.contains(parameter.getClass());
-            if (!hasPrimitive && isPrimitive) {
-                hasPrimitive = true;
-            }
-            buffer.add((coercePrimitives && isPrimitive) ? getPrimitiveType(parameter.getClass()) : parameter.getClass());
-        }
-        return buffer.toArray(new Class<?>[buffer.size()]);
-    }
-
-    private Class<?> getPrimitiveType(final Class<?> parameterClass) {
-        try {
-            return (Class<?>) parameterClass.getField("TYPE").get(null);
-        } catch (ReflectiveOperationException e) {
-            return parameterClass;
         }
     }
 
@@ -135,6 +85,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
             _log.debug("Creating a new entity: " + entity.toString());
         }
         getDao().create(entity);
+        postProcessNewEntity(entity);
     }
 
     /**
@@ -153,7 +104,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     public E create(Object... parameters) {
         final E entity = newEntity(parameters);
         create(entity);
-        return entity;
+        return postProcessNewEntity(entity);
     }
 
     /**
@@ -374,6 +325,10 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
     }
 
+    protected E postProcessNewEntity(final E entity) {
+        return entity;
+    }
+
     /**
      * Gets the DAO configured for the service instance.
      * @return The DAO object.
@@ -384,6 +339,56 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
 
     protected ApplicationContext getContext() {
         return _context;
+    }
+
+    private Constructor<E> getConstructor(final Object[] parameters) {
+        try {
+            return getConstructor(parameters, true);
+        } catch (NrgServiceException e) {
+            if (e.getServiceError() == NrgServiceError.Instantiation) {
+                try {
+                    return getConstructor(parameters, false);
+                } catch (NrgServiceException e1) {
+                    final Class<?>[] types = getClassTypes(parameters, false);
+                    throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
+                }
+            } else {
+                throw new NrgServiceRuntimeException(e);
+            }
+        }
+    }
+
+    private Constructor<E> getConstructor(final Object[] parameters, final boolean coercePrimitives) throws NrgServiceException {
+        if (parameters == null || parameters.length == 0) {
+            return Reflection.getConstructorForParameters(getParameterizedType());
+        }
+        final Class<?>[] types = getClassTypes(parameters, coercePrimitives);
+        Constructor<E> constructor = Reflection.getConstructorForParameters(getParameterizedType(), types);
+        if (constructor == null) {
+            throw new NrgServiceException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
+        }
+        return constructor;
+    }
+
+    private Class<?>[] getClassTypes(final Object[] parameters, final boolean coercePrimitives) {
+        final List<Class<?>> buffer = new ArrayList<>();
+        boolean hasPrimitive = false;
+        for (final Object parameter : parameters) {
+            final boolean isPrimitive = PRIMITIVES.contains(parameter.getClass());
+            if (!hasPrimitive && isPrimitive) {
+                hasPrimitive = true;
+            }
+            buffer.add((coercePrimitives && isPrimitive) ? getPrimitiveType(parameter.getClass()) : parameter.getClass());
+        }
+        return buffer.toArray(new Class<?>[buffer.size()]);
+    }
+
+    private Class<?> getPrimitiveType(final Class<?> parameterClass) {
+        try {
+            return (Class<?>) parameterClass.getField("TYPE").get(null);
+        } catch (ReflectiveOperationException e) {
+            return parameterClass;
+        }
     }
 
     private String displayTypes(final Class<?>[] types) {

@@ -45,7 +45,8 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
     /**
      * Returns the name for the properties resource to be generated for the annotation instance. This can be as simple
      * as just the bare name of the properties bundle without a path or properties extension: these will be added if not
-     * present.
+     * present. However you can also add folder hierarchies to the returned name if you want to further segregate the
+     * generated properties files.
      *
      * @param annotation The annotation instance.
      * @return The name for the properties resource.

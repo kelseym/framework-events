@@ -12,6 +12,14 @@ package org.nrg.framework.orm.hibernate;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 
 public class PrefixedTableNamingStrategy extends ImprovedNamingStrategy {
+    public PrefixedTableNamingStrategy() {
+        //
+    }
+
+    public PrefixedTableNamingStrategy(final String prefix) {
+        setPrefix(prefix);
+    }
+
     /**
      * Sets the prefix to be used for naming tables. If the prefix doesn't end with the
      * underscore character, it's automatically added to the end. Thus setting the prefix
@@ -25,7 +33,6 @@ public class PrefixedTableNamingStrategy extends ImprovedNamingStrategy {
             _prefix = prefix;
         }
     }
-
     /**
      * @return Returns the prefix property.
      */
