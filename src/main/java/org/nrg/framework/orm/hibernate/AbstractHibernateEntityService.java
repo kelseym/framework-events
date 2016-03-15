@@ -103,7 +103,6 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Transactional
     public E create(Object... parameters) {
         final E entity = newEntity(parameters);
-        create(entity);
         return postProcessNewEntity(entity);
     }
 
