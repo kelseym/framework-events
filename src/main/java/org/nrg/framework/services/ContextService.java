@@ -24,9 +24,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ContextService implements NrgService, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, ServletContextAware {
@@ -66,7 +64,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      */
     @Override
     public void setApplicationContext(final ApplicationContext context) throws BeansException {
-        _context = context;
+        _contexts.add(context);
     }
 
     /**
@@ -75,7 +73,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      * @return <b>true</b> if the service object has an application context.
      */
     public boolean hasApplicationContext() {
-        return _context != null;
+        return _contexts.size() > 0;
     }
 
     /**
@@ -107,7 +105,13 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      * @return An object of the type.
      */
     public <T> T getBean(final Class<T> type) {
-        return _context.getBean(type);
+        for (final ApplicationContext context : _contexts) {
+            final T candidate = context.getBean(type);
+            if (candidate != null) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     /**
@@ -119,7 +123,13 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      * @return An object of the type.
      */
     public <T> T getBean(final String name, final Class<T> type) {
-        return _context.getBean(name, type);
+        for (final ApplicationContext context : _contexts) {
+            final T candidate = context.getBean(name, type);
+            if (candidate != null) {
+                return candidate;
+            }
+        }
+        return null;
     }
 
     /**
@@ -131,7 +141,23 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      */
     @SuppressWarnings("unused")
     public <T> Map<String, T> getBeansOfType(final Class<T> type) {
-        return _context.getBeansOfType(type);
+        for (final ApplicationContext context : _contexts) {
+            final Map<String, T> candidate = context.getBeansOfType(type);
+            if (candidate.size() > 0) {
+                return candidate;
+            }
+        }
+        return new HashMap<>();
+    }
+
+    @SuppressWarnings("unused")
+    public URI getConfigurationLocation(final String configuration) {
+        return getAppRelativeLocation("WEB-INF", "conf", configuration);
+    }
+
+    @SuppressWarnings("unused")
+    public InputStream getConfigurationStream(final String configuration) {
+        return getAppRelativeStream("WEB-INF", "conf", configuration);
     }
 
     public URI getAppRelativeLocation(final String... relativePaths) {
@@ -142,15 +168,15 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
         }
     }
 
-    public InputStream getAppRelativeStream(final String... relativePaths) {
+    private InputStream getAppRelativeStream(final String... relativePaths) {
         return _servletContext.getResourceAsStream(joinPaths(relativePaths));
     }
 
-    public Set<String> getAppRelativeLocationContents(final String... relativePaths) {
+    private Set<String> getAppRelativeLocationContents(final String... relativePaths) {
         return getAppRelativeLocationContents(null, relativePaths);
     }
 
-    public Set<String> getAppRelativeLocationContents(final FilenameFilter filter, final String... relativePaths) {
+    private Set<String> getAppRelativeLocationContents(final FilenameFilter filter, final String... relativePaths) {
         final Set<String> paths = _servletContext.getResourcePaths(joinPaths(relativePaths));
         if (filter == null) {
             return paths;
@@ -164,11 +190,11 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
         return accepted;
     }
 
-    public Set<String> getAppRelativeLocationChildren(final String... relativePaths) {
+    private Set<String> getAppRelativeLocationChildren(final String... relativePaths) {
         return getAppRelativeLocationChildren(null, relativePaths);
     }
 
-    public Set<String> getAppRelativeLocationChildren(final FilenameFilter filter, final String... relativePaths) {
+    private Set<String> getAppRelativeLocationChildren(final FilenameFilter filter, final String... relativePaths) {
         final Set<String> found    = getAppRelativeLocationContents(relativePaths);
         final Set<String> children = new HashSet<>();
         for (final String current : found) {
@@ -183,16 +209,6 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
         return children;
     }
 
-    @SuppressWarnings("unused")
-    public URI getConfigurationLocation(final String configuration) {
-        return getAppRelativeLocation("WEB-INF", "conf", configuration);
-    }
-
-    @SuppressWarnings("unused")
-    public InputStream getConfigurationStream(final String configuration) {
-        return getAppRelativeStream("WEB-INF", "conf", configuration);
-    }
-
     private static String joinPaths(final String... elements) {
         return Joiner.on("/").join(elements);
     }
@@ -204,7 +220,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
         return path;
     }
 
-    private static ContextService     _instance;
-    private        ApplicationContext _context;
-    private        ServletContext     _servletContext;
+    private static ContextService _instance;
+    private final Set<ApplicationContext> _contexts = new HashSet<>();
+    private ServletContext _servletContext;
 }
