@@ -10,10 +10,10 @@ import javax.lang.model.element.TypeElement;
 import java.util.Properties;
 
 /**
- * Processes the {@link XnatPlugin} annotation and generates the module's properties file that used by XNAT for module
+ * Processes the {@link XnatPlugin} annotation and generates the plugin's properties file that used by XNAT for plugin
  * discovery. The basis for this code was adapted from <a href="http://kohsuke.org">Kohsuke Kawaguchi's</a> code for the
  * <a href="http://metainf-services.kohsuke.org">META-INF/services generator</a>. This does the same basic thing but
- * generates a file named "META-INF/xnat/id-module.properties", where the <i>id</i> is taken from the value set for the
+ * generates a file named "META-INF/xnat/id-plugin.properties", where the <i>id</i> is taken from the value set for the
  * {@link XnatPlugin#value()} attribute on the annotation.
  */
 @MetaInfServices(Processor.class)
@@ -21,18 +21,18 @@ import java.util.Properties;
 public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcessor<XnatPlugin> {
 
     @Override
-    protected Properties processAnnotation(final TypeElement element, final XnatPlugin module) {
+    protected Properties processAnnotation(final TypeElement element, final XnatPlugin plugin) {
         final Properties properties = new Properties();
-        properties.setProperty("id", module.value());
-        if (StringUtils.isNotBlank(module.namespace())) {
-            properties.setProperty("namespace", module.namespace());
+        properties.setProperty("id", plugin.value());
+        if (StringUtils.isNotBlank(plugin.namespace())) {
+            properties.setProperty("namespace", plugin.namespace());
         }
-        properties.setProperty("name", module.name());
-        if (StringUtils.isNotBlank(module.description())) {
-            properties.setProperty("description", module.description());
+        properties.setProperty("name", plugin.name());
+        if (StringUtils.isNotBlank(plugin.description())) {
+            properties.setProperty("description", plugin.description());
         }
-        if (StringUtils.isNotBlank(module.beanName())) {
-            properties.setProperty("beanName", module.beanName());
+        if (StringUtils.isNotBlank(plugin.beanName())) {
+            properties.setProperty("beanName", plugin.beanName());
         }
         final String config = getTypeElementValue(element, "config");
         if (StringUtils.isNotEmpty(config)) {
@@ -42,12 +42,12 @@ public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcesso
     }
 
     @Override
-    protected String getPropertiesName(final XnatPlugin module) {
-        final String namespace = module.namespace();
-        final String moduleId = module.value();
+    protected String getPropertiesName(final XnatPlugin plugin) {
+        final String namespace = plugin.namespace();
+        final String pluginId = plugin.value();
         if (StringUtils.isBlank(namespace)) {
-            return String.format("META-INF/xnat/%s-module.properties", moduleId);
+            return String.format("META-INF/xnat/%s-plugin.properties", pluginId);
         }
-        return String.format("META-INF/xnat/%s/%s-module.properties", namespace, moduleId);
+        return String.format("META-INF/xnat/%s/%s-plugin.properties", namespace, pluginId);
     }
 }
