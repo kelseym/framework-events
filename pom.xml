@@ -24,8 +24,9 @@
     <description>Defines the common framework for NRG services and libraries.</description>
 
     <scm>
-        <connection>scm:hg:https://bitbucket.org/nrg/nrg_framework</connection>
-        <url>scm:hg:https://bitbucket.org/nrg/nrg_framework</url>
+        <url>https://bitbucket.org/xnatdev/framework</url>
+        <connection>scm:git:git://bitbucket.org/xnatdev/framework.git</connection>
+        <developerConnection>scm:git:git@bitbucket.org:xnatdev/framework.git</developerConnection>
     </scm>
 
     <issueManagement>
