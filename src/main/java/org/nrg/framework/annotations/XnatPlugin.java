@@ -8,12 +8,11 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-public @interface XnatModule {
+public @interface XnatPlugin {
     String value();
     String namespace() default "";
     String name() default "";
     String description() default "";
     String beanName() default "";
     Class<?>[] config() default {};
-    Class<?>[] targetType() default {};
 }
