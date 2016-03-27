@@ -21,7 +21,7 @@ public class DataSourceConfig {
         final Class<? extends DataSource> clazz = Class.forName(properties.getProperty("class", SimpleDriverDataSource.class.getName())).asSubclass(DataSource.class);
         if (properties.containsKey("driver")) {
             final String driver = properties.getProperty("driver");
-            properties.put("driver", Class.forName(driver));
+            properties.put("driver", Class.forName(driver).newInstance());
         }
         return Beans.getInitializedBean(properties, clazz);
     }

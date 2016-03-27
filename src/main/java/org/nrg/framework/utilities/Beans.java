@@ -9,14 +9,14 @@ import java.util.Properties;
 public class Beans {
     public static <T> T getInitializedBean(final Properties properties, final Class<? extends T> clazz) throws InstantiationException, IllegalAccessException, InvocationTargetException {
         final T bean = clazz.newInstance();
-        for (final String key : properties.stringPropertyNames()) {
-            BeanUtils.setProperty(bean, key, properties.getProperty(key));
+        for (final Object key : properties.keySet()) {
+            BeanUtils.setProperty(bean, key.toString(), properties.get(key));
         }
         return bean;
     }
 
     public static Properties getNamespacedProperties(final Environment environment, final String namespace, final boolean truncate) {
-        final String regex = "^" + namespace.replaceAll("\\.", "\\\\.") + (namespace.endsWith(".") ? "" : "\\.") + "[A-z0-9_]+";
+        final String regex = "^" + namespace.replaceAll("\\.", "\\\\.") + (namespace.endsWith(".") ? "" : "\\.") + "[A-z0-9_\\.-]+";
         final Properties properties = new Properties();
         if (environment instanceof AbstractEnvironment) {
             final AbstractEnvironment abstractEnvironment = (AbstractEnvironment) environment;
