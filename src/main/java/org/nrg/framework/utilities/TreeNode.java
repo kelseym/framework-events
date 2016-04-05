@@ -1,17 +1,21 @@
 package org.nrg.framework.utilities;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.util.*;
 
 public class TreeNode<T> {
-    public TreeNode<T> getParent() {
-        return _parent;
+    public TreeNode() {
+
     }
 
-    public void setParent(final TreeNode<T> parent) {
-        _parent = parent;
+    public TreeNode(final T data) {
+        setData(data);
+    }
+
+    public TreeNode<T> getParent() {
+        return _parent;
     }
 
     public T getData() {
@@ -22,24 +26,38 @@ public class TreeNode<T> {
         _data = data;
     }
 
-    public Collection<TreeNode<T>> getChildren() {
+    public List<TreeNode<T>> getChildren() {
         return _children;
     }
 
     public void setChildren(final Collection<TreeNode<T>> children) {
-        for (final TreeNode<T> child : children) {
-            child.setParent(this);
+        for (final TreeNode<T> child : _children) {
+            child._parent = null;
         }
-        _children = children;
+        _children.clear();
+        for (final TreeNode<T> child : children) {
+            addChild(child);
+        }
     }
 
-    public void setChildren(final TreeNode<T>... children) {
+    @SafeVarargs
+    public final void setChildren(final TreeNode<T>... children) {
         setChildren(Arrays.asList(children));
     }
 
+    public void addChild(final TreeNode<T> child) {
+        child._parent = this;
+        _children.add(child);
+    }
+
+    /**
+     * Returns the direct ancestry of this node as a list, with the first member of the list being the parent of this
+     * node and each subsequent member of the list the parent of the previous member. The last ancestor is the root
+     * node. Note that the ancestry list does <em>not</em> include this node.
+     * @return The ancestors of this node in ascending order.
+     */
     public List<TreeNode<T>> getAncestry() {
         final List<TreeNode<T>> ancestry = new ArrayList<>();
-        ancestry.add(this);
         TreeNode<T> current = this;
         while (current.getParent() != null) {
             current = current.getParent();
@@ -48,8 +66,54 @@ public class TreeNode<T> {
         return ancestry;
     }
 
-    private TreeNode<T>             _parent;
-    private T                       _data;
-    private Collection<TreeNode<T>> _children;
-}
+    public Set<TreeNode<T>> getDistinctAncestry() {
+        final Set<TreeNode<T>> ancestry = new HashSet<>();
+        TreeNode<T> current = this;
+        while (current.getParent() != null && !ancestry.contains(current.getParent())) {
+            current = current.getParent();
+            ancestry.add(current);
+        }
+        return ancestry;
+    }
 
+    public int size() {
+        return size(this);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+
+        if (!(other instanceof TreeNode)) {
+            return false;
+        }
+
+        final TreeNode<?> that = (TreeNode<?>) other;
+
+        return new EqualsBuilder().append(_data, that._data).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(_data).toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return _data.toString();
+    }
+
+    private int size(final TreeNode<T> node) {
+        int size = 1; // Start with this node.
+        for (final TreeNode<T> child : node.getChildren()) {
+            size += size(child);
+        }
+        return size;
+    }
+
+    private TreeNode<T> _parent;
+    private T           _data;
+    private List<TreeNode<T>> _children = new ArrayList<>();
+}
