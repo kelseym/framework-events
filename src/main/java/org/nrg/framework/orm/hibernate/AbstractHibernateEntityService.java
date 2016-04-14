@@ -80,12 +80,12 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      */
     @Override
     @Transactional
-    public void create(E entity) {
+    public E create(E entity) {
         if (_log.isDebugEnabled()) {
             _log.debug("Creating a new entity: " + entity.toString());
         }
         getDao().create(entity);
-        postProcessNewEntity(entity);
+        return postProcessNewEntity(entity);
     }
 
     /**
