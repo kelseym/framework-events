@@ -287,8 +287,9 @@ public class Reflection {
                     break;
                 }
             }
-            // We made it through all of the candidates... If they all matched, this constructor matches so return it.
-            return match ? candidate : null;
+            if (match) {
+               return candidate;
+            }
         }
         // If we made it through without returning, none of the constructor candidates match.
         return null;
