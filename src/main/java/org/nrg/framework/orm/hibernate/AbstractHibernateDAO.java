@@ -275,6 +275,11 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     @Override
+    public void flush() {
+        getSession().flush();
+    }
+
+    @Override
     public List<Number> getRevisions(final long id) {
         return getAuditReader().getRevisions(getParameterizedType(), id);
     }

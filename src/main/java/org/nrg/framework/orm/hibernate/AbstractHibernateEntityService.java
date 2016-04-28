@@ -252,6 +252,12 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
 
     @Override
     @Transactional
+    public void flush() {
+        getDao().flush();
+    }
+
+    @Override
+    @Transactional
     public final List<Number> getRevisions(final long id) {
         return getDao().getRevisions(id);
     }
