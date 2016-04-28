@@ -9,6 +9,8 @@ package org.nrg.framework.utilities;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import org.nrg.framework.exceptions.NotConcreteTypeException;
+import org.nrg.framework.exceptions.NotParameterizedTypeException;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.slf4j.Logger;
@@ -17,8 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -28,7 +29,10 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 public class Reflection {
-    public static Map<String,List<Class<?>>> CACHED_CLASSES_BY_PACKAGE=Maps.newHashMap();
+    public static final Pattern PATTERN_GETTER = Pattern.compile("^get[A-Z][A-z]+");
+    public static final Pattern PATTERN_BOOL_GETTER = Pattern.compile("^is[A-Z][A-z]+");
+    public static final Pattern PATTERN_SETTER      = Pattern.compile("^set[A-Z][A-z]+");
+                                                                                          public static       Map<String,List<Class<?>>> CACHED_CLASSES_BY_PACKAGE =Maps.newHashMap();
     /**
      * Scans all classes accessible from the context class loader which belong
      * to the given package and subpackages.
@@ -108,7 +112,32 @@ public class Reflection {
             // Nothing to do here...
 		}
     }
-    
+
+    public static List<Class<?>> getClassesFromParameterizedType(final Type type) throws NotParameterizedTypeException, NotConcreteTypeException {
+        if (!(type instanceof ParameterizedType)) {
+            throw new NotParameterizedTypeException(type, "The type " + type.toString() + " is not a parameterized type");
+        }
+        final List<Class<?>> classes = new ArrayList<>();
+        final ParameterizedType parameterizedType = (ParameterizedType) type;
+        for (final Type subtype : parameterizedType.getActualTypeArguments()) {
+            if (subtype instanceof ParameterizedType) {
+                throw new NotConcreteTypeException(type, "The type " + type.toString() + " can not be a parameterized type");
+            }
+            classes.add((Class<?>) subtype);
+        }
+        return classes;
+    }
+
+    public static boolean isGetter(final Method method) {
+        return Modifier.isPublic(method.getModifiers()) &&
+               method.getParameterTypes().length == 0 &&
+               ((PATTERN_GETTER.matcher(method.getName()).matches() && !method.getReturnType().equals(Void.TYPE)) || (PATTERN_BOOL_GETTER.matcher((method.getName())).matches() && method.getReturnType().equals(Boolean.TYPE)));
+    }
+
+    public static boolean isSetter(final Method method) {
+        return Modifier.isPublic(method.getModifiers()) && PATTERN_SETTER.matcher(method.getName()).matches() && method.getParameterTypes().length == 1;
+    }
+
     public interface InjectableI{
     	void execute(Map<String,Object> params);
     }

@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = PacsEntityServiceTestConfiguration.class)
 public class PacsEntityServiceTest {
 
     @Inject

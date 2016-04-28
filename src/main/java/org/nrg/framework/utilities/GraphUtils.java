@@ -25,8 +25,8 @@ public final class GraphUtils {
     /**
      * Indicates that an algorithm that requires a directed acyclic graph (DAG)
      * was instead provided a cyclic graph.
-     * @author Kevin A. Archie
      *
+     * @author Kevin A. Archie
      */
     public static class CyclicGraphException extends IllegalArgumentException {
         private static final long serialVersionUID = 1L;
@@ -45,6 +45,7 @@ public final class GraphUtils {
 
         /**
          * Retrieves partial result from algorithm, if one is available.
+         *
          * @return partial result (type determined by throwing algorithm)
          */
         public Object getPartialResult() {
@@ -55,8 +56,12 @@ public final class GraphUtils {
 
     /**
      * Use Kahn's algorithm for topological sort. Removes successfully sorted nodes from the input graph.
+     *
      * @param graph A map where each entry maps from a node to its incoming edges
+     * @param <X>   The type of object to be sorted.
+     *
      * @return topologically sorted X
+     *
      * @throws CyclicGraphException if graph is cyclic
      */
     @SuppressWarnings("Duplicates")
@@ -64,9 +69,9 @@ public final class GraphUtils {
         // Nodes with no incoming edges are trivially resolved.
         final Set<X> resolved = new LinkedHashSet<>();
         for (final Iterator<Map.Entry<X, Collection<X>>> mei = graph.entrySet().iterator(); mei.hasNext(); ) {
-            final Map.Entry<X, Collection<X>> me    = mei.next();
-            final X                           node  = me.getKey();
-            final Collection<X>               edges = me.getValue();
+            final Map.Entry<X, Collection<X>> me = mei.next();
+            final X node = me.getKey();
+            final Collection<X> edges = me.getValue();
             edges.remove(node); // ignore edges from a node to itself
             if (edges.isEmpty()) {
                 resolved.add(node);
@@ -78,14 +83,14 @@ public final class GraphUtils {
         while (!resolved.isEmpty()) {
             // Move one element (x) from the resolved bin to the final sorted list.
             final Iterator<X> i = resolved.iterator();
-            final X           x = i.next();
+            final X x = i.next();
             i.remove();
             sorted.add(x);
 
             // All of the elements pointed to by x now have that edge resolved.
             for (final Iterator<Map.Entry<X, Collection<X>>> mei = graph.entrySet().iterator(); mei.hasNext(); ) {
-                final Map.Entry<X, Collection<X>> me       = mei.next();
-                final Collection<X>               incoming = me.getValue();
+                final Map.Entry<X, Collection<X>> me = mei.next();
+                final Collection<X> incoming = me.getValue();
                 incoming.remove(x);
                 if (incoming.isEmpty()) {
                     resolved.add(me.getKey());

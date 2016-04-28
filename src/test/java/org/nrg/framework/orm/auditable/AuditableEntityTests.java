@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = AuditableEntityTestsConfiguration.class)
 public class AuditableEntityTests {
 
     public static final String FIELD_1 = "Field 1";
@@ -84,6 +84,7 @@ public class AuditableEntityTests {
         _service.create(created2);
     }
 
+    @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
     @Test
     public void testAuditableUniqueConstraints() {
         final JdbcTemplate template = new JdbcTemplate(_dataSource);

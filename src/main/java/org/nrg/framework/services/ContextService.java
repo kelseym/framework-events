@@ -8,13 +8,13 @@
 package org.nrg.framework.services;
 
 import com.google.common.base.Joiner;
-import org.nrg.framework.exceptions.NrgServiceError;
-import org.nrg.framework.exceptions.NrgServiceException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.ServletContextAware;
 
@@ -24,37 +24,27 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class ContextService implements NrgService, ApplicationContextAware, ApplicationListener<ContextRefreshedEvent>, ServletContextAware {
-    /**
-     * Public constructor for use by Spring to initialize the ContextService within the application context. Other
-     * classes or applications should not call this constructor and should only call the
-     *
-     * @throws NrgServiceException Thrown when the ContextService is already initialized.
-     */
-    protected ContextService() throws NrgServiceException {
-        if (_instance != null) {
-            throw new NrgServiceException(NrgServiceError.AlreadyInitialized, "The ContextService is already initialized, try calling getInstance() instead.");
-        }
-        _instance = this;
-    }
-
+public class ContextService implements NrgService, ApplicationContextAware, ServletContextAware {
     /**
      * Returns the existing instance of the ContextService.
      *
      * @return The existing instance of the ContextService.
      */
     public static ContextService getInstance() {
-        if (_instance == null) {
-            try {
-                _instance = new ContextService();
-            } catch (NrgServiceException e) {
-                // Do nothing. This should never happen, since the exception is only thrown when the service is already initialized.
-            }
+        if (_instances.containsKey("contextService")) {
+            return _instances.get("contextService");
         }
-        return _instance;
+        if (_instances.containsKey("rootContextService")) {
+            return _instances.get("rootContextService");
+        }
+        return new ContextService();
     }
 
     /**
@@ -64,6 +54,9 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      */
     @Override
     public void setApplicationContext(final ApplicationContext context) throws BeansException {
+        synchronized (_instances) {
+            _instances.putAll(context.getBeansOfType(ContextService.class));
+        }
         _contexts.add(context);
     }
 
@@ -89,28 +82,53 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
     /**
      * Handles updates to the application context.
      *
-     * @param event The application event. This is checked to see if it's a <b>ContextRefreshedEvent</b> and, if so, the
-     *              application context will be refreshed.
+     * @param event The context refreshed event. This adds the new context to the contexts available to this service.
      */
-    @Override
-    public void onApplicationEvent(final ContextRefreshedEvent event) {
-        ContextService.getInstance().setApplicationContext(event.getApplicationContext());
+    @EventListener
+    public void handleContextRefreshedEvent(final ContextRefreshedEvent event) {
+        setApplicationContext(event.getApplicationContext());
     }
 
     /**
-     * Gets a bean of the indicated type.
+     * Gets a bean of the indicated type. If no bean of that type is found, this method throws {@link
+     * NoSuchBeanDefinitionException}.
      *
      * @param <T>  The type of the bean to be retrieved.
      * @param type The class of the bean to be retrieved.
+     *
      * @return An object of the type.
+     *
+     * @throws NoSuchBeanDefinitionException When a bean of the indicated type can't be found.
      */
-    public <T> T getBean(final Class<T> type) {
+    public <T> T getBean(final Class<T> type) throws NoSuchBeanDefinitionException {
         for (final ApplicationContext context : _contexts) {
-            final T candidate = context.getBean(type);
-            if (candidate != null) {
-                return candidate;
+            try {
+                return context.getBean(type);
+            } catch (NoSuchBeanDefinitionException ignored) {
+                // This is OK, just means the bean doesn't exist in the current context. Carry on.
             }
         }
+        // If we didn't find a valid bean of the type, return null.
+        throw new NoSuchBeanDefinitionException(type);
+    }
+
+    /**
+     * Gets a bean of the indicated type. If no bean of that type is found, null is returned.
+     *
+     * @param <T>  The type of the bean to be retrieved.
+     * @param type The class of the bean to be retrieved.
+     *
+     * @return An object of the type.
+     */
+    public <T> T getBeanSafely(final Class<T> type) {
+        for (final ApplicationContext context : _contexts) {
+            try {
+                return context.getBean(type);
+            } catch (NoSuchBeanDefinitionException ignored) {
+                // This is OK, just means the bean doesn't exist in the current context. Carry on.
+            }
+        }
+        // If we didn't find a valid bean of the type, return null.
         return null;
     }
 
@@ -120,16 +138,42 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      * @param <T>  The type of the bean to be retrieved.
      * @param name The name of the bean to be retrieved.
      * @param type The class of the bean to be retrieved.
+     *
      * @return An object of the type.
+     *
+     * @throws NoSuchBeanDefinitionException When a bean of the indicated type can't be found.
      */
-    public <T> T getBean(final String name, final Class<T> type) {
+    public <T> T getBean(final String name, final Class<T> type) throws NoSuchBeanDefinitionException {
         for (final ApplicationContext context : _contexts) {
-            final T candidate = context.getBean(name, type);
-            if (candidate != null) {
-                return candidate;
+            try {
+                return context.getBean(name, type);
+            } catch (NoSuchBeanDefinitionException ignored) {
+                // This is OK, just means the bean doesn't exist in the current context. Carry on.
             }
         }
-        return null;
+        // If we didn't find a valid bean of the name and type, return null.
+        throw new NoSuchBeanDefinitionException(type, name);
+    }
+
+    /**
+     * Gets the bean with the indicated name and type. If no bean with that name and type is found, null is returned.
+     *
+     * @param <T>  The type of the bean to be retrieved.
+     * @param name The name of the bean to be retrieved.
+     * @param type The class of the bean to be retrieved.
+     *
+     * @return An object of the type.
+     */
+    public <T> T getBeanSafely(final String name, final Class<T> type) {
+        for (final ApplicationContext context : _contexts) {
+            try {
+                return context.getBean(name, type);
+            } catch (NoSuchBeanDefinitionException ignored) {
+                // This is OK, just means the bean doesn't exist in the current context. Carry on.
+            }
+        }
+        // If we didn't find a valid bean of the name and type, return null.
+        throw new NoSuchBeanDefinitionException(type, name);
     }
 
     /**
@@ -137,6 +181,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
      *
      * @param type The class of the bean to be retrieved.
      * @param <T>  The parameterized class of the bean to be retrieved.
+     *
      * @return An object of the type.
      */
     @SuppressWarnings("unused")
@@ -195,7 +240,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
     }
 
     private Set<String> getAppRelativeLocationChildren(final FilenameFilter filter, final String... relativePaths) {
-        final Set<String> found    = getAppRelativeLocationContents(relativePaths);
+        final Set<String> found = getAppRelativeLocationContents(relativePaths);
         final Set<String> children = new HashSet<>();
         for (final String current : found) {
             if (!current.endsWith("/")) {
@@ -220,7 +265,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Appl
         return path;
     }
 
-    private static ContextService _instance;
-    private final Set<ApplicationContext> _contexts = new HashSet<>();
+    private final static Map<String, ContextService> _instances = new ConcurrentHashMap<>();
+    private final        Set<ApplicationContext>     _contexts  = new HashSet<>();
     private ServletContext _servletContext;
 }

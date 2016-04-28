@@ -43,5 +43,5 @@ public class SerializerRegistry extends HashMap<Class<?>, String> {
         return null;
     }
 
-    private Map<Class<?>, JsonSerializer<?>> _cache = new HashMap<Class<?>, JsonSerializer<?>>();
+    private Map<Class<?>, JsonSerializer<?>> _cache = new HashMap<>();
 }

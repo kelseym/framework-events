@@ -17,8 +17,8 @@ import org.nrg.framework.orm.hibernate.BaseHibernateService;
 import java.io.Serializable;
 
 public interface DataCacheService extends BaseHibernateService<DataCacheItem> {
-    public abstract <T extends Serializable> long put(String key, T value);
-    public abstract <T extends Serializable> T get(String key);
-    public abstract <T extends Serializable> T remove(String key);
-    public abstract void clean();
+    <T extends Serializable> long put(String key, T value);
+    <T extends Serializable> T get(String key);
+    <T extends Serializable> T remove(String key);
+    void clean();
 }

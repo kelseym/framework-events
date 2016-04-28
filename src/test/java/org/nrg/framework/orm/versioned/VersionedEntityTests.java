@@ -10,7 +10,6 @@
 package org.nrg.framework.orm.versioned;
 
 import org.hibernate.exception.ConstraintViolationException;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,7 +38,7 @@ import static org.junit.Assert.*;
 
 @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = VersionedEntityTestsConfiguration.class)
 @Rollback
 public class VersionedEntityTests {
 

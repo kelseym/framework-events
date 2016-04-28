@@ -28,7 +28,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = TestMarshallerCacheServiceConfiguration.class)
 public class TestMarshallerCacheService {
 
     @Test

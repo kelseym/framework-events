@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class SerializerService {
@@ -21,6 +23,10 @@ public class SerializerService {
 
     public <T> T deserializeJson(final String json, final TypeReference<T> typeRef) throws IOException {
         return _jsonObjectMapper.readValue(json, typeRef);
+    }
+
+    public Map<String, String> deserializeJsonToMapOfStrings(final String json) throws IOException {
+        return _jsonObjectMapper.readValue(json, MAP_STRING_STRING_TYPE_REFERENCE);
     }
 
     public <T> String toJson(final T instance) throws IOException {
@@ -42,6 +48,8 @@ public class SerializerService {
     public <T> String toYaml(final T instance) throws IOException {
         return _yamlObjectMapper.writeValueAsString(instance);
     }
+
+    private final static TypeReference<HashMap<String, String>> MAP_STRING_STRING_TYPE_REFERENCE = new TypeReference<HashMap<String, String>>() {};
 
     @Inject
     @Named("jsonObjectMapper")

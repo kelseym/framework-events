@@ -14,7 +14,9 @@ package org.nrg.framework.datacache;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.nrg.framework.configuration.FrameworkConfig;
 import org.nrg.framework.exceptions.NrgServiceException;
+import org.nrg.framework.test.OrmTestConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -28,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(classes = {OrmTestConfiguration.class, FrameworkConfig.class})
 public class TestDataCacheService {
     public static final String KEY1 = "key1";
     public static final String KEY2 = "key2";

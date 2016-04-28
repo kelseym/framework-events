@@ -6,18 +6,21 @@ import org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory;
 import org.hibernate.cache.spi.RegionFactory;
 import org.hibernate.cfg.ImprovedNamingStrategy;
 import org.nrg.framework.orm.hibernate.AggregatedAnnotationSessionFactoryBean;
+import org.nrg.framework.orm.hibernate.HibernateEntityPackageList;
 import org.nrg.framework.orm.hibernate.PrefixedTableNamingStrategy;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.orm.hibernate4.HibernateTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.ResourceTransactionManager;
 
 import javax.sql.DataSource;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -29,12 +32,12 @@ import java.util.Properties;
 public class OrmTestConfiguration {
     @Bean
     public DataSource dataSource() {
-        return new SimpleDriverDataSource() {{
-            setDriverClass(Driver.class);
-            setUrl("jdbc:h2:mem:test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
-            setUsername("sa");
-            setPassword("");
-        }};
+        final SimpleDriverDataSource dataSource = new SimpleDriverDataSource();
+        dataSource.setDriverClass(Driver.class);
+        dataSource.setUrl("jdbc:h2:mem:test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE");
+        dataSource.setUsername("sa");
+        dataSource.setPassword("");
+        return dataSource;
     }
 
     @Bean
@@ -65,8 +68,10 @@ public class OrmTestConfiguration {
     public FactoryBean<SessionFactory> sessionFactory(final RegionFactory factory,
                                                       final DataSource dataSource,
                                                       @Qualifier("hibernateProperties") final Properties properties,
-                                                      final ImprovedNamingStrategy namingStrategy) {
+                                                      final ImprovedNamingStrategy namingStrategy,
+                                                      final List<HibernateEntityPackageList> packageLists) {
         final AggregatedAnnotationSessionFactoryBean bean = new AggregatedAnnotationSessionFactoryBean();
+        bean.setEntityPackageLists(packageLists);
         bean.setCacheRegionFactory(factory);
         bean.setDataSource(dataSource);
         bean.setHibernateProperties(properties);
@@ -78,4 +83,10 @@ public class OrmTestConfiguration {
     public ResourceTransactionManager transactionManager(final FactoryBean<SessionFactory> sessionFactory) throws Exception {
         return new HibernateTransactionManager(sessionFactory.getObject());
     }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(dataSource());
+    }
 }
+
