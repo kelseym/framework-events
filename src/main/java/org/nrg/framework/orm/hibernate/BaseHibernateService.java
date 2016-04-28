@@ -169,6 +169,8 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
     @SuppressWarnings({"unchecked", "varargs"})
     void refresh(boolean initialize, E... entities);
 
+    void flush();
+
     @Transactional
     List<Number> getRevisions(long id);
 
