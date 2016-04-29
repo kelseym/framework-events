@@ -29,18 +29,21 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
 public class Reflection {
-    public static final Pattern PATTERN_GETTER = Pattern.compile("^get[A-Z][A-z]+");
-    public static final Pattern PATTERN_BOOL_GETTER = Pattern.compile("^is[A-Z][A-z]+");
-    public static final Pattern PATTERN_SETTER      = Pattern.compile("^set[A-Z][A-z]+");
-                                                                                          public static       Map<String,List<Class<?>>> CACHED_CLASSES_BY_PACKAGE =Maps.newHashMap();
+    public static final Pattern                     PATTERN_GETTER            = Pattern.compile("^get[A-Z][A-z]+");
+    public static final Pattern                     PATTERN_BOOL_GETTER       = Pattern.compile("^is[A-Z][A-z]+");
+    public static final Pattern                     PATTERN_SETTER            = Pattern.compile("^set[A-Z][A-z]+");
+    public static       Map<String, List<Class<?>>> CACHED_CLASSES_BY_PACKAGE = Maps.newHashMap();
+
     /**
      * Scans all classes accessible from the context class loader which belong
      * to the given package and subpackages.
      *
      * @param packageName The base package
+     *
      * @return The classes
+     *
      * @throws ClassNotFoundException the class not found exception
-     * @throws IOException    Signals that an I/O exception has occurred.
+     * @throws IOException            Signals that an I/O exception has occurred.
      */
     public static List<Class<?>> getClassesForPackage(final String packageName) throws ClassNotFoundException, IOException {
         if (CACHED_CLASSES_BY_PACKAGE.containsKey(packageName)) {
@@ -79,38 +82,38 @@ public class Reflection {
 
         return classes;
     }
-    
-    public static void injectDynamicImplementations(final String _package, final boolean failOnException, Map<String,Object> params) throws Exception{
-    	List<Class<?>> classes = Reflection.getClassesForPackage(_package);
-    	if(params==null){
-    		params=Maps.newHashMap();
-    	}
-		if(classes!=null && classes.size()>0){
-			for(Class<?> clazz: classes){
-			    try {
-					if(InjectableI.class.isAssignableFrom(clazz)){			
-						InjectableI action=(InjectableI)clazz.newInstance();
-					    action.execute(params);
-					}else{
-						_log.error("Reflection: "+ _package + "." + clazz.getName() + " is NOT an implementation of InjectableI");
-					}
-				} catch (Throwable e) {
-					if(failOnException){
-						throw e;
-					}else{
-						_log.error("",e);
-					}
-				}
-			}
-		}
+
+    public static void injectDynamicImplementations(final String _package, final boolean failOnException, Map<String, Object> params) throws Exception {
+        List<Class<?>> classes = Reflection.getClassesForPackage(_package);
+        if (params == null) {
+            params = Maps.newHashMap();
+        }
+        if (classes != null && classes.size() > 0) {
+            for (Class<?> clazz : classes) {
+                try {
+                    if (InjectableI.class.isAssignableFrom(clazz)) {
+                        InjectableI action = (InjectableI) clazz.newInstance();
+                        action.execute(params);
+                    } else {
+                        _log.error("Reflection: " + _package + "." + clazz.getName() + " is NOT an implementation of InjectableI");
+                    }
+                } catch (Throwable e) {
+                    if (failOnException) {
+                        throw e;
+                    } else {
+                        _log.error("", e);
+                    }
+                }
+            }
+        }
     }
-    
-    public static void injectDynamicImplementations(final String _package, final Map<String,Object> params){
-    	try {
-			injectDynamicImplementations(_package, false, params);
-		} catch (Throwable ignored) {
+
+    public static void injectDynamicImplementations(final String _package, final Map<String, Object> params) {
+        try {
+            injectDynamicImplementations(_package, false, params);
+        } catch (Throwable ignored) {
             // Nothing to do here...
-		}
+        }
     }
 
     public static List<Class<?>> getClassesFromParameterizedType(final Type type) throws NotParameterizedTypeException, NotConcreteTypeException {
@@ -138,8 +141,8 @@ public class Reflection {
         return Modifier.isPublic(method.getModifiers()) && PATTERN_SETTER.matcher(method.getName()).matches() && method.getParameterTypes().length == 1;
     }
 
-    public interface InjectableI{
-    	void execute(Map<String,Object> params);
+    public interface InjectableI {
+        void execute(Map<String, Object> params);
     }
 
     /**
@@ -147,8 +150,10 @@ public class Reflection {
      *
      * @param jarFile     the jar file
      * @param packageName the package name
+     *
      * @return the collection of classes in the jar file.
-     * @throws IOException    Signals that an I/O exception has occurred.
+     *
+     * @throws IOException            Signals that an I/O exception has occurred.
      * @throws ClassNotFoundException the class not found exception
      */
     public static Collection<? extends Class<?>> findClassesInJarFile(final URL jarFile, final String packageName) throws IOException, ClassNotFoundException {
@@ -169,9 +174,11 @@ public class Reflection {
      *
      * @param directory   The base directory
      * @param packageName The package name for classes found inside the base directory
+     *
      * @return The classes
+     *
      * @throws ClassNotFoundException the class not found exception
-     * @throws IOException    Signals that an I/O exception has occurred.
+     * @throws IOException            Signals that an I/O exception has occurred.
      */
     public static List<Class<?>> findClasses(final File directory, final String packageName) throws ClassNotFoundException, IOException {
         final List<Class<?>> classes = new ArrayList<>();
@@ -232,9 +239,10 @@ public class Reflection {
      * <b>Note:</b> This version of the method returns only publicly accessible constructors. If you need to find
      * protected or private constructors, call {@link #getConstructorForParameters(Class, int, Class[])}.
      *
-     * @param target            The class that you want to inspect for compatible constructors.
-     * @param parameterTypes    The parameter types you want to submit to the constructor.
-     * @param <T>               The parameterized type for this method.
+     * @param target         The class that you want to inspect for compatible constructors.
+     * @param parameterTypes The parameter types you want to submit to the constructor.
+     * @param <T>            The parameterized type for this method.
+     *
      * @return A matching constructor, if any, <b>null</b> otherwise.
      */
     public static <T> Constructor<T> getConstructorForParameters(final Class<T> target, final Class<?>... parameterTypes) {
@@ -254,15 +262,16 @@ public class Reflection {
      * the {@link Modifier} class:
      *
      * <ul>
-     *     <li>{@link Modifier#PUBLIC} indicates only publicly accessible constructors</li>
-     *     <li>{@link Modifier#PROTECTED} indicates publicly accessible or protected constructors</li>
-     *     <li>{@link Modifier#PRIVATE} indicates public, protected, or private constructors</li>
+     * <li>{@link Modifier#PUBLIC} indicates only publicly accessible constructors</li>
+     * <li>{@link Modifier#PROTECTED} indicates publicly accessible or protected constructors</li>
+     * <li>{@link Modifier#PRIVATE} indicates public, protected, or private constructors</li>
      * </ul>
      *
-     * @param target            The class that you want to inspect for compatible constructors.
-     * @param requestedAccess   Indicates the desired access level.
-     * @param parameterTypes    The parameter types you want to submit to the constructor.
-     * @param <T>               The parameterized type for this method.
+     * @param target          The class that you want to inspect for compatible constructors.
+     * @param requestedAccess Indicates the desired access level.
+     * @param parameterTypes  The parameter types you want to submit to the constructor.
+     * @param <T>             The parameterized type for this method.
+     *
      * @return A matching constructor, if any, <b>null</b> otherwise.
      */
     @SuppressWarnings("unchecked")
@@ -317,7 +326,7 @@ public class Reflection {
                 }
             }
             if (match) {
-               return candidate;
+                return candidate;
             }
         }
         // If we made it through without returning, none of the constructor candidates match.
