@@ -9,6 +9,7 @@ package org.nrg.framework.utilities;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import org.nrg.framework.annotations.XnatPlugin;
 import org.nrg.framework.exceptions.NotConcreteTypeException;
 import org.nrg.framework.exceptions.NotParameterizedTypeException;
 import org.reflections.Reflections;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.net.JarURLConnection;
 import java.net.URL;
@@ -81,6 +83,32 @@ public class Reflection {
         CACHED_CLASSES_BY_PACKAGE.put(packageName, classes);
 
         return classes;
+    }
+
+    /**
+     * Checks whether <b>clazz</b> or any of its superclasses are decorated with an annotation of the class
+     * <b>annotationClass</b>. If so, the annotation instance is returned. If not, this method returns null. Note that
+     * an instance of the annotation will not be found unless the annotation definition is retained for run-time
+     * analysis, which requires the following annotation on the definition:
+     *
+     * <pre>@Retention(RetentionPolicy.RUNTIME)</pre>
+     *
+     * See {@link XnatPlugin} for an example of an annotation that includes this configuration.
+     *
+     * @param clazz              The top-level class to check.
+     * @param annotationClass    The annotation definition to check for.
+     *
+     * @return The annotation instance if it exists on the class or any of its subtypes, null otherwise.
+     */
+    public static <T extends Annotation> T findAnnotationInClassHierarchy(final Class<?> clazz, final Class<T> annotationClass) {
+        Class<?> current = clazz;
+        while (current != null) {
+            if (current.isAnnotationPresent(annotationClass)) {
+                return current.getAnnotation(annotationClass);
+            }
+            current = clazz.getSuperclass();
+        }
+        return null;
     }
 
     public static void injectDynamicImplementations(final String _package, final boolean failOnException, Map<String, Object> params) throws Exception {
