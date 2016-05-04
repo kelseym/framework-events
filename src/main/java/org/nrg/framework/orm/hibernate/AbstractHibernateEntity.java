@@ -9,6 +9,8 @@
  */
 package org.nrg.framework.orm.hibernate;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.nrg.framework.orm.NrgEntity;
 
@@ -159,6 +161,21 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     @Override
     public int hashCode() {
         return Objects.hash(_id, _enabled, _created, _timestamp, _disabled);
+    }
+
+    @Override
+    public String toString() {
+        return addParentPropertiesToString(MoreObjects.toStringHelper(this))
+                .toString();
+    }
+
+    public ToStringHelper addParentPropertiesToString(final ToStringHelper toStringHelper) {
+        return toStringHelper
+                .add("id", _id)
+                .add("enabled", _enabled)
+                .add("created", _created)
+                .add("disabled", _disabled)
+                .add("timestamp", _timestamp);
     }
 
     private long _id;
