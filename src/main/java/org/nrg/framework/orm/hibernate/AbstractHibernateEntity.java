@@ -15,6 +15,7 @@ import org.nrg.framework.orm.NrgEntity;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 @MappedSuperclass
 @SuppressWarnings("serial")
@@ -142,6 +143,23 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
      * Used to exclude the properties of the base {@link NrgEntity} class.
      */
     private static final String[] EXCLUDE_BASE_PROPS = new String[] { "id", "enabled", "created", "timestamp", "disabled" };
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final AbstractHibernateEntity that = (AbstractHibernateEntity) o;
+        return _id == that._id &&
+                _enabled == that._enabled &&
+                Objects.equals(_created, that._created) &&
+                Objects.equals(_timestamp, that._timestamp) &&
+                Objects.equals(_disabled, that._disabled);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_id, _enabled, _created, _timestamp, _disabled);
+    }
 
     private long _id;
     private boolean _enabled;
