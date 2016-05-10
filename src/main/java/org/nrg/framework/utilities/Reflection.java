@@ -95,8 +95,9 @@ public class Reflection {
      *
      * See {@link XnatPlugin} for an example of an annotation that includes this configuration.
      *
-     * @param clazz              The top-level class to check.
-     * @param annotationClass    The annotation definition to check for.
+     * @param <T>                 The annotation class to check.
+     * @param clazz               The top-level class to check.
+     * @param annotationClass     The annotation definition to check for.
      *
      * @return The annotation instance if it exists on the class or any of its subtypes, null otherwise.
      */

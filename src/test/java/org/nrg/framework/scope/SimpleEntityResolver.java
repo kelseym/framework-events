@@ -13,16 +13,16 @@ import java.util.Map;
 public class SimpleEntityResolver implements EntityResolver<Wired> {
 
     public SimpleEntityResolver() throws IOException {
-        _site = new ObjectMapper().readValue(SITE_MAP, Site.class);
-        _registry.put(_site.getEntityId(), _site);
-        for (final Project project : _site.getProjects()) {
-            project.setParentEntityId(_site.getEntityId());
+        final Site site = new ObjectMapper().readValue(SITE_MAP, Site.class);
+        _registry.put(site.getEntityId(), site);
+        for (final Project project : site.getProjects()) {
+            project.setParentEntityId(site.getEntityId());
             _registry.put(project.getEntityId(), project);
-            _results.put(project.getEntityId(), project.isWired() ? project.getEntityId() : _site.getEntityId());
+            _results.put(project.getEntityId(), project.isWired() ? project.getEntityId() : site.getEntityId());
             for (final Subject subject : project.getSubjects()) {
                 subject.setParentEntityId(project.getEntityId());
                 _registry.put(subject.getEntityId(), subject);
-                _results.put(subject.getEntityId(), subject.isWired() ? subject.getEntityId() : project.isWired() ? project.getEntityId() : _site.getEntityId());
+                _results.put(subject.getEntityId(), subject.isWired() ? subject.getEntityId() : project.isWired() ? project.getEntityId() : site.getEntityId());
             }
         }
     }
@@ -103,7 +103,6 @@ public class SimpleEntityResolver implements EntityResolver<Wired> {
             "    ]\n" +
             "}";
 
-    private final Site _site;
-    private final Map<EntityId, Wired> _registry = new HashMap<EntityId, Wired>();
-    private final Map<EntityId, EntityId> _results  = new HashMap<EntityId, EntityId>();
+    private final Map<EntityId, Wired> _registry = new HashMap<>();
+    private final Map<EntityId, EntityId> _results  = new HashMap<>();
 }

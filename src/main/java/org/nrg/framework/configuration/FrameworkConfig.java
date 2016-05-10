@@ -1,17 +1,17 @@
 package org.nrg.framework.configuration;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.PrettyPrinter;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 import org.nrg.framework.datacache.SerializerRegistry;
 import org.nrg.framework.orm.hibernate.HibernateEntityPackageList;
 import org.nrg.framework.services.SerializerService;
+import org.nrg.framework.services.YamlObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 @Configuration
 @ComponentScan({"org.nrg.framework.datacache.impl.hibernate","org.nrg.framework.services.impl"})
@@ -28,28 +28,18 @@ public class FrameworkConfig {
     }
 
     @Bean
-    public PrettyPrinter prettyPrinter() {
-        final DefaultIndenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
-        final DefaultPrettyPrinter printer  = new DefaultPrettyPrinter();
-        printer.indentObjectsWith(indenter);
-        printer.indentArraysWith(indenter);
-        return printer;
+    public Jackson2ObjectMapperBuilder objectMapperBuilder() {
+        return new Jackson2ObjectMapperBuilder()
+                .serializationInclusion(JsonInclude.Include.NON_NULL)
+                .failOnEmptyBeans(false)
+                .featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES, JsonParser.Feature.ALLOW_YAML_COMMENTS)
+                .featuresToDisable(SerializationFeature.FAIL_ON_EMPTY_BEANS, SerializationFeature.WRITE_NULL_MAP_VALUES)
+                .modulesToInstall(new Hibernate4Module());
     }
 
     @Bean
-    public ObjectMapper jsonObjectMapper() {
-        final PrettyPrinter printer = prettyPrinter();
-        final ObjectMapper  mapper  = new ObjectMapper().setDefaultPrettyPrinter(printer);
-        mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-        return mapper;
-    }
-
-    @Bean
-    public ObjectMapper yamlObjectMapper() {
-        final PrettyPrinter printer = prettyPrinter();
-        final ObjectMapper  mapper  = new ObjectMapper(new YAMLFactory()).setDefaultPrettyPrinter(printer);
-        mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
-        return mapper;
+    public YamlObjectMapper yamlObjectMapper() {
+        return new YamlObjectMapper();
     }
 
     @Bean

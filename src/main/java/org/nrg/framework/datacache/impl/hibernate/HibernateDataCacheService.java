@@ -12,15 +12,14 @@
 
 package org.nrg.framework.datacache.impl.hibernate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nrg.framework.datacache.DataCacheItem;
 import org.nrg.framework.datacache.DataCacheService;
 import org.nrg.framework.datacache.SerializerRegistry;
 import org.nrg.framework.exceptions.NrgServiceError;
 import org.nrg.framework.exceptions.NrgServiceRuntimeException;
 import org.nrg.framework.orm.hibernate.AbstractHibernateEntityService;
+import org.nrg.framework.services.SerializerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -92,9 +91,9 @@ public class HibernateDataCacheService extends AbstractHibernateEntityService<Da
             JsonSerializer<? extends Serializable> serializer = _serializers.getSerializer(value.getClass());
             // If there's no special serializer for this class...
             if (serializer == null) {
-                return MAPPER.writeValueAsString(value);
+                return _serializerService.toJson(value);
             }
-        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | JsonProcessingException e) {
+        } catch (IOException | ClassNotFoundException | IllegalAccessException | InstantiationException e) {
             throw new NrgServiceRuntimeException(e);
         }
         return null;
@@ -106,16 +105,18 @@ public class HibernateDataCacheService extends AbstractHibernateEntityService<Da
         }
         try {
             //noinspection unchecked
-            return (T) MAPPER.readValue(item.getValue(), Class.forName(item.getType()));
+            return (T) _serializerService.deserializeJson(item.getValue(), Class.forName(item.getType()));
         } catch (IOException | ClassNotFoundException e) {
             throw new NrgServiceRuntimeException(e);
         }
     }
 
+    private static final Logger       _log   = LoggerFactory.getLogger(HibernateDataCacheService.class);
+
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Inject
     private SerializerRegistry _serializers;
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-    private static final Logger       _log   = LoggerFactory.getLogger(HibernateDataCacheService.class);
+    @Inject
+    private SerializerService _serializerService;
 }
