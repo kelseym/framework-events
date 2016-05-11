@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -17,31 +18,31 @@ import java.util.Map;
 @Service
 public class SerializerService {
     public JsonNode deserializeJson(final String json) throws IOException {
-        return _objectMapper.readTree(json);
+        return getObjectMapper().readTree(json);
     }
 
     public <T> T deserializeJson(final String json, final Class<T> clazz) throws IOException {
-        return _objectMapper.readValue(json, clazz);
+        return getObjectMapper().readValue(json, clazz);
     }
 
     public <T> T deserializeJson(final String json, final TypeReference<T> typeRef) throws IOException {
-        return _objectMapper.readValue(json, typeRef);
+        return getObjectMapper().readValue(json, typeRef);
     }
 
     public <T> T deserializeJson(final String json, final JavaType type) throws IOException {
-        return _objectMapper.readValue(json, type);
+        return getObjectMapper().readValue(json, type);
     }
 
     public JsonNode deserializeJson(final InputStream input) throws IOException {
-        return _objectMapper.readTree(input);
+        return getObjectMapper().readTree(input);
     }
 
     public Map<String, String> deserializeJsonToMapOfStrings(final String json) throws IOException {
-        return _objectMapper.readValue(json, MAP_STRING_STRING_TYPE_REFERENCE);
+        return getObjectMapper().readValue(json, MAP_STRING_STRING_TYPE_REFERENCE);
     }
 
     public <T> String toJson(final T instance) throws IOException {
-        return _objectMapper.writeValueAsString(instance);
+        return getObjectMapper().writeValueAsString(instance);
     }
 
     public JsonNode deserializeYaml(final String yaml) throws IOException {
@@ -69,14 +70,19 @@ public class SerializerService {
     }
 
     public TypeFactory getTypeFactory() {
-        return _objectMapper.getTypeFactory();
+        return getObjectMapper().getTypeFactory();
     }
 
-    private final static TypeReference<HashMap<String, String>> MAP_STRING_STRING_TYPE_REFERENCE = new TypeReference<HashMap<String, String>>() {};
+    private ObjectMapper getObjectMapper() {
+        return _objectMapper == null ? _objectMapper = _builder.build() : _objectMapper;
+    }
 
-    @Inject
+    private final static TypeReference<HashMap<String, String>> MAP_STRING_STRING_TYPE_REFERENCE = new TypeReference<HashMap<String, String>>() {
+    };
+
+    @Autowired
+    private Jackson2ObjectMapperBuilder _builder;
+
     private ObjectMapper _objectMapper;
-
-    @Inject
-    private YamlObjectMapper _yamlObjectMapper;
+    private YamlObjectMapper _yamlObjectMapper = new YamlObjectMapper();
 }

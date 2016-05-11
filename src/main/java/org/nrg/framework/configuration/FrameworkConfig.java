@@ -7,7 +7,6 @@ import com.fasterxml.jackson.datatype.hibernate4.Hibernate4Module;
 import org.nrg.framework.datacache.SerializerRegistry;
 import org.nrg.framework.orm.hibernate.HibernateEntityPackageList;
 import org.nrg.framework.services.SerializerService;
-import org.nrg.framework.services.YamlObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -35,11 +34,6 @@ public class FrameworkConfig {
                 .featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES, JsonParser.Feature.ALLOW_YAML_COMMENTS)
                 .featuresToDisable(SerializationFeature.FAIL_ON_EMPTY_BEANS, SerializationFeature.WRITE_NULL_MAP_VALUES)
                 .modulesToInstall(new Hibernate4Module());
-    }
-
-    @Bean
-    public YamlObjectMapper yamlObjectMapper() {
-        return new YamlObjectMapper();
     }
 
     @Bean
