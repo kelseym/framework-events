@@ -65,6 +65,10 @@ public class SerializerService {
         return _yamlObjectMapper.readTree(input);
     }
 
+    public <T> T deserializeYaml(final InputStream input, final TypeReference<T> typeRef) throws IOException {
+        return _yamlObjectMapper.readValue(input, typeRef);
+    }
+
     public <T> String toYaml(final T instance) throws IOException {
         return _yamlObjectMapper.writeValueAsString(instance);
     }
