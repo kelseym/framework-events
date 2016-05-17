@@ -130,7 +130,7 @@ public class NrgEventService {
 	 *
 	 * @param eventDesc the event desc
 	 * @param event the event
-	 * @param notifyClassEventListeners Notify class listeners?
+	 * @param notifyClassListeners Notify class listeners?
 	 * @param replyTo the reply to
 	 */
 	@SuppressWarnings("rawtypes")
