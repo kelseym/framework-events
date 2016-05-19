@@ -8,7 +8,6 @@
 package org.nrg.framework.services;
 
 import com.google.common.base.Joiner;
-import org.nrg.framework.exceptions.NrgServiceRuntimeException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -89,6 +88,24 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
     @EventListener
     public void handleContextRefreshedEvent(final ContextRefreshedEvent event) {
         setApplicationContext(event.getApplicationContext());
+    }
+
+    /**
+     * Gets a bean with the indicated name. If no bean with that name is found, this method throws {@link
+     * NoSuchBeanDefinitionException}.
+     *
+     * @param name The name of the bean to be retrieved.
+     *
+     * @return An object from the context.
+     *
+     * @throws NoSuchBeanDefinitionException When a bean of the indicated type can't be found.
+     */
+    public Object getBean(final String name) throws NoSuchBeanDefinitionException {
+        final ApplicationContext context = getContext();
+        if (context == null) {
+            return null;
+        }
+        return context.getBean(name);
     }
 
     /**
