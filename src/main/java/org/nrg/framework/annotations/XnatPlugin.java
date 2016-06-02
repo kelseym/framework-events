@@ -63,4 +63,11 @@ public @interface XnatPlugin {
      * @return A list of packages to be scanned.
      */
     String[] entityPackages() default {};
+
+    /**
+     * Defines all data models provided by the plugin.
+     *
+     * @return An array of data models provided by the plugin.
+     */
+    XnatDataModel[] dataModels() default {};
 }
