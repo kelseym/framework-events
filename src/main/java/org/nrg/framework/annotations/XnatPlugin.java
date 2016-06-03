@@ -14,13 +14,14 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 public @interface XnatPlugin {
-    String PLUGIN_CLASS           = "class";
-    String PLUGIN_ID              = "id";
-    String PLUGIN_NAMESPACE       = "namespace";
-    String PLUGIN_NAME            = "name";
-    String PLUGIN_DESCRIPTION     = "description";
-    String PLUGIN_BEAN_NAME       = "beanName";
-    String PLUGIN_ENTITY_PACKAGES = "entityPackages";
+    String PLUGIN_CLASS             = "class";
+    String PLUGIN_ID                = "id";
+    String PLUGIN_NAMESPACE         = "namespace";
+    String PLUGIN_NAME              = "name";
+    String PLUGIN_DESCRIPTION       = "description";
+    String PLUGIN_BEAN_NAME         = "beanName";
+    String PLUGIN_ENTITY_PACKAGES   = "entityPackages";
+    String PLUGIN_DATA_MODEL_PREFIX = "dataModel.";
 
     /**
      * In combination with the {@link #namespace()} value, indicates the unique ID for this plugin.

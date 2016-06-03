@@ -10,19 +10,37 @@ import java.lang.annotation.*;
 @Documented
 public @interface XnatDataModel {
     /**
-     * Indicates the name of the schema. If your schema follows the standard XNAT naming pattern of
-     * <b>schemas/<i>name</i>/<i>name</i>.xsd</b>, then this value only needs to specify the value for <i>name</i>. If
-     * the name of the XSD file differs from the name of the containing folder, then you must specify the full path,
-     * e.g. schemas/one/two.xsd.
+     * Provides the fully qualified name of the data model element. This includes the namespace, e.g. foo:barData.
      *
-     * @return The name of the schema file that defines the data model.
+     * @return The name of the element.
      */
     String value();
 
     /**
-     * Lists the elements provided by the data model.
+     * Indicates whether the data model element is secured by default. This defaults to true.
      *
-     * @return Any data elements provided by the data model that should be provisioned.
+     * @return Whether the data model element is secured by default.
      */
-    XnatDataModelElement[] elements() default {};
+    boolean secured() default true;
+
+    /**
+     * Defines the default singular name for the data model element.
+     *
+     * @return The default singular name.
+     */
+    String singular() default "";
+
+    /**
+     * Defines the default plural name for the data model element.
+     *
+     * @return The default plural name.
+     */
+    String plural() default "";
+
+    /**
+     * Defines the default code for the data model element.
+     *
+     * @return The default code.
+     */
+    String code() default "";
 }
