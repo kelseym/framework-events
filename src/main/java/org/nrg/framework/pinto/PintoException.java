@@ -52,7 +52,7 @@ public class PintoException extends Exception {
 
     @Override
     public String toString() {
-        return "Error on parameter " + _parameter + " (" + _type + ")\\n" + getMessage();
+        return "Error on parameter " + _parameter + " (" + _type + "): " + getMessage();
     }
 
     private final PintoExceptionType _type;

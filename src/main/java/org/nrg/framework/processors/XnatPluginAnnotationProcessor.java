@@ -3,14 +3,16 @@ package org.nrg.framework.processors;
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.MetaInfServices;
+import org.nrg.framework.annotations.XnatDataModel;
 import org.nrg.framework.annotations.XnatPlugin;
 
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.TypeElement;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 /**
  * Processes the {@link XnatPlugin} annotation and generates the plugin's properties file that used by XNAT for plugin
@@ -24,32 +26,56 @@ import java.util.Properties;
 public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcessor<XnatPlugin> {
 
     @Override
-    protected Properties processAnnotation(final TypeElement element, final XnatPlugin plugin) {
-        final Properties properties = new Properties();
-        properties.setProperty(XnatPlugin.PLUGIN_CLASS, element.getQualifiedName().toString());
-        properties.setProperty(XnatPlugin.PLUGIN_ID, plugin.value());
+    protected Map<String, String> processAnnotation(final TypeElement element, final XnatPlugin plugin) {
+        final Map<String, String> properties = new LinkedHashMap<>();
+        properties.put(XnatPlugin.PLUGIN_ID, plugin.value());
+        properties.put(XnatPlugin.PLUGIN_CLASS, element.getQualifiedName().toString());
+        properties.put(XnatPlugin.PLUGIN_NAME, plugin.name());
         if (StringUtils.isNotBlank(plugin.namespace())) {
-            properties.setProperty(XnatPlugin.PLUGIN_NAMESPACE, plugin.namespace());
+            properties.put(XnatPlugin.PLUGIN_NAMESPACE, plugin.namespace());
         }
-        properties.setProperty(XnatPlugin.PLUGIN_NAME, plugin.name());
         if (StringUtils.isNotBlank(plugin.description())) {
-            properties.setProperty(XnatPlugin.PLUGIN_DESCRIPTION, plugin.description());
+            properties.put(XnatPlugin.PLUGIN_DESCRIPTION, plugin.description());
         }
 
         final String beanName;
         if (StringUtils.isNotBlank(plugin.beanName())) {
             beanName = plugin.beanName();
         } else {
-            beanName = StringUtils.lowerCase(element.getSimpleName().toString());
+            beanName = StringUtils.uncapitalize(element.getSimpleName().toString());
         }
-        properties.setProperty(XnatPlugin.PLUGIN_BEAN_NAME, beanName);
+        properties.put(XnatPlugin.PLUGIN_BEAN_NAME, beanName);
 
         final List<String> entityPackages = Arrays.asList(plugin.entityPackages());
         if (entityPackages.size() > 0) {
-            properties.setProperty(XnatPlugin.PLUGIN_ENTITY_PACKAGES, Joiner.on(", ").join(entityPackages));
+            properties.put(XnatPlugin.PLUGIN_ENTITY_PACKAGES, Joiner.on(", ").join(entityPackages));
         }
+
+        final List<XnatDataModel> dataModels = Arrays.asList(plugin.dataModels());
+        for (final XnatDataModel dataModel : dataModels) {
+            final String elementPrefix = getElementPrefix(dataModel);
+            properties.put(elementPrefix + "secured", Boolean.toString(dataModel.secured()));
+            final String singular = dataModel.singular();
+            if (StringUtils.isNotBlank(singular)) {
+                properties.put(elementPrefix + "singular", singular);
+            }
+            final String plural = dataModel.plural();
+            if (StringUtils.isNotBlank(plural)) {
+                properties.put(elementPrefix + "plural", plural);
+            }
+            final String code = dataModel.code();
+            if (StringUtils.isNotBlank(code)) {
+                properties.put(elementPrefix + "code", code);
+            }
+        }
+
         return properties;
     }
+
+    private String getElementPrefix(final XnatDataModel dataModel) {
+        return "dataModel." + dataModel.value().replace(":", ".") + ".";
+    }
+
 
     @Override
     protected String getPropertiesName(final XnatPlugin plugin) {

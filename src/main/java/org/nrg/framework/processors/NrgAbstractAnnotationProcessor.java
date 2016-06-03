@@ -36,11 +36,16 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      * class (i.e. not an interface or abstract class). The annotation is processed according to the logic provided in
      * the implementation of this method and converted into a properties object.
      *
+     * Note that the map maintained by this processor is sorted based on order of insertion. If your subclass should
+     * have a particular ordering, your implementation of this method should return an ordered map of some sort, for
+     * example a LinkedHashMap.
+     *
      * @param element    The annotated class element.
      * @param annotation The annotation.
-     * @return The attributes for the annotation converted into a properties object.
+     *
+     * @return The attributes for the annotation converted into a map of strings.
      */
-    protected abstract Properties processAnnotation(final TypeElement element, final A annotation);
+    protected abstract Map<String, String> processAnnotation(final TypeElement element, final A annotation);
 
     /**
      * Returns the name for the properties resource to be generated for the annotation instance. This can be as simple
@@ -49,6 +54,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      * generated properties files.
      *
      * @param annotation The annotation instance.
+     *
      * @return The name for the properties resource.
      */
     protected abstract String getPropertiesName(final A annotation);
@@ -80,7 +86,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
         }
 
         messager.printMessage(Diagnostic.Kind.NOTE, "Beginning processing for the " + _class.getName() + " annotation.");
-        final Map<String, Properties> outputs = new HashMap<>();
+        final Map<String, Map<String, String>> outputs = new LinkedHashMap<>();
         for (final Element element : roundEnv.getElementsAnnotatedWith(_class)) {
             if (!(element instanceof TypeElement)) {
                 continue;
@@ -106,9 +112,9 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
             messager.printMessage(Diagnostic.Kind.NOTE, "Writing resource to " + propertiesPath);
 
             try (final PrintWriter writer = new PrintWriter(new OutputStreamWriter(filer.createResource(StandardLocation.CLASS_OUTPUT, "", propertiesPath).openOutputStream(), "UTF-8"))) {
-                final Properties properties = outputs.get(propertiesPath);
-                for (final String property : properties.stringPropertyNames()) {
-                    writer.println(property + "=" + properties.getProperty(property));
+                final Map<String, String> properties = outputs.get(propertiesPath);
+                for (final String property : properties.keySet()) {
+                    writer.println(property + "=" + properties.get(property));
                 }
             } catch (IOException x) {
                 messager.printMessage(Diagnostic.Kind.ERROR, "Failed to write service definition files: " + x);
@@ -126,7 +132,9 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      *
      * @param element The element (that is, the annotated class) to inspect.
      * @param key     The name of the attribute to retrieve.
+     *
      * @return The type element for the specified class if found, or null if not found.
+     *
      * @throws IllegalArgumentException When there is more than one class specified for the attribute value.
      */
     @Nullable
@@ -153,6 +161,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      *
      * @param element The element (that is, the annotated class) to inspect.
      * @param key     The name of the attribute to retrieve.
+     *
      * @return The type element(s) for the specified class(es) if found, or null if not found.
      */
     @Nullable
@@ -166,7 +175,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
             return null;
         }
         final List<String> elements = new ArrayList<>();
-        final Object       value    = annotationValue.getValue();
+        final Object value = annotationValue.getValue();
         if (value instanceof List) {
             final List list = (List) value;
             if (list.size() == 0) {
@@ -201,6 +210,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      * </ul>
      *
      * @param annotations The annotations on the implementing class definition.
+     *
      * @return The class for the supported annotation type.
      */
     @Nullable
@@ -231,6 +241,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      * (specifying another root path, e.g. /META-INF/foo, will result in an exception) and ended with ".properties".
      *
      * @param propertiesName The name for the generated properties resource.
+     *
      * @return The full path and name for the generated properties resource.
      */
     private String xnatize(final String propertiesName) {
