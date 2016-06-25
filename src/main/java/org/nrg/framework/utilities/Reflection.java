@@ -242,7 +242,11 @@ public class Reflection {
     }
 
     public static ClassLoader getClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        if (contextClassLoader != null) {
+            return contextClassLoader;
+        }
+        return Reflection.class.getClassLoader();
     }
 
     public static Properties getPropertiesForClass(final Class<?> parent) {
