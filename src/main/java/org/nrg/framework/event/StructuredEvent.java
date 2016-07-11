@@ -10,9 +10,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
- * The Class StructuredEvent.
+ * The Abstract Class StructuredEvent.
+ * 
+ * This class provides an optional implementation for the StructuredEventI interface.  That interface defines 
+ * fields important for both persistent events and those that trigger automation scripts.  
  */
-public class StructuredEvent implements Serializable, StructuredEventI {
+public abstract class StructuredEvent implements Serializable, StructuredEventI {
     
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = -5252326449503618313L;
