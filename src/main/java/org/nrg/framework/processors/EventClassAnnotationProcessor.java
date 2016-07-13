@@ -45,7 +45,7 @@ public class EventClassAnnotationProcessor extends NrgAbstractAnnotationProcesso
     @Override
     protected String getPropertiesName(final EventClass plugin) {
     	final String eventName = plugin.name();
-        return String.format("META-INF/xnat/event/%s-event.properties", (eventName!=null && eventName.length()>0) ? eventName : (new Date()).toString() );
+        return String.format("META-INF/xnat/event/%s-event.properties", (eventName!=null && eventName.length()>0) ? eventName : "EV" + Long.toString((new Date()).getTime()) );
     }
     
 }
