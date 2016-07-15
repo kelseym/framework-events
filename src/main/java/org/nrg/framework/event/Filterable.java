@@ -22,6 +22,13 @@ public @interface Filterable {
 	String[] initialValues() default {};
 	
 	/**
+	 * Default value.
+	 *
+	 * @return the string[]
+	 */
+	String defaultValue() default "";
+	
+	/**
 	 * Is a filter value required?
 	 * NOTE:  This currently only affects the UI.  This requirement is not currently enforced in the backend code.
 	 * 
