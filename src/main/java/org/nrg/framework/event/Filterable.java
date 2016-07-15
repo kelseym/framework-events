@@ -22,6 +22,14 @@ public @interface Filterable {
 	String[] initialValues() default {};
 	
 	/**
+	 * Is a filter value required?
+	 * NOTE:  This currently only affects the UI.  This requirement is not currently enforced in the backend code.
+	 * 
+	 * @return true, if a filter is required
+	 */
+	boolean filterRequired() default false;  
+	
+	/**
 	 * Include values from database.
 	 *
 	 * @return true, if successful
