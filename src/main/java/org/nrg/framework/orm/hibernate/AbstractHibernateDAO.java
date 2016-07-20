@@ -1,11 +1,9 @@
-/**
+/*
  * AbstractHibernateDAO
- * (C) 2011 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on Aug 29, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.orm.hibernate;
 
@@ -20,8 +18,8 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.nrg.framework.generics.AbstractParameterizedWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -57,8 +55,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#setSessionFactory(org.hibernate.SessionFactory)
+     * {@inheritDoc}
      */
+    @Autowired(required = false)
     @Override
     public void setSessionFactory(SessionFactory factory) {
         if (_log.isDebugEnabled()) {
@@ -68,7 +67,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#create(BaseHibernateEntity)
+     * {@inheritDoc}
      */
     @Override
     public Serializable create(E entity) {
@@ -82,7 +81,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#retrieve(long)
+     * {@inheritDoc}
      */
     @Override
     public E retrieve(long id) {
@@ -93,7 +92,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#update(BaseHibernateEntity)
+     * {@inheritDoc}
      */
     @Override
     public void update(E entity) {
@@ -103,7 +102,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
-     * @see BaseHibernateDAO#delete(BaseHibernateEntity)
+     * {@inheritDoc}
      */
     @Override
     public void delete(E entity) {
@@ -113,6 +112,24 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
             getSession().update(entity);
         } else {
             getSession().delete(entity);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void saveOrUpdate(final E entity) {
+        try {
+            final Criteria criteria = getCriteriaForType();
+            criteria.add(Restrictions.eq("id", entity.getId()));
+            if (criteria.list().size() > 0) {
+                update(entity);
+            } else {
+                create(entity);
+            }
+        } catch (NonUniqueObjectException e) {
+            getSession().merge(entity);
         }
     }
 
@@ -238,10 +255,11 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     @Override
     public E findById(long id, boolean lock) {
         E entity;
-        if (lock)
+        if (lock) {
             entity = (E) getSession().load(getParameterizedType(), id, LockOptions.UPGRADE);
-        else
+        } else {
             entity = (E) getSession().load(getParameterizedType(), id);
+        }
 
         return entity;
     }
@@ -305,7 +323,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
 
     /**
      * Use this inside subclasses as a convenience method.
-     * @param criterion    The criteria on which you want to search.
+     *
+     * @param criterion The criteria on which you want to search.
+     *
      * @return All entities matching the submitted criteria.
      */
     protected List<E> findByCriteria(Criterion... criterion) {
@@ -337,9 +357,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * the value is null, the criterion is set to {@link Restrictions#isNull(String)} for the indicated name, otherwise
      * it's set to the given value.
      *
-     * @param criteria    The {@link Criteria} object to which the restriction should be added.
-     * @param name        The name of the property.
-     * @param value       The value of the property. May be null.
+     * @param criteria The {@link Criteria} object to which the restriction should be added.
+     * @param name     The name of the property.
+     * @param value    The value of the property. May be null.
      */
     protected void addNullableCriteria(Criteria criteria, String name, Object value) {
         if (value == null) {
@@ -365,10 +385,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
 
     private static final Logger _log = LoggerFactory.getLogger(AbstractHibernateDAO.class);
 
-    @Inject
     private SessionFactory _factory;
 
     private final boolean _isAuditable;
-    private final String _cacheRegion;
+    private final String  _cacheRegion;
     private final boolean _addDistinctRootEntity;
 }

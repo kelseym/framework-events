@@ -1,9 +1,8 @@
 package org.nrg.framework.services;
 
-import javax.inject.Inject;
-
 import org.nrg.framework.event.EventI;
 //import org.nrg.xdat.XDAT;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import reactor.bus.Bus;
@@ -11,24 +10,22 @@ import reactor.bus.Event;
 import reactor.bus.EventBus;
 
 /**
- * The Class XftEventService.
+ * The Class NrgEventService.
  */
 @Service
 public class NrgEventService {
-	
-	/** The _instance. */
-	private static NrgEventService _instance;
-	
 	/**
 	 * Instantiates a new xft event service.
+     *
+     * @param eventBus    The event bus for the service.
 	 */
-	public NrgEventService() {
-		_instance = this;
+	@Autowired
+	public NrgEventService(final EventBus eventBus) {
+		_eventBus = eventBus;
 	}
-	
-	
+
 	/** The event bus. */
-	@Inject private EventBus eventBus;
+	private EventBus _eventBus;
 	
 	/**
 	 * Trigger event.
@@ -38,9 +35,9 @@ public class NrgEventService {
 	 * @param notifyClassListeners Notify class listeners?
 	 */
 	public void triggerEvent(String eventDesc, EventI event, boolean notifyClassListeners) {
-		eventBus.notify(eventDesc,Event.wrap(event));
+		_eventBus.notify(eventDesc, Event.wrap(event));
 		if (notifyClassListeners) {
-			eventBus.notify(event.getClass(),Event.wrap(event));
+			_eventBus.notify(event.getClass(), Event.wrap(event));
 		}
 	}
 	
@@ -60,7 +57,7 @@ public class NrgEventService {
 	 * @param event the event
 	 */
 	public void triggerEvent(EventI event) {
-		eventBus.notify(event.getClass(),Event.wrap(event));
+		_eventBus.notify(event.getClass(), Event.wrap(event));
 	}
 	
 	/**
@@ -73,7 +70,7 @@ public class NrgEventService {
 		if (replyTo == null) {
 			throw new IllegalArgumentException("Event replyTo object cannot be null");
 		}
-		eventBus.notify(event.getClass(),Event.wrap(event, replyTo));
+		_eventBus.notify(event.getClass(), Event.wrap(event, replyTo));
 	}
 	
 	/**
@@ -85,9 +82,9 @@ public class NrgEventService {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void triggerEvent(String eventDesc,Event event,boolean notifyClassListeners) {
-		eventBus.notify(eventDesc,event);
+		_eventBus.notify(eventDesc, event);
 		if (notifyClassListeners) {
-			eventBus.notify(event.getClass(),Event.wrap(event));
+			_eventBus.notify(event.getClass(), Event.wrap(event));
 		}
 	}
 	
@@ -109,7 +106,7 @@ public class NrgEventService {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void triggerEvent(Event event) {
-		eventBus.notify(event.getClass(),event);
+		_eventBus.notify(event.getClass(), event);
 	}
 	
 	/**
@@ -122,7 +119,7 @@ public class NrgEventService {
 		if (event.getReplyTo() == null) {
 			throw new IllegalArgumentException("Event replyTo object cannot be null");
 		}
-		eventBus.send(event.getClass(),event);
+		_eventBus.send(event.getClass(), event);
 	}
 	
 	/**
@@ -135,9 +132,9 @@ public class NrgEventService {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void sendEvent(String eventDesc, EventI event, Bus replyTo, boolean notifyClassListeners) {
-		eventBus.send(eventDesc, Event.wrap(event), replyTo);
+		_eventBus.send(eventDesc, Event.wrap(event), replyTo);
 		if (notifyClassListeners) {
-			eventBus.send(event.getClass(), Event.wrap(event), replyTo);
+			_eventBus.send(event.getClass(), Event.wrap(event), replyTo);
 		}
 	}
 	
@@ -161,7 +158,7 @@ public class NrgEventService {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void sendEvent(EventI event, Bus replyTo) {
-		eventBus.send(event.getClass(),Event.wrap(event), replyTo);
+		_eventBus.send(event.getClass(), Event.wrap(event), replyTo);
 	}
 
 }

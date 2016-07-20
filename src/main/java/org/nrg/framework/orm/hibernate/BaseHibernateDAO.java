@@ -1,11 +1,9 @@
-/**
+/*
  * BaseHibernateDAO
- * (C) 2011 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on Aug 29, 2011 by Rick Herrick <rick.herrick@wustl.edu>
  */
 package org.nrg.framework.orm.hibernate;
 
@@ -16,17 +14,20 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
 
-    void setSessionFactory(SessionFactory factory);
+    void setSessionFactory(final SessionFactory factory);
 
-    Serializable create(E entity);
+    Serializable create(final E entity);
 
-    E retrieve(long id);
+    E retrieve(final long id);
 
-    void update(E entity);
+    void update(final E entity);
 
-    void delete(E entity);
+    void delete(final E entity);
+
+    void saveOrUpdate(final E entity);
 
     List<E> findAll();
 
@@ -54,8 +55,7 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
     E findEnabledById(long id, boolean lock);
 
     /**
-     * Finds entities that match the set properties. This excludes disabled instances of {@link Auditable auditable}
-     * entity definitions.
+     * Finds entities that match the set properties.
      *
      * @param exampleInstance The example to use.
      * @param excludeProperty Properties of the example that should be ignored.
@@ -72,8 +72,11 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
      * @param excludeProperty Properties of the example that should be ignored.
      *
      * @return All entities that match the set properties.
+     *
+     * @deprecated Auditable entities should be transitioned to use the Hibernate Envers @Audited annotation.
      */
-    @SuppressWarnings("unused")
+    @Deprecated
+    @SuppressWarnings({"unused", "deprecation"})
     List<E> findAllByExample(E exampleInstance, String[] excludeProperty);
 
     void refresh(boolean initialize, E entity);

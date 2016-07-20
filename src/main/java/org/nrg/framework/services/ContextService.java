@@ -8,7 +8,6 @@
 package org.nrg.framework.services;
 
 import com.google.common.base.Joiner;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -36,48 +35,26 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
      * @return The existing instance of the ContextService.
      */
     public static ContextService getInstance() {
-        if (_servletContext != null) {
-            return _servletContext.getBean("contextService", ContextService.class);
-        }
-        if (_rootContext != null) {
-            return _rootContext.getBean("rootContextService", ContextService.class);
+        if (_applicationContext != null) {
+            return _applicationContext.getBean(ContextService.class);
         }
         return new ContextService();
     }
 
     /**
-     * Provides the setter for the application context.
-     *
-     * @see ApplicationContextAware#setApplicationContext(ApplicationContext)
+     * {@inheritDoc}
      */
     @Override
-    public void setApplicationContext(final ApplicationContext context) throws BeansException {
-        synchronized (MUTEX) {
-            if (context.getParent() == null) {
-                _rootContext = context;
-            } else {
-                _servletContext = context;
-            }
-        }
+    public void setApplicationContext(final ApplicationContext applicationContext) {
+        _applicationContext = applicationContext;
     }
 
     /**
-     * Indicates whether the context service instance has an application context.
-     *
-     * @return <b>true</b> if the service object has an application context.
-     */
-    public boolean hasApplicationContext() {
-        return _servletContext != null || _rootContext != null;
-    }
-
-    /**
-     * Provides the setter for the servlet context.
-     *
-     * @param servletContext The servlet context being set.
+     * {@inheritDoc}
      */
     @Override
     public void setServletContext(final ServletContext servletContext) {
-        _httpServletContext = servletContext;
+        _servletContext = servletContext;
     }
 
     /**
@@ -101,11 +78,10 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
      * @throws NoSuchBeanDefinitionException When a bean of the indicated type can't be found.
      */
     public Object getBean(final String name) throws NoSuchBeanDefinitionException {
-        final ApplicationContext context = getContext();
-        if (context == null) {
+        if (_applicationContext == null) {
             return null;
         }
-        return context.getBean(name);
+        return _applicationContext.getBean(name);
     }
 
     /**
@@ -120,11 +96,10 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
      * @throws NoSuchBeanDefinitionException When a bean of the indicated type can't be found.
      */
     public <T> T getBean(final Class<T> type) throws NoSuchBeanDefinitionException {
-        final ApplicationContext context = getContext();
-        if (context == null) {
+        if (_applicationContext == null) {
             return null;
         }
-        return context.getBean(type);
+        return _applicationContext.getBean(type);
     }
 
     /**
@@ -135,13 +110,10 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
      *
      * @return An object of the type.
      */
+    @SuppressWarnings("unused")
     public <T> T getBeanSafely(final Class<T> type) {
         try {
-            final ApplicationContext context = getContext();
-            if (context == null) {
-                return null;
-            }
-            return context.getBean(type);
+            return getBean(type);
         } catch (NoSuchBeanDefinitionException ignored) {
             // This is OK, just means the bean doesn't exist in the current context. Carry on.
         }
@@ -161,11 +133,10 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
      * @throws NoSuchBeanDefinitionException When a bean of the indicated type can't be found.
      */
     public <T> T getBean(final String name, final Class<T> type) throws NoSuchBeanDefinitionException {
-        final ApplicationContext context = getContext();
-        if (context == null) {
+        if (_applicationContext == null) {
             return null;
         }
-        return context.getBean(name, type);
+        return _applicationContext.getBean(name, type);
     }
 
     /**
@@ -177,13 +148,10 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
      *
      * @return An object of the type.
      */
+    @SuppressWarnings("unused")
     public <T> T getBeanSafely(final String name, final Class<T> type) {
         try {
-            final ApplicationContext context = getContext();
-            if (context == null) {
-                return null;
-            }
-            return context.getBean(name, type);
+            return getBean(name, type);
         } catch (NoSuchBeanDefinitionException ignored) {
             // This is OK, just means the bean doesn't exist in the current context. Carry on.
         }
@@ -201,11 +169,10 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
      */
     @SuppressWarnings("unused")
     public <T> Map<String, T> getBeansOfType(final Class<T> type) {
-        final ApplicationContext context = getContext();
-        if (context == null) {
+        if (_applicationContext == null) {
             return null;
         }
-        final Map<String, T> candidate = context.getBeansOfType(type);
+        final Map<String, T> candidate = _applicationContext.getBeansOfType(type);
         if (candidate.size() > 0) {
             return candidate;
         }
@@ -224,24 +191,14 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
 
     public URI getAppRelativeLocation(final String... relativePaths) {
         try {
-            return _httpServletContext.getResource(joinPaths(relativePaths)).toURI();
+            return _servletContext.getResource(joinPaths(relativePaths)).toURI();
         } catch (URISyntaxException | MalformedURLException e) {
             return null;
         }
     }
 
-    private ApplicationContext getContext() {
-        if (_servletContext != null) {
-            return _servletContext;
-        }
-        if (_rootContext != null) {
-            return _rootContext;
-        }
-        return null;
-    }
-
     private InputStream getAppRelativeStream(final String... relativePaths) {
-        return _httpServletContext.getResourceAsStream(joinPaths(relativePaths));
+        return _servletContext.getResourceAsStream(joinPaths(relativePaths));
     }
 
     private Set<String> getAppRelativeLocationContents(final String... relativePaths) {
@@ -249,7 +206,7 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
     }
 
     private Set<String> getAppRelativeLocationContents(final FilenameFilter filter, final String... relativePaths) {
-        final Set<String> paths = _httpServletContext.getResourcePaths(joinPaths(relativePaths));
+        final Set<String> paths = _servletContext.getResourcePaths(joinPaths(relativePaths));
         if (filter == null) {
             return paths;
         }
@@ -292,9 +249,6 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
         return path;
     }
 
-    private static final Object MUTEX = new Object();
-
-    private static ApplicationContext _rootContext;
-    private static ApplicationContext _servletContext;
-    private        ServletContext     _httpServletContext;
+    private static ApplicationContext _applicationContext;
+    private        ServletContext     _servletContext;
 }
