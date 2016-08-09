@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BasicXnatResourceLocator implements XnatResourceLocator {
+public class BasicXnatResourceLocator extends AbstractXnatResourceLocator {
 
     private BasicXnatResourceLocator(final String pattern) {
-        _pattern = pattern;
+        super(pattern);
     }
 
     public static Resource getResource(final String pattern) throws IOException {
@@ -21,17 +21,4 @@ public class BasicXnatResourceLocator implements XnatResourceLocator {
     public static List<Resource> getResources(final String pattern) throws IOException {
         return new BasicXnatResourceLocator(pattern).getResources();
     }
-
-    @Override
-    public Resource getResource() throws IOException {
-        return _resolver.getResource(_pattern);
-    }
-
-    @Override
-    public List<Resource> getResources() throws IOException {
-        return new ArrayList<>(Arrays.asList(_resolver.getResources(_pattern)));
-    }
-
-    private final PathMatchingResourcePatternResolver _resolver = new PathMatchingResourcePatternResolver();
-    private final String _pattern;
 }
