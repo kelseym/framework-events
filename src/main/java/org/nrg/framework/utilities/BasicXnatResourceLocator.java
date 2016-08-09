@@ -10,12 +10,21 @@ import java.util.List;
 
 public class BasicXnatResourceLocator implements XnatResourceLocator {
 
+    private BasicXnatResourceLocator(final String pattern) {
+        _pattern = pattern;
+    }
+
+    public static Resource getResource(final String pattern) throws IOException {
+        return new BasicXnatResourceLocator(pattern).getResource();
+    }
+
     public static List<Resource> getResources(final String pattern) throws IOException {
         return new BasicXnatResourceLocator(pattern).getResources();
     }
 
-    private BasicXnatResourceLocator(final String pattern) {
-        _pattern = pattern;
+    @Override
+    public Resource getResource() throws IOException {
+        return _resolver.getResource(_pattern);
     }
 
     @Override
