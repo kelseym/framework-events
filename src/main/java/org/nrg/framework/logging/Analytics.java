@@ -1,27 +1,25 @@
-/**
+/*
  * Analytics
- * (C) 2011 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on 12/1/11 by rherri01
  */
 package org.nrg.framework.logging;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.apache.logging.log4j.Level;
 import org.nrg.framework.analytics.AnalyticsEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class Analytics {
     public static final String EVENT_KEY = "key";
     public static final Level DEFAULT_LEVEL = Level.TRACE;
@@ -190,7 +188,7 @@ public class Analytics {
     public static void enter(String tool, Map<String, String> properties) {
         Level level;
         if (properties.containsKey("level")) {
-            level = Level.toLevel(properties.get("level"));
+            level = Level.valueOf(properties.get("level"));
         } else {
             level = DEFAULT_LEVEL;
         }
@@ -205,21 +203,26 @@ public class Analytics {
      */
     public static void enter(String tool, Level level, Map<String, String> properties) {
         try {
-            AnalyticsEvent event = new AnalyticsEvent();
+            final AnalyticsEvent event = new AnalyticsEvent();
             event.setKey(tool);
             event.setLevel(level);
             event.setProperties(properties);
-            String payload = _serializer.writeValueAsString(event);
-            if (level.equals(Level.TRACE)) {
-                _analytics.trace(payload);
-            } else if (level.equals(Level.DEBUG)) {
-                _analytics.debug(payload);
-            } else if (level.equals(Level.INFO)) {
-                _analytics.info(payload);
-            } else if (level.equals(Level.WARN)) {
-                _analytics.warn(payload);
-            } else if (level.equals(Level.ERROR) || level.equals(Level.FATAL)) {
-                _analytics.error(payload);
+            final String payload = _serializer.writeValueAsString(event);
+            switch (level) {
+                case TRACE:
+                    _analytics.trace(payload);
+                    break;
+                case DEBUG:
+                    _analytics.debug(payload);
+                    break;
+                case INFO:
+                    _analytics.info(payload);
+                    break;
+                case WARN:
+                    _analytics.warn(payload);
+                    break;
+                default:
+                    _analytics.error(payload);
             }
         } catch (IOException exception) {
             _log.error("Error during analytics serialization", exception);

@@ -1,16 +1,15 @@
-/**
+/*
  * AnalyticsEvent
- * (C) 2012 Washington University School of Medicine
+ * (C) 2016 Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD License
- *
- * Created on 2/9/12 by rherri01
  */
 package org.nrg.framework.analytics;
 
-import org.apache.logging.log4j.Level;
 import org.nrg.framework.logging.RemoteEvent;
+
+import org.slf4j.event.Level;
 
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;

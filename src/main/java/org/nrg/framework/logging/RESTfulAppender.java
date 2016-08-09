@@ -1,6 +1,9 @@
-/**
+/*
  * RESTfulAppender
- * Created on 11/30/11 by rherri01
+ * (C) 2016 Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD License
  */
 package org.nrg.framework.logging;
 
@@ -9,18 +12,8 @@ package org.nrg.framework.logging;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-//import org.apache.logging.log4j.AppenderSkeleton;
-//import org.apache.log4j.spi.LoggingEvent;
-//import org.apache.log4j.spi.ThrowableInformation;
-import org.nrg.framework.net.AuthenticatedClientHttpRequestFactory;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.*;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 @SuppressWarnings("unused")
 public class RESTfulAppender { // extends AppenderSkeleton {
@@ -28,17 +21,11 @@ public class RESTfulAppender { // extends AppenderSkeleton {
     public RESTfulAppender() {
     }
 
-//    /**
-//     * Implements the {@link org.apache.log4j.AppenderSkeleton#close()} method.
-//     */
     // @Override
     public void close() {
         //
     }
 
-//    /**
-//     * Implements the {@link org.apache.log4j.AppenderSkeleton#requiresLayout()} method.
-//     */
 //    @Override
     public boolean requiresLayout() {
         return false;
@@ -52,10 +39,6 @@ public class RESTfulAppender { // extends AppenderSkeleton {
         _serviceAddress = serviceAddress;
     }
 
-//    /**
-//     * Implements the {@link AppenderSkeleton#append(org.apache.log4j.spi.LoggingEvent)} method.
-//     * @param event The event to append.
-//     */
 //    @Override
 //    protected void append(LoggingEvent event) {
 //        try {
@@ -103,8 +86,9 @@ public class RESTfulAppender { // extends AppenderSkeleton {
 //        return eventMap;
 //    }
 
-    private static final HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[] { new FormHttpMessageConverter(), new StringHttpMessageConverter(), new ResourceHttpMessageConverter(), new ByteArrayHttpMessageConverter() };
-    private static final ObjectMapper _serializer = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    @SuppressWarnings("MismatchedReadAndWriteOfArray")
+    private static final HttpMessageConverter<?>[] messageConverters = new HttpMessageConverter<?>[] {new FormHttpMessageConverter(), new StringHttpMessageConverter(), new ResourceHttpMessageConverter(), new ByteArrayHttpMessageConverter() };
+    private static final ObjectMapper              _serializer       = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
     private RestTemplate _template;
     private String _serviceAddress;

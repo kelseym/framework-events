@@ -1,20 +1,18 @@
-/**
- * RemoteEvent
- * (C) 2012 Washington University School of Medicine
- * All Rights Reserved
- *
- * Released under the Simplified BSD License
- *
- * Created on 2/9/12 by rherri01
- */
+    /*
+     * RemoteEvent
+     * (C) 2016 Washington University School of Medicine
+     * All Rights Reserved
+     *
+     * Released under the Simplified BSD License
+     */
 package org.nrg.framework.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
 import org.restlet.data.ClientInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,7 +26,7 @@ public class RemoteEvent extends HashMap<String, String> {
     @SuppressWarnings("unused")
     public static final String REMOTE_LOG = "org.nrg.xnat.remote";
 
-    public RemoteEvent() {
+    protected RemoteEvent() {
         _log.debug("Creating default remote event instance");
     }
 
@@ -38,7 +36,7 @@ public class RemoteEvent extends HashMap<String, String> {
         addProperties(properties);
     }
 
-    public RemoteEvent(final Map<String, Object> eventMap) {
+    private RemoteEvent(final Map<String, Object> eventMap) {
         _log.debug("Creating remote event instance from map");
         if (eventMap.containsKey("level")) {
             Object level = eventMap.get("level");
@@ -46,7 +44,7 @@ public class RemoteEvent extends HashMap<String, String> {
                 if (level instanceof Level) {
                     setLevel((Level) level);
                 } else {
-                    setLevel(Level.toLevel(level.toString()));
+                    setLevel(Level.valueOf(level.toString()));
                 }
             }
         }
@@ -71,25 +69,6 @@ public class RemoteEvent extends HashMap<String, String> {
     @SuppressWarnings("unused")
     public RemoteEvent(Map<String, Object> map, ClientInfo clientInfo) {
         this(map);
-        setClientInfo(clientInfo);
-        _log.debug("Creating remote event instance from map and client info");
-    }
-
-    public Level getLevel() {
-        if (containsKey("level")) {
-            return Level.toLevel(get("level"));
-        }
-        if (containsKey("LEVEL")) {
-            return Level.toLevel(get("LEVEL"));
-        }
-        return Level.TRACE;
-    }
-
-    public void setLevel(Level level) {
-        put("level", level.toString());
-    }
-
-    public void setClientInfo(ClientInfo clientInfo) {
         putNotBlank("address", clientInfo.getAddress());
         putNotBlank("port", Integer.toString(clientInfo.getPort()));
         putNotBlank("agent", clientInfo.getAgent());
@@ -100,6 +79,21 @@ public class RemoteEvent extends HashMap<String, String> {
                 putNotBlank(attribute, attributes.get(attribute));
             }
         }
+        _log.debug("Creating remote event instance from map and client info");
+    }
+
+    public Level getLevel() {
+        if (containsKey("level")) {
+            return Level.valueOf(get("level"));
+        }
+        if (containsKey("LEVEL")) {
+            return Level.valueOf(get("LEVEL"));
+        }
+        return Level.TRACE;
+    }
+
+    public void setLevel(Level level) {
+        put("level", level.toString());
     }
 
     public Map<String, String> getProperties() {
