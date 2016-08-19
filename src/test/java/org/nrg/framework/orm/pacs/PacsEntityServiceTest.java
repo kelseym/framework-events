@@ -23,6 +23,7 @@ import javax.validation.ConstraintViolationException;
 import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = PacsEntityServiceTestConfiguration.class)
@@ -52,6 +53,9 @@ public class PacsEntityServiceTest {
         Pacs pacs = buildTestPacs();
         pacsEntityService.create(pacs);
         assertEquals(1, pacsEntityService.getAll().size());
+        pacs = pacsEntityService.findByAeTitle("TIP-DEV-PACS");
+        assertNotNull(pacs);
+        assertEquals("TIP-DEV-PACS", pacs.getAeTitle());
         pacs.setAeTitle("FOO");
         pacsEntityService.update(pacs);
         pacs = pacsEntityService.retrieve(pacs.getId());

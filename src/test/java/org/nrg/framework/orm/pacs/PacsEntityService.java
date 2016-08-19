@@ -14,4 +14,5 @@ package org.nrg.framework.orm.pacs;
 import org.nrg.framework.orm.hibernate.BaseHibernateService;
 
 public interface PacsEntityService extends BaseHibernateService<Pacs> {
+    Pacs findByAeTitle(final String aeTitle);
 }
