@@ -11,10 +11,9 @@
 package org.nrg.framework.orm.utils;
 
 import org.h2.api.ErrorCode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,6 +21,10 @@ import java.sql.Statement;
 
 @Component
 public final class TestDBUtils {
+    @Autowired
+    public TestDBUtils(final DataSource dataSource) {
+        _dataSource = dataSource;
+    }
 
     public void cleanDb(final String table) throws SQLException {
         Connection connection = _dataSource.getConnection();
@@ -37,7 +40,5 @@ public final class TestDBUtils {
         statement.close();
     }
 
-    @Inject
-    @Named("dataSource")
-    private DataSource _dataSource;
+    private final DataSource _dataSource;
 }
