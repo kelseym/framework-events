@@ -22,15 +22,24 @@ import org.nrg.framework.orm.hibernate.AbstractHibernateEntityService;
 import org.nrg.framework.services.SerializerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Serializable;
 
 @Service
 public class HibernateDataCacheService extends AbstractHibernateEntityService<DataCacheItem, DataCacheItemDAO> implements DataCacheService {
+    @Autowired
+    public void getSerializerRegistry(final SerializerRegistry serializers) {
+        _serializers = serializers;
+    }
+
+    @Autowired
+    public void getSerializerService(final SerializerService serializerService) {
+        _serializerService = serializerService;
+    }
 
     @Override
     @Transactional
@@ -111,12 +120,8 @@ public class HibernateDataCacheService extends AbstractHibernateEntityService<Da
         }
     }
 
-    private static final Logger       _log   = LoggerFactory.getLogger(HibernateDataCacheService.class);
+    private static final Logger _log = LoggerFactory.getLogger(HibernateDataCacheService.class);
 
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Inject
     private SerializerRegistry _serializers;
-
-    @Inject
-    private SerializerService _serializerService;
+    private SerializerService  _serializerService;
 }
