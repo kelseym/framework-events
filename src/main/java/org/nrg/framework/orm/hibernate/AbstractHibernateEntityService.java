@@ -123,7 +123,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
             entity = getDao().retrieve(id);
         }
         if (_initialize) {
-            Hibernate.initialize(entity);
+            initialize(entity);
         }
         return entity;
     }
@@ -177,7 +177,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         final List<E> list = getDao().findAllEnabled();
         if (_initialize) {
             for (final E entity : list) {
-                Hibernate.initialize(entity);
+                initialize(entity);
             }
         }
         return list;
@@ -190,7 +190,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         final List<E> list = getDao().findAll();
         if (_initialize) {
             for (final E entity : list) {
-                Hibernate.initialize(entity);
+                initialize(entity);
             }
         }
         return list;
@@ -286,7 +286,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
 
     /**
      * Indicates whether entities should be initialized before being returned from transactional service methods.
-     * If <b>true</b>, {@link org.hibernate.Hibernate#initialize(Object)} is called before returning entities. This
+     * If <b>true</b>, {@link #initialize(BaseHibernateEntity)} is called before returning entities. This
      * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
      * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
      * a service with the "open session in view" pattern available.
@@ -300,7 +300,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
 
     /**
      * Sets whether entities should be initialized before being returned from transactional service methods.
-     * If <b>true</b>, {@link org.hibernate.Hibernate#initialize(Object)} is called before returning entities. This
+     * If <b>true</b>, {@link #initialize(BaseHibernateEntity)} is called before returning entities. This
      * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
      * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
      * a service with the "open session in view" pattern available.
@@ -309,6 +309,16 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      */
     public void setInitialize(final boolean initialize) {
         _initialize = initialize;
+    }
+
+    /**
+     * @see BaseHibernateService#initialize(BaseHibernateEntity)
+     * @param entity Entity object to initialize.
+     *
+     */
+    @Override
+    public void initialize(final E entity) {
+        Hibernate.initialize(entity);
     }
 
     @Override
