@@ -312,11 +312,13 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
-     * @see BaseHibernateService#initialize(BaseHibernateEntity)
+     * Method to initialize entity. By default, calls {@link org.hibernate.Hibernate#initialize(Object)}, but this
+     * can be overridden.
+     *
      * @param entity Entity object to initialize.
      *
+     * @see #getInitialize()
      */
-    @Override
     public void initialize(final E entity) {
         Hibernate.initialize(entity);
     }

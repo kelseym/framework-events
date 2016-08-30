@@ -189,7 +189,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
 
     /**
      * Indicates whether entities should be initialized before being returned from transactional service methods.
-     * If <b>true</b>, {@link #initialize(BaseHibernateEntity)} is called before returning entities. This
+     * If <b>true</b>, {@link AbstractHibernateEntityService#initialize(BaseHibernateEntity)} is called before returning entities. This
      * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
      * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
      * a service with the "open session in view" pattern available.
@@ -202,7 +202,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
 
     /**
      * Sets whether entities should be initialized before being returned from transactional service methods.
-     * If <b>true</b>, {@link #initialize(BaseHibernateEntity)} is called before returning entities. This
+     * If <b>true</b>, {@link AbstractHibernateEntityService#initialize(BaseHibernateEntity)} is called before returning entities. This
      * deals with the problem of lazily initialized data members being unavailable in the web tier once the Hibernate
      * session is no longer accessible. For performance benefits, you should set this to <b>false</b> when working with
      * a service with the "open session in view" pattern available.
@@ -212,14 +212,4 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @see BaseHibernateService#getInitialize()
      */
     void setInitialize(final boolean initialize);
-
-    /**
-     * Method to initialize entity. By default, calls {@link org.hibernate.Hibernate#initialize(Object)}, but this
-     * can be overridden.
-     *
-     * @param entity Entity object to initialize.
-     *
-     * @see BaseHibernateService#getInitialize()
-     */
-    void initialize(final E entity);
 }
