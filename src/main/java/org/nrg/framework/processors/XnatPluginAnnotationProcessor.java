@@ -78,7 +78,7 @@ public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcesso
 
 
     @Override
-    protected String getPropertiesName(final XnatPlugin plugin) {
+    protected String getPropertiesName(final TypeElement element, final XnatPlugin plugin) {
         final String namespace = plugin.namespace();
         final String pluginId = plugin.value();
         if (StringUtils.isBlank(namespace)) {

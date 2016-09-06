@@ -53,11 +53,12 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      * present. However you can also add folder hierarchies to the returned name if you want to further segregate the
      * generated properties files.
      *
+     * @param element    The annotated class element.
      * @param annotation The annotation instance.
      *
      * @return The name for the properties resource.
      */
-    protected abstract String getPropertiesName(final A annotation);
+    protected abstract String getPropertiesName(final TypeElement element, final A annotation);
 
     /**
      * {@inheritDoc}
@@ -103,7 +104,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
             }
 
             messager.printMessage(Diagnostic.Kind.NOTE, "Processing the " + typeElement.toString() + " class.");
-            outputs.put(xnatize(getPropertiesName(annotation)), processAnnotation(typeElement, annotation));
+            outputs.put(xnatize(getPropertiesName(typeElement, annotation)), processAnnotation(typeElement, annotation));
         }
 
         final Filer filer = processingEnv.getFiler();
@@ -137,6 +138,7 @@ public abstract class NrgAbstractAnnotationProcessor<A extends Annotation> exten
      *
      * @throws IllegalArgumentException When there is more than one class specified for the attribute value.
      */
+    @SuppressWarnings("unused")
     @Nullable
     protected String getTypeElementValue(final TypeElement element, String key) {
         final List<String> list = getTypeElementValues(element, key);

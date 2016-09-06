@@ -37,7 +37,7 @@ public class FrameworkConfig {
     }
 
     @Bean
-    public SerializerService serializerService() {
-        return new SerializerService();
+    public SerializerService serializerService(final Jackson2ObjectMapperBuilder objectMapperBuilder) {
+        return new SerializerService(objectMapperBuilder);
     }
 }

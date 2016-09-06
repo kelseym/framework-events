@@ -1,4 +1,4 @@
-package org.nrg.framework.processors;
+package org.nrg.framework.beans;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;

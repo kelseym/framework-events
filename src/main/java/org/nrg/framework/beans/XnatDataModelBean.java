@@ -1,4 +1,4 @@
-package org.nrg.framework.processors;
+package org.nrg.framework.beans;
 
 public class XnatDataModelBean {
     public String getType() {

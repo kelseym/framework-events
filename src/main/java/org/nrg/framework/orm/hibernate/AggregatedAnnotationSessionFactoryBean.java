@@ -10,7 +10,7 @@ package org.nrg.framework.orm.hibernate;
 import com.google.common.base.Joiner;
 import org.apache.commons.io.IOUtils;
 import org.nrg.framework.annotations.XnatPlugin;
-import org.nrg.framework.processors.XnatPluginBean;
+import org.nrg.framework.beans.XnatPluginBean;
 import org.nrg.framework.utilities.BasicXnatResourceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

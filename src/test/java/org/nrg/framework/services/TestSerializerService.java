@@ -7,7 +7,6 @@
  */
 package org.nrg.framework.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -18,13 +17,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = TestSerializerServiceConfiguration.class)
 public class TestSerializerService {
+
+    public static final String IGNORED  = "This shouldn't show up.";
+    public static final String RELEVANT = "This should totally show up.";
 
     @Test
     public void testNaNAndInfinityHandling() throws IOException {
@@ -42,7 +42,7 @@ public class TestSerializerService {
 
         assertNotNull(serialized);
 
-        final Map<String, Double> deserialized = _serializer.deserializeJson(serialized, TYPE_REFERENCE);
+        final Map<String, Double> deserialized = _serializer.deserializeJson(serialized, SerializerService.TYPE_REF_MAP_STRING_DOUBLE);
 
         assertNotNull(deserialized);
         assertFalse(Double.isInfinite(deserialized.get("one")));
@@ -60,7 +60,20 @@ public class TestSerializerService {
         assertTrue(Double.isInfinite(deserialized.get("eight")));
     }
 
-    private final static TypeReference<HashMap<String, Double>> TYPE_REFERENCE = new TypeReference<HashMap<String, Double>>() {};
+    @Test
+    public void testAnnotatedMixIn() throws IOException {
+        final SimpleBean bean = new SimpleBean(RELEVANT, IGNORED);
+        assertNotNull(bean);
+        assertEquals(RELEVANT, bean.getRelevantField());
+        assertEquals(IGNORED, bean.getIgnoredField());
+
+        final String json = _serializer.toJson(bean);
+        assertNotNull(json);
+        final Map<String, String> map = _serializer.deserializeJsonToMapOfStrings(json);
+        assertTrue(map.containsKey("relevantField"));
+        assertFalse(map.containsKey("ignoredField"));
+        assertEquals(RELEVANT, map.get("relevantField"));
+    }
 
     @Inject
     private SerializerService _serializer;

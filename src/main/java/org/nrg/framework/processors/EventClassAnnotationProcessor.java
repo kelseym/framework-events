@@ -7,6 +7,7 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.TypeElement;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class EventClassAnnotationProcessor extends NrgAbstractAnnotationProcesso
         properties.put(EventClass.EVENT_CLASS, element.getQualifiedName().toString());
         properties.put(EventClass.EVENT_NAME, plugin.name());
         properties.put(EventClass.EVENT_DESC, plugin.description());
-        properties.put(EventClass.EVENT_DEFAULTIDS, plugin.defaultEventIds().toString());
+        properties.put(EventClass.EVENT_DEFAULTIDS, Arrays.toString(plugin.defaultEventIds()));
         properties.put(EventClass.EVENT_INCLUDEFROMDATABASE, String.valueOf(plugin.includeValuesFromDatabase()));
         return properties;
     }
@@ -43,9 +44,9 @@ public class EventClassAnnotationProcessor extends NrgAbstractAnnotationProcesso
      * @see org.nrg.framework.processors.NrgAbstractAnnotationProcessor#getPropertiesName(java.lang.annotation.Annotation)
      */
     @Override
-    protected String getPropertiesName(final EventClass plugin) {
+    protected String getPropertiesName(final TypeElement element, final EventClass plugin) {
     	final String eventName = plugin.name();
-        return String.format("META-INF/xnat/event/%s-event.properties", (eventName!=null && eventName.length()>0) ? eventName : "EV" + Long.toString((new Date()).getTime()) );
+        return String.format("META-INF/xnat/event/%s-event.properties", eventName.length() > 0 ? eventName : "EV" + Long.toString(new Date().getTime()));
     }
     
 }

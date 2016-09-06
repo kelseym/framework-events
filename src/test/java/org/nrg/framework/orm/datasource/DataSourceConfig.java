@@ -1,6 +1,6 @@
 package org.nrg.framework.orm.datasource;
 
-import org.nrg.framework.utilities.Beans;
+import org.nrg.framework.beans.Beans;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

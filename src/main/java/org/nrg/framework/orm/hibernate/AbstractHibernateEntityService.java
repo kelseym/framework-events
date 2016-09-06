@@ -1,4 +1,4 @@
-/**
+/*
  * AbstractHibernateEntityService
  * (C) 2011 Washington University School of Medicine
  * All Rights Reserved
@@ -429,7 +429,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         PRIMITIVES.add(Double.class);
     }
 
-    @SuppressWarnings("SpringJavaAutowiringInspection")
+    @SuppressWarnings({"SpringJavaAutowiringInspection", "SpringAutowiredFieldsWarningInspection"})
     @Autowired
     private DAO _dao;
 
