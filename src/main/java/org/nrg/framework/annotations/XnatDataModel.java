@@ -9,6 +9,12 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 public @interface XnatDataModel {
+    String DATA_MODEL_TYPE     = "type";
+    String DATA_MODEL_SECURED  = "secured";
+    String DATA_MODEL_SINGULAR = "singular";
+    String DATA_MODEL_PLURAL   = "plural";
+    String DATA_MODEL_CODE     = "code";
+
     /**
      * Provides the fully qualified name of the data model element. This includes the namespace, e.g. foo:barData.
      *

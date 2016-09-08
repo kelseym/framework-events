@@ -21,7 +21,6 @@ public @interface XnatPlugin {
     String PLUGIN_DESCRIPTION       = "description";
     String PLUGIN_BEAN_NAME         = "beanName";
     String PLUGIN_ENTITY_PACKAGES   = "entityPackages";
-    String PLUGIN_DATA_MODEL_PREFIX = "dataModel.";
 
     /**
      * In combination with the {@link #namespace()} value, indicates the unique ID for this plugin.
@@ -42,7 +41,7 @@ public @interface XnatPlugin {
      *
      * @return The name of the plugin.
      */
-    String name() default "";
+    String name();
 
     /**
      * A description for this plugin.

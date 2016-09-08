@@ -104,7 +104,7 @@ public class AggregatedAnnotationSessionFactoryBean extends LocalSessionFactoryB
             }
         }
         try {
-            for (final XnatPluginBean plugin : XnatPluginBean.findAllXnatPluginBeans()) {
+            for (final XnatPluginBean plugin : XnatPluginBean.getXnatPluginBeans().values()) {
                 if (_log.isDebugEnabled()) {
                     _log.debug("Processing entity packages from plugin {}: {}", plugin.getId(), Joiner.on(", ").join(plugin.getEntityPackages()));
                 }
