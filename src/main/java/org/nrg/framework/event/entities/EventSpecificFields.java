@@ -1,5 +1,7 @@
 package org.nrg.framework.event.entities;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,14 +10,15 @@ import javax.persistence.Id;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class EventSpecificFields.
  */
 @Entity
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE, region = "nrg")
-public class EventSpecificFields {
+public class EventSpecificFields implements Serializable {
 
-    /**
+	/**
      * Instantiates a new event specific fields.
      */
     public EventSpecificFields() {
@@ -87,6 +90,9 @@ public class EventSpecificFields {
     public void setFieldVal(final String fieldVal) {
         _fieldVal = fieldVal;
     }
+
+	/** The Constant serialVersionUID. */
+	private static final long serialVersionUID = -3032912730958594504L;
 
     /** The _field name. */
     private String _fieldName;
