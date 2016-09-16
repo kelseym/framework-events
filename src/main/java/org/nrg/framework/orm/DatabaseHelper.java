@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.Date;
 
+@SuppressWarnings("WeakerAccess")
 public class DatabaseHelper {
     public DatabaseHelper(final DataSource dataSource) {
         this(dataSource, null);
@@ -43,8 +44,20 @@ public class DatabaseHelper {
      * @throws SQLException If an error occurs while accessing the database.
      */
     public boolean tableExists(final String table) throws SQLException {
+        return tableExists(null, table);
+    }
+
+    /**
+     * Checks whether the indicated table exists in the specified schema.
+     *
+     * @param schema The schema to look in.
+     * @param table  The table for which to test.
+     * @return Returns true if the table exists, false otherwise.
+     * @throws SQLException If an error occurs while accessing the database.
+     */
+    public boolean tableExists(final String schema, final String table) throws SQLException {
         try (final Connection connection = _template.getDataSource().getConnection();
-             final ResultSet results = connection.getMetaData().getTables("catalog", null, table, new String[] {"TABLE"})) {
+             final ResultSet results = connection.getMetaData().getTables("catalog", schema, table, new String[] {"TABLE"})) {
             if (results.next()) {
                 return true;
             }
