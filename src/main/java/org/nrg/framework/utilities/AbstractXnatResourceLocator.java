@@ -1,3 +1,12 @@
+/*
+ * org.nrg.framework.utilities.AbstractXnatResourceLocator
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD.
+ */
+
 package org.nrg.framework.utilities;
 
 import org.slf4j.Logger;

@@ -1,12 +1,12 @@
-/**
- * AuthenticatedClientHttpRequestFactory
- * (C) 2011 Washington University School of Medicine
+/*
+ * org.nrg.framework.net.AuthenticatedClientHttpRequestFactory
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on 11/30/11 by rherri01
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.net;
 
 import org.apache.http.HttpHost;

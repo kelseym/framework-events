@@ -1,10 +1,12 @@
 /*
- * ContextService
- * (C) 2016 Washington University School of Medicine
+ * org.nrg.framework.services.ContextService
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.services;
 
 import com.google.common.base.Joiner;

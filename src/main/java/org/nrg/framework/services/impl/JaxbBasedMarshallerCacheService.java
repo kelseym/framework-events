@@ -1,11 +1,12 @@
-/**
- * JaxbBasedMarshallerCacheService
- * (C) 2011 Washington University School of Medicine
+/*
+ * org.nrg.framework.services.impl.JaxbBasedMarshallerCacheService
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
- * 
- * Released under the Simplified BSD License
- * Created on Oct 21, 2011
+ *
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.services.impl;
 
 import java.io.ByteArrayInputStream;

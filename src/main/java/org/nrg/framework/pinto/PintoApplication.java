@@ -1,12 +1,12 @@
-/**
- * PintoApplication
- * (C) 2012 Washington University School of Medicine
+/*
+ * org.nrg.framework.pinto.PintoApplication
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on 10/29/12 by rherri01
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.pinto;
 
 import java.lang.annotation.Documented;

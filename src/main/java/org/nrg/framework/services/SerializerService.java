@@ -1,3 +1,12 @@
+/*
+ * org.nrg.framework.services.SerializerService
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD.
+ */
+
 package org.nrg.framework.services;
 
 import com.fasterxml.jackson.core.type.TypeReference;

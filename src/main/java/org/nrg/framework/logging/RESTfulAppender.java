@@ -1,10 +1,12 @@
 /*
- * RESTfulAppender
- * (C) 2016 Washington University School of Medicine
+ * org.nrg.framework.logging.RESTfulAppender
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.logging;
 
 // TODO: Rewrite with log4j2. This requires creating an @Plugin-annotated class.

@@ -1,12 +1,10 @@
 /*
- * Pacs
+ * org.nrg.framework.orm.pacs.Pacs
  * XNAT http://www.xnat.org
- * Copyright (c) 2014, Washington University School of Medicine
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD.
- *
- * Last modified 9/4/13 4:37 PM
  */
 package org.nrg.framework.orm.pacs;
 

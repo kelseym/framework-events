@@ -1,12 +1,12 @@
-/**
- * HttpMethod
- * (C) 2012 Washington University School of Medicine
+/*
+ * org.nrg.framework.net.HttpMethod
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on 10/31/12 by rherrick
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.net;
 
 import org.apache.http.client.methods.*;

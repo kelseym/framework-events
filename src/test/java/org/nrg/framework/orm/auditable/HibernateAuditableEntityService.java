@@ -1,12 +1,12 @@
-/**
- * HibernateAuditableEntityService
- * (C) 2014 Washington University School of Medicine
+/*
+ * org.nrg.framework.orm.auditable.HibernateAuditableEntityService
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on 8/5/2014 by Rick Herrick
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.orm.auditable;
 
 import org.nrg.framework.orm.hibernate.AbstractHibernateEntityService;

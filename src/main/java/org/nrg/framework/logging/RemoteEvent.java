@@ -1,10 +1,12 @@
-    /*
-     * RemoteEvent
-     * (C) 2016 Washington University School of Medicine
-     * All Rights Reserved
-     *
-     * Released under the Simplified BSD License
-     */
+/*
+ * org.nrg.framework.logging.RemoteEvent
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD.
+ */
+
 package org.nrg.framework.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

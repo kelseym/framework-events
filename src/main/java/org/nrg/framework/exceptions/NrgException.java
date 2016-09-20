@@ -1,10 +1,12 @@
-/**
- * NrgException
- * (C) 2016 Washington University School of Medicine
+/*
+ * org.nrg.framework.exceptions.NrgException
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.exceptions;
 
 /**

@@ -1,10 +1,12 @@
-/**
- * JSESSIONIDCookieTest
- * (C) 2015 Washington University School of Medicine
+/*
+ * org.nrg.framework.net.JSESSIONIDCookieTest
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.net;
 
 import static org.junit.Assert.*;

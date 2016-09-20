@@ -1,10 +1,12 @@
 /*
- * AggregatedAnnotationSessionFactoryBean
- * (C) 2016 Washington University School of Medicine
+ * org.nrg.framework.orm.hibernate.AggregatedAnnotationSessionFactoryBean
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.orm.hibernate;
 
 import com.google.common.base.Joiner;

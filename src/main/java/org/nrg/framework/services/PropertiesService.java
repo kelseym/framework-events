@@ -1,12 +1,12 @@
-/**
- * PropertiesService
- * (C) 2012 Washington University School of Medicine
+/*
+ * org.nrg.framework.services.PropertiesService
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on 5/31/12 by rherri01
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.services;
 
 import java.io.File;

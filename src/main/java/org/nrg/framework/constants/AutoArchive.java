@@ -1,12 +1,12 @@
-/**
- * AutoArchive
- * (C) 2011 Washington University School of Medicine
+/*
+ * org.nrg.framework.constants.AutoArchive
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on 12/19/11 by rherri01
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.constants;
 
 public enum AutoArchive {

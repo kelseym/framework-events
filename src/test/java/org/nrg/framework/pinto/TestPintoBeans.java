@@ -1,11 +1,10 @@
-/**
- * TestPintoBeans
- * (C) 2012 Washington University School of Medicine
+/*
+ * org.nrg.framework.pinto.TestPintoBeans
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on 10/18/12 by rherri01
+ * Released under the Simplified BSD.
  */
 package org.nrg.framework.pinto;
 
@@ -21,7 +20,7 @@ import static org.junit.Assert.*;
 @PintoApplication(value = TestPintoBeans.TITLE, copyright = TestPintoBeans.COPYRIGHT, introduction = TestPintoBeans.INTRODUCTION)
 public class TestPintoBeans {
     public static final String TITLE = "TestPintoBeans Unit Tests";
-    public static final String COPYRIGHT = "(c) 2012, Washington University in St. Louis";
+    public static final String COPYRIGHT = "(c) 2016, Washington University in St. Louis";
     public static final String INTRODUCTION = "Hello from NRG's Pinto Beans unit tests.";
 
     private static final String TEST_URI = "http://www.yahoo.com";

@@ -1,12 +1,10 @@
 /*
- * HibernatePacsEntityService
+ * org.nrg.framework.orm.pacs.HibernatePacsEntityService
  * XNAT http://www.xnat.org
- * Copyright (c) 2014, Washington University School of Medicine
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD.
- *
- * Last modified 9/5/13 12:55 PM
  */
 package org.nrg.framework.orm.pacs;
 

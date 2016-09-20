@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
-  ~ D:/Development/XNAT/1.6/nrg_framework/src/test/resources/properties/test2.xml
+  ~ /home/rherrick/Development/XNAT/1.7/libraries/framework/src/test/resources/properties/test2.xml
   ~ XNAT http://www.xnat.org
-  ~ Copyright (c) 2014, Washington University School of Medicine
+  ~ Copyright (c) 2016, Washington University School of Medicine
   ~ All Rights Reserved
   ~
   ~ Released under the Simplified BSD.
-  ~
-  ~ Last modified 8/26/13 6:15 PM
   -->
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>

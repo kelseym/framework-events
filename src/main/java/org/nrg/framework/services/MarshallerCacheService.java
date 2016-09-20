@@ -1,12 +1,12 @@
-/**
- * MarshallerCacheService
- * (C) 2011 Washington University School of Medicine
+/*
+ * org.nrg.framework.services.MarshallerCacheService
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
  * All Rights Reserved
  *
- * Released under the Simplified BSD License
- *
- * Created on Oct 21, 2011
+ * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.services;
 
 import java.util.List;

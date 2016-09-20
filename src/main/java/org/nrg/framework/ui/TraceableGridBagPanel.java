@@ -1,3 +1,12 @@
+/*
+ * org.nrg.framework.ui.TraceableGridBagPanel
+ * XNAT http://www.xnat.org
+ * Copyright (c) 2016, Washington University School of Medicine
+ * All Rights Reserved
+ *
+ * Released under the Simplified BSD.
+ */
+
 package org.nrg.framework.ui;
 
 import javax.swing.*;
