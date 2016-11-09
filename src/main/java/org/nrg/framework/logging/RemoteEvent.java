@@ -11,7 +11,6 @@ package org.nrg.framework.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.restlet.data.ClientInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -66,22 +65,6 @@ public class RemoteEvent extends HashMap<String, String> {
                 }
             }
         }
-    }
-
-    @SuppressWarnings("unused")
-    public RemoteEvent(Map<String, Object> map, ClientInfo clientInfo) {
-        this(map);
-        putNotBlank("address", clientInfo.getAddress());
-        putNotBlank("port", Integer.toString(clientInfo.getPort()));
-        putNotBlank("agent", clientInfo.getAgent());
-        putNotBlank("agentName", clientInfo.getAgentName());
-        Map<String, String> attributes = clientInfo.getAgentAttributes();
-        if (attributes != null && attributes.size() > 0) {
-            for (String attribute : attributes.keySet()) {
-                putNotBlank(attribute, attributes.get(attribute));
-            }
-        }
-        _log.debug("Creating remote event instance from map and client info");
     }
 
     public Level getLevel() {

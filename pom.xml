@@ -151,10 +151,6 @@
             <artifactId>jackson-datatype-hibernate4</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.restlet</groupId>
-            <artifactId>org.restlet</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.kohsuke.metainf-services</groupId>
             <artifactId>metainf-services</artifactId>
         </dependency>
