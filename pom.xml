@@ -19,6 +19,7 @@
     </parent>
 
     <artifactId>framework</artifactId>
+    <version>1.7.2-SNAPSHOT</version>
 
     <name>NRG Common Framework</name>
     <description>Defines the common framework for NRG services and libraries.</description>
