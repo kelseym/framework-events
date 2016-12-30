@@ -21,7 +21,6 @@ public interface XnatTaskService {
 	 * Record task run information.
 	 *
 	 * @param clazz the clazz
-	 * @return true, if successful
 	 */
 	void recordTaskRun(Class<?> clazz);
 	
