@@ -1,11 +1,12 @@
 /*
- * org.nrg.framework.pinto.TestPintoBeans
+ * framework: org.nrg.framework.pinto.TestPintoBeans
  * XNAT http://www.xnat.org
- * Copyright (c) 2016, Washington University School of Medicine
+ * Copyright (c) 2017, Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.pinto;
 
 import org.apache.commons.lang3.StringUtils;

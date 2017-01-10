@@ -1,11 +1,12 @@
 /*
- * org.nrg.framework.test.models.containers.MarshalableList
+ * framework: org.nrg.framework.test.models.containers.MarshalableList
  * XNAT http://www.xnat.org
- * Copyright (c) 2016, Washington University School of Medicine
+ * Copyright (c) 2017, Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD.
  */
+
 package org.nrg.framework.test.models.containers;
 
 import java.util.ArrayList;
