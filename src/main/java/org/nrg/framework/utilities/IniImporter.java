@@ -17,15 +17,11 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.nrg.framework.configuration.ConfigPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nonnull;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 /**
  * Provides utility functions for processing ini files.
@@ -60,28 +56,36 @@ public class IniImporter {
     }
 
     private static void processIniToStore(final IniStore store, final ConfigPaths configFolderPaths, final String iniFileSpec, final String... requested) {
-        final File iniFile = configFolderPaths.findFile(iniFileSpec);
-        if (iniFile != null && iniFile.exists()) {
-            try {
-                // If we find the requested ini file, load that.
-                final INIConfiguration ini = new INIConfiguration();
-                ini.read(new FileReader(iniFile));
-
-                final Set<String> sections = requested.length == 0 ? ini.getSections() : Sets.newHashSet(requested);
-                for (final String section : sections) {
-                    // So check whether it contains the tool ID...
-                    if (ini.getSections().contains(section)) {
-                        // If so, we'll use this...
-                        final SubnodeConfiguration configuration = ini.getSection(section);
-                        final Iterator<String> keys = configuration.getKeys();
-                        while (keys.hasNext()) {
-                            final String key = keys.next();
-                            store.storeIniValue(section, key, configuration.getString(key, ""));
-                        }
-                    }
+        try {
+            for (final File iniFile : configFolderPaths.findFiles(iniFileSpec)) {
+                if (iniFile != null && iniFile.exists()) {
+                    // If we find the requested ini file, load that.
+                    loadIni(store, new FileReader(iniFile), requested);
                 }
-            } catch (IOException | ConfigurationException e) {
-                _log.error("An error occurred trying to read the ini file " + iniFile.getAbsolutePath(), e);
+            }
+            for (final Resource resource : BasicXnatResourceLocator.getResources(iniFileSpec)) {
+                loadIni(store, new InputStreamReader(resource.getInputStream()), requested);
+            }
+        } catch (IOException | ConfigurationException e) {
+            _log.error("An error occurred trying to read the ini file " + iniFileSpec, e);
+        }
+    }
+
+    private static void loadIni(final IniStore store, final Reader reader, final String... requested) throws ConfigurationException, IOException {
+        final INIConfiguration ini = new INIConfiguration();
+        ini.read(reader);
+
+        final Set<String> sections = requested.length == 0 ? ini.getSections() : Sets.newHashSet(requested);
+        for (final String section : sections) {
+            // So check whether it contains the tool ID...
+            if (ini.getSections().contains(section)) {
+                // If so, we'll use this...
+                final SubnodeConfiguration configuration = ini.getSection(section);
+                final Iterator<String>     keys          = configuration.getKeys();
+                while (keys.hasNext()) {
+                    final String key = keys.next();
+                    store.storeIniValue(section, key, configuration.getString(key, ""));
+                }
             }
         }
     }
