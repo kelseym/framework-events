@@ -32,42 +32,126 @@ public class IniImporter {
     }
 
     @Nonnull
+    public static Properties getIniProperties(final String iniFileSpec) {
+        return getIniProperties(null, Collections.singletonList(iniFileSpec), new String[0]);
+    }
+
+    @Nonnull
+    public static Properties getIniProperties(final List<String> iniFileSpecs) {
+        return getIniProperties(null, iniFileSpecs, new String[0]);
+    }
+
+    @Nonnull
+    public static Properties getIniProperties(final String iniFileSpec, final String... requested) {
+        return getIniProperties(null, Collections.singletonList(iniFileSpec), requested);
+    }
+
+    @Nonnull
+    public static Properties getIniProperties(final List<String> iniFileSpecs, final String... requested) {
+        return getIniProperties(null, iniFileSpecs, requested);
+    }
+
+    @Nonnull
     public static Properties getIniProperties(final ConfigPaths configFolderPaths, final String iniFileSpec) {
-        return getIniProperties(configFolderPaths, iniFileSpec, new String[0]);
+        return getIniProperties(configFolderPaths, Collections.singletonList(iniFileSpec), new String[0]);
+    }
+
+    @Nonnull
+    public static Properties getIniProperties(final ConfigPaths configFolderPaths, final List<String> iniFileSpecs) {
+        return getIniProperties(configFolderPaths, iniFileSpecs, new String[0]);
     }
 
     @Nonnull
     public static Properties getIniProperties(final ConfigPaths configFolderPaths, final String iniFileSpec, final String... requested) {
+        return getIniProperties(configFolderPaths, Collections.singletonList(iniFileSpec), requested);
+    }
+
+    @Nonnull
+    public static Properties getIniProperties(final ConfigPaths configFolderPaths, final List<String> iniFileSpecs, final String... requested) {
         final PropertiesIniStore store = new PropertiesIniStore();
-        processIniToStore(store, configFolderPaths, iniFileSpec, requested);
+        processInisToStore(store, configFolderPaths, iniFileSpecs, requested);
         return store.getIniProperties();
     }
 
     @Nonnull
+    public static Map<String, Map<String, String>> getIniMap(final String iniFileSpec) {
+        return getIniMap(Collections.singletonList(iniFileSpec), new String[0]);
+    }
+
+    @Nonnull
+    public static Map<String, Map<String, String>> getIniMap(final List<String> iniFileSpecs) {
+        return getIniMap(null, iniFileSpecs, new String[0]);
+    }
+
+    @Nonnull
+    public static Map<String, Map<String, String>> getIniMap(final String iniFileSpec, final String... requested) {
+        return getIniMap(null, Collections.singletonList(iniFileSpec), requested);
+    }
+
+    @Nonnull
+    public static Map<String, Map<String, String>> getIniMap(final List<String> iniFileSpecs, final String... requested) {
+        return getIniMap(null, iniFileSpecs, requested);
+    }
+
+    @Nonnull
     public static Map<String, Map<String, String>> getIniMap(final ConfigPaths configFolderPaths, final String iniFileSpec) {
-        return getIniMap(configFolderPaths, iniFileSpec, new String[0]);
+        return getIniMap(configFolderPaths, Collections.singletonList(iniFileSpec), new String[0]);
+    }
+
+    @Nonnull
+    public static Map<String, Map<String, String>> getIniMap(final ConfigPaths configFolderPaths, final List<String> iniFileSpecs) {
+        return getIniMap(configFolderPaths, iniFileSpecs, new String[0]);
     }
 
     @Nonnull
     public static Map<String, Map<String, String>> getIniMap(final ConfigPaths configFolderPaths, final String iniFileSpec, final String... requested) {
+        return getIniMap(configFolderPaths, Collections.singletonList(iniFileSpec), requested);
+    }
+
+    @Nonnull
+    public static Map<String, Map<String, String>> getIniMap(final ConfigPaths configFolderPaths, final List<String> iniFileSpecs, final String... requested) {
         final MapIniStore store = new MapIniStore();
-        processIniToStore(store, configFolderPaths, iniFileSpec, requested);
+        processInisToStore(store, configFolderPaths, iniFileSpecs, requested);
         return store.getIniMap();
     }
 
-    private static void processIniToStore(final IniStore store, final ConfigPaths configFolderPaths, final String iniFileSpec, final String... requested) {
-        try {
-            for (final File iniFile : configFolderPaths.findFiles(iniFileSpec)) {
-                if (iniFile != null && iniFile.exists()) {
-                    // If we find the requested ini file, load that.
-                    loadIni(store, new FileReader(iniFile), requested);
+    private static void processInisToStore(final IniStore store, final ConfigPaths configFolderPaths, final List<String> iniFileSpecs, final String... requested) {
+        for (final String iniFileSpec : iniFileSpecs) {
+            try {
+                if (configFolderPaths != null) {
+                    for (final File iniFile : configFolderPaths.findFiles(iniFileSpec)) {
+                        if (iniFile != null && iniFile.exists()) {
+                            final String name = iniFile.getName();
+                            // If we find the requested ini file, load that.
+                            try (final Reader reader = new FileReader(iniFile)) {
+                                loadIni(store, reader, name, requested);
+                            }
+                        }
+                    }
                 }
+                for (final Resource resource : BasicXnatResourceLocator.getResources(iniFileSpec)) {
+                    try {
+                        try (final Reader reader = new InputStreamReader(resource.getInputStream())) {
+                            final String name = resource.getFilename();
+                            loadIni(store, reader, name, requested);
+                        }
+                    } catch (FileNotFoundException e) {
+                        _log.info("Resource {} not found. This is probably OK, sometimes Spring makes stuff up, so we'll just skip it.", resource.getFilename());
+                    }
+                }
+            } catch (IOException | ConfigurationException e) {
+                _log.error("An error occurred trying to read the ini file " + iniFileSpec, e);
             }
-            for (final Resource resource : BasicXnatResourceLocator.getResources(iniFileSpec)) {
-                loadIni(store, new InputStreamReader(resource.getInputStream()), requested);
-            }
-        } catch (IOException | ConfigurationException e) {
-            _log.error("An error occurred trying to read the ini file " + iniFileSpec, e);
+        }
+    }
+
+    private static void loadIni(final IniStore store, final Reader reader, final String name, final String[] requested) throws ConfigurationException, IOException {
+        if (name.endsWith(".ini")) {
+            loadIni(store, reader, requested);
+        } else if (name.endsWith(".properties")) {
+            loadProperties(store, reader, requested);
+        } else {
+            _log.info("Found specified init file {}, but it doesn't end in '.ini' or '.properties', so I'm not sure what to do with it.", name);
         }
     }
 
@@ -86,6 +170,27 @@ public class IniImporter {
                     final String key = keys.next();
                     store.storeIniValue(section, key, configuration.getString(key, ""));
                 }
+            }
+        }
+    }
+
+    private static void loadProperties(final IniStore store, final Reader reader, final String... requested) throws ConfigurationException, IOException {
+        final Properties properties = new Properties();
+        properties.load(reader);
+
+        final Set<String> sections = Sets.newHashSet(requested);
+        for (final String propertyName : properties.stringPropertyNames()) {
+            final String[] atoms = propertyName.split("\\.", 2);
+            final String   section, key;
+            if (atoms.length == 1) {
+                section = "";
+                key = atoms[0];
+            } else {
+                section = atoms[0];
+                key = atoms[1];
+            }
+            if (requested.length == 0 || sections.contains(section)) {
+                store.storeIniValue(section, key, properties.getProperty(propertyName, ""));
             }
         }
     }
@@ -125,5 +230,4 @@ public class IniImporter {
     }
 
     private static final Logger _log = LoggerFactory.getLogger(IniImporter.class);
-
 }
