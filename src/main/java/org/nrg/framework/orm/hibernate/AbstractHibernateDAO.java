@@ -290,13 +290,24 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     public void refresh(boolean initialize, E entity) {
         getSession().refresh(entity);
         if (initialize) {
-            Hibernate.initialize(entity);
+            initialize(entity);
         }
     }
 
     @Override
     public void flush() {
         getSession().flush();
+    }
+
+    /**
+     * Method to initialize entity. By default, calls {@link org.hibernate.Hibernate#initialize(Object)}, but this
+     * can be overridden.
+     *
+     * @param entity Entity object to initialize.
+     */
+    @Override
+    public void initialize(final E entity) {
+        Hibernate.initialize(entity);
     }
 
     @Override

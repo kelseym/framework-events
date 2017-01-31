@@ -85,6 +85,8 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
 
     void flush();
 
+    void initialize(E entity);
+
     List<Number> getRevisions(final long id);
 
     E getRevision(final long id, final Number revision);

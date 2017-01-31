@@ -312,7 +312,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     /**
-     * Method to initialize entity. By default, calls {@link org.hibernate.Hibernate#initialize(Object)}, but this
+     * Method to initialize entity. By default, calls {@link BaseHibernateDAO#initialize(BaseHibernateEntity)}, but this
      * can be overridden.
      *
      * @param entity Entity object to initialize.
@@ -320,7 +320,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      * @see #getInitialize()
      */
     public void initialize(final E entity) {
-        Hibernate.initialize(entity);
+        getDao().initialize(entity);
     }
 
     @Override
