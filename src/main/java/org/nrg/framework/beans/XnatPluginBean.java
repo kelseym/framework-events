@@ -10,7 +10,7 @@
 package org.nrg.framework.beans;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.*;
 import org.apache.commons.lang3.StringUtils;
 import org.nrg.framework.annotations.XnatDataModel;
 import org.nrg.framework.annotations.XnatPlugin;
@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 
+import javax.annotation.Nonnull;
 import javax.lang.model.element.TypeElement;
 import java.io.IOException;
 import java.util.*;
@@ -33,6 +34,7 @@ public class XnatPluginBean {
         _namespace = StringUtils.defaultIfBlank(plugin.namespace(), null);
         _description = StringUtils.defaultIfBlank(plugin.description(), null);
         _beanName = StringUtils.defaultIfBlank(plugin.beanName(), StringUtils.uncapitalize(element.getSimpleName().toString()));
+        _associatedNamespaces.addAll(findAssociatedNamespaces(Arrays.asList(plugin.associatedNamespaces())));
         _entityPackages.addAll(Arrays.asList(plugin.entityPackages()));
         for (final XnatDataModel dataModel : Arrays.asList(plugin.dataModels())) {
             _dataModels.add(new XnatDataModelBean(dataModel));
@@ -46,44 +48,21 @@ public class XnatPluginBean {
              properties.getProperty(XnatPlugin.PLUGIN_NAME),
              properties.getProperty(XnatPlugin.PLUGIN_DESCRIPTION),
              properties.getProperty(XnatPlugin.PLUGIN_BEAN_NAME),
+             properties.getProperty(XnatPlugin.PLUGIN_ASSOC_NAMESPACES),
              properties.getProperty(XnatPlugin.PLUGIN_ENTITY_PACKAGES),
              getDataModelBeans(properties));
     }
 
-    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String description, final String beanName, final String entityPackages, final List<XnatDataModelBean> dataModels) {
+    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String description, final String beanName, final String associatedNamespaces, final String entityPackages, final List<XnatDataModelBean> dataModels) {
         _id = id;
         _name = name;
         _pluginClass = pluginClass;
         _namespace = StringUtils.defaultIfBlank(namespace, null);
         _description = StringUtils.defaultIfBlank(description, null);
         _beanName = StringUtils.defaultIfBlank(beanName, getBeanName(pluginClass));
-        _entityPackages.addAll(parsePackages(entityPackages));
+        _associatedNamespaces.addAll(findAssociatedNamespaces(associatedNamespaces));
+        _entityPackages.addAll(parseCommaSeparatedList(entityPackages));
         _dataModels.addAll(dataModels);
-    }
-
-    public static Map<String, XnatPluginBean> getXnatPluginBeans() throws IOException {
-        if (_pluginBeans.size() == 0 && !_scanned) {
-            synchronized (_pluginBeans) {
-                _scanned = true;
-                for (final Resource resource : BasicXnatResourceLocator.getResources("classpath*:META-INF/xnat/**/*-plugin.properties")) {
-                    final Properties properties = PropertiesLoaderUtils.loadProperties(resource);
-                    final XnatPluginBean plugin = new XnatPluginBean(properties);
-                    if (_log.isDebugEnabled()) {
-                        _log.debug("Found plugin bean {} in file {}", plugin.getId(), resource.getURI().toString());
-                    }
-                    _pluginBeans.put(plugin.getId(), plugin);
-                }
-
-                if (_log.isDebugEnabled()) {
-                    if (_pluginBeans.size() == 0) {
-                        _log.debug("Found no plugin beans.");
-                    } else {
-                        _log.debug("Found a total of {} plugin beans", _pluginBeans.size());
-                    }
-                }
-            }
-        }
-        return ImmutableMap.copyOf(_pluginBeans);
     }
 
     public String getPluginClass() {
@@ -110,12 +89,116 @@ public class XnatPluginBean {
         return _beanName;
     }
 
+    public List<String> getAssociatedNamespaces() {
+        return ImmutableList.copyOf(_associatedNamespaces);
+    }
+
     public List<String> getEntityPackages() {
-        return new ArrayList<>(_entityPackages);
+        return ImmutableList.copyOf(_entityPackages);
     }
 
     public List<XnatDataModelBean> getDataModelBeans() {
-        return new ArrayList<>(_dataModels);
+        return ImmutableList.copyOf(_dataModels);
+    }
+
+    /**
+     * Gets all of the available extended attributes. Extended attributes aren't set by the plugin directly but can be
+     * used by other applications to configure information about a plugin that might be relevant to consumers of the
+     * plugin metadata.
+     *
+     * @return A map containing the available extended attributes.
+     */
+    public ListMultimap<String, String> getExtendedAttributes() {
+        return Multimaps.unmodifiableListMultimap(_extendedAttributes);
+    }
+
+    /**
+     * Replaces the available extended attributes.
+     */
+    public void setExtendedAttributes(final ListMultimap<String, String> extendedAttributes) {
+        _extendedAttributes.clear();
+        _extendedAttributes.putAll(extendedAttributes);
+    }
+
+    /**
+     * Gets any values set for the specified extended attribute. If the key doesn't exist in the extended attributes,
+     * an empty list is returned.
+     *
+     * @param key The extended attribute to retrieve.
+     *
+     * @return A list of all values associated with the extended attribute key.
+     */
+    @Nonnull
+    public List<String> getExtendedAttribute(final String key) {
+        final List<String> elements = _extendedAttributes.get(key);
+        if (elements == null) {
+            return Collections.emptyList();
+        }
+        return ImmutableList.copyOf(elements);
+    }
+
+    /**
+     * Adds the indicated value to the specified extended attribute. Note that, if one or more values are already set
+     * for the attribute, this adds the value to that list.
+
+     * @param key The extended attribute to set.
+     * @param value The value to add to the extended attribute values.
+     */
+    public void setExtendedAttribute(final String key, final String value) {
+        _extendedAttributes.put(key, value);
+    }
+
+    /**
+     * Adds the indicated values to the specified extended attribute. Note that, if one or more values are already set
+     * for the attribute, this adds the values to that list.
+
+     * @param key The extended attribute to set.
+     * @param values The values to add to the extended attribute values.
+     */
+    public void setExtendedAttribute(final String key, final List<String> values) {
+        _extendedAttributes.putAll(key, values);
+    }
+
+    /**
+     * Puts the indicated value to the specified extended attribute. If any values are set for the attribute, this
+     * removes them then sets the new value for the attribute.
+
+     * @param key The extended attribute to set.
+     * @param value The value to set for the extended attribute values.
+     */
+    public void replaceExtendedAttribute(final String key, final String value) {
+        _extendedAttributes.put(key, value);
+    }
+
+    /**
+     * Puts the indicated values to the specified extended attribute. If any values are set for the attribute, this adds
+     * removes them then sets the new values for the attribute.
+
+     * @param key The extended attribute to set.
+     * @param values The values to set for the extended attribute values.
+     */
+    public void replaceExtendedAttribute(final String key, final List<String> values) {
+        _extendedAttributes.putAll(key, values);
+    }
+
+    /**
+     * Removes the indicated value from the specified extended attribute. If any other values are set for the attribute,
+     * they will still be set for the attribute.
+
+     * @param key The extended attribute to set.
+     * @param value The value to remove from the extended attribute values.
+     */
+    public void removeExtendedAttribute(final String key, final String value) {
+        _extendedAttributes.remove(key, value);
+    }
+
+    /**
+     * Removes the specified extended attribute.
+
+     * @param key The extended attribute to remove.
+     */
+    public void removeExtendedAttribute(final String key) {
+        _extendedAttributes.removeAll(key);
     }
 
     public Properties asProperties() {
@@ -140,7 +223,21 @@ public class XnatPluginBean {
         return StringUtils.uncapitalize(lastToken == -1 ? config : config.substring(lastToken + 1));
     }
 
-    private static List<String> parsePackages(final String entityPackages) {
+    private List<String> findAssociatedNamespaces(final String associatedNamespaces) {
+        return findAssociatedNamespaces(parseCommaSeparatedList(associatedNamespaces));
+    }
+
+    private List<String> findAssociatedNamespaces(final List<String> associatedNamespaces) {
+        if (associatedNamespaces.contains(_id)) {
+            associatedNamespaces.remove(_id);
+        }
+        if (associatedNamespaces.contains(_namespace)) {
+            associatedNamespaces.remove(_namespace);
+        }
+        return associatedNamespaces;
+    }
+
+    private static List<String> parseCommaSeparatedList(final String entityPackages) {
         if (StringUtils.isBlank(entityPackages)) {
             return Collections.emptyList();
         }
@@ -165,15 +262,15 @@ public class XnatPluginBean {
 
     private static final Logger _log = LoggerFactory.getLogger(XnatPluginBean.class);
 
-    private static final Map<String, XnatPluginBean> _pluginBeans = new HashMap<>();
-    private static       boolean                     _scanned     = false;
-
     private final String _pluginClass;
     private final String _id;
     private final String _namespace;
     private final String _name;
     private final String _description;
     private final String _beanName;
-    private final List<String>            _entityPackages = new ArrayList<>();
-    private final List<XnatDataModelBean> _dataModels     = new ArrayList<>();
+
+    private final List<String>                      _associatedNamespaces = Lists.newArrayList();
+    private final List<String>                      _entityPackages       = Lists.newArrayList();
+    private final List<XnatDataModelBean>           _dataModels           = Lists.newArrayList();
+    private final ArrayListMultimap<String, String> _extendedAttributes   = ArrayListMultimap.create();
 }

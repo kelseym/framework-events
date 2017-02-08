@@ -23,13 +23,14 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Documented
 public @interface XnatPlugin {
-    String PLUGIN_CLASS             = "class";
-    String PLUGIN_ID                = "id";
-    String PLUGIN_NAMESPACE         = "namespace";
-    String PLUGIN_NAME              = "name";
-    String PLUGIN_DESCRIPTION       = "description";
-    String PLUGIN_BEAN_NAME         = "beanName";
-    String PLUGIN_ENTITY_PACKAGES   = "entityPackages";
+    String PLUGIN_CLASS            = "class";
+    String PLUGIN_ID               = "id";
+    String PLUGIN_NAMESPACE        = "namespace";
+    String PLUGIN_NAME             = "name";
+    String PLUGIN_DESCRIPTION      = "description";
+    String PLUGIN_BEAN_NAME        = "beanName";
+    String PLUGIN_ASSOC_NAMESPACES = "associatedNamespaces";
+    String PLUGIN_ENTITY_PACKAGES  = "entityPackages";
 
     /**
      * In combination with the {@link #namespace()} value, indicates the unique ID for this plugin.
@@ -65,6 +66,15 @@ public @interface XnatPlugin {
      * @return The desired bean name.
      */
     String beanName() default "";
+
+    /**
+     * Any extra namespaces that are associated with this plugin. The default namespace and value for the plugin don't
+     * need to be specified here. How these extra associated namespaces are used is dependent on the tools that rely on
+     * them.
+     *
+     * @return A list of any extra namespaces associated with this plugin.
+     */
+    String[] associatedNamespaces() default {};
 
     /**
      * Any packages that should be scanned for persistent entity classes, e.g. Hibernate or JPA entities.
