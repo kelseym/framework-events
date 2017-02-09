@@ -11,6 +11,7 @@ package org.nrg.framework.orm.hibernate;
 
 import com.google.common.base.Joiner;
 import org.hibernate.Hibernate;
+import org.nrg.framework.exceptions.NotFoundException;
 import org.nrg.framework.exceptions.NrgServiceError;
 import org.nrg.framework.exceptions.NrgServiceException;
 import org.nrg.framework.exceptions.NrgServiceRuntimeException;
@@ -124,6 +125,19 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
         if (_initialize) {
             initialize(entity);
+        }
+        return entity;
+    }
+
+    /**
+     * @see BaseHibernateService#get(long)
+     */
+    @Override
+    @Transactional
+    public E get(long id) throws NotFoundException {
+        final E entity = retrieve(id);
+        if (entity == null) {
+            throw new NotFoundException("Could not find entity with ID " + String.valueOf(id));
         }
         return entity;
     }
