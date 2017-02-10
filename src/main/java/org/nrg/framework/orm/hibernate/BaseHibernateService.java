@@ -9,6 +9,7 @@
 
 package org.nrg.framework.orm.hibernate;
 
+import org.nrg.framework.exceptions.NotFoundException;
 import org.nrg.framework.services.NrgService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +60,15 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * @return The requested entity.
      */
     E retrieve(long id);
+
+    /**
+     * Retrieves the entity with the specified ID.
+     *
+     * @param id The ID of the entity to be retrieved.
+     * @throws NotFoundException If entity is not found.
+     * @return The requested entity.
+     */
+    E get(long id) throws NotFoundException;
 
     /**
      * Updates the submitted entity.
