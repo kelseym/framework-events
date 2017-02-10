@@ -14,15 +14,11 @@ import com.google.common.collect.*;
 import org.apache.commons.lang3.StringUtils;
 import org.nrg.framework.annotations.XnatDataModel;
 import org.nrg.framework.annotations.XnatPlugin;
-import org.nrg.framework.utilities.BasicXnatResourceLocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 import javax.annotation.Nonnull;
 import javax.lang.model.element.TypeElement;
-import java.io.IOException;
 import java.util.*;
 
 @SuppressWarnings({"unused", "WeakerAccess"})
@@ -34,7 +30,6 @@ public class XnatPluginBean {
         _namespace = StringUtils.defaultIfBlank(plugin.namespace(), null);
         _description = StringUtils.defaultIfBlank(plugin.description(), null);
         _beanName = StringUtils.defaultIfBlank(plugin.beanName(), StringUtils.uncapitalize(element.getSimpleName().toString()));
-        _associatedNamespaces.addAll(findAssociatedNamespaces(Arrays.asList(plugin.associatedNamespaces())));
         _entityPackages.addAll(Arrays.asList(plugin.entityPackages()));
         for (final XnatDataModel dataModel : Arrays.asList(plugin.dataModels())) {
             _dataModels.add(new XnatDataModelBean(dataModel));
@@ -48,19 +43,17 @@ public class XnatPluginBean {
              properties.getProperty(XnatPlugin.PLUGIN_NAME),
              properties.getProperty(XnatPlugin.PLUGIN_DESCRIPTION),
              properties.getProperty(XnatPlugin.PLUGIN_BEAN_NAME),
-             properties.getProperty(XnatPlugin.PLUGIN_ASSOC_NAMESPACES),
              properties.getProperty(XnatPlugin.PLUGIN_ENTITY_PACKAGES),
              getDataModelBeans(properties));
     }
 
-    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String description, final String beanName, final String associatedNamespaces, final String entityPackages, final List<XnatDataModelBean> dataModels) {
+    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String description, final String beanName, final String entityPackages, final List<XnatDataModelBean> dataModels) {
         _id = id;
         _name = name;
         _pluginClass = pluginClass;
         _namespace = StringUtils.defaultIfBlank(namespace, null);
         _description = StringUtils.defaultIfBlank(description, null);
         _beanName = StringUtils.defaultIfBlank(beanName, getBeanName(pluginClass));
-        _associatedNamespaces.addAll(findAssociatedNamespaces(associatedNamespaces));
         _entityPackages.addAll(parseCommaSeparatedList(entityPackages));
         _dataModels.addAll(dataModels);
     }
@@ -89,10 +82,6 @@ public class XnatPluginBean {
         return _beanName;
     }
 
-    public List<String> getAssociatedNamespaces() {
-        return ImmutableList.copyOf(_associatedNamespaces);
-    }
-
     public List<String> getEntityPackages() {
         return ImmutableList.copyOf(_entityPackages);
     }
@@ -114,6 +103,8 @@ public class XnatPluginBean {
 
     /**
      * Replaces the available extended attributes.
+     *
+     * @param extendedAttributes The extended attributes to set.
      */
     public void setExtendedAttributes(final ListMultimap<String, String> extendedAttributes) {
         _extendedAttributes.clear();
@@ -223,20 +214,6 @@ public class XnatPluginBean {
         return StringUtils.uncapitalize(lastToken == -1 ? config : config.substring(lastToken + 1));
     }
 
-    private List<String> findAssociatedNamespaces(final String associatedNamespaces) {
-        return findAssociatedNamespaces(parseCommaSeparatedList(associatedNamespaces));
-    }
-
-    private List<String> findAssociatedNamespaces(final List<String> associatedNamespaces) {
-        if (associatedNamespaces.contains(_id)) {
-            associatedNamespaces.remove(_id);
-        }
-        if (associatedNamespaces.contains(_namespace)) {
-            associatedNamespaces.remove(_namespace);
-        }
-        return associatedNamespaces;
-    }
-
     private static List<String> parseCommaSeparatedList(final String entityPackages) {
         if (StringUtils.isBlank(entityPackages)) {
             return Collections.emptyList();
@@ -269,7 +246,6 @@ public class XnatPluginBean {
     private final String _description;
     private final String _beanName;
 
-    private final List<String>                      _associatedNamespaces = Lists.newArrayList();
     private final List<String>                      _entityPackages       = Lists.newArrayList();
     private final List<XnatDataModelBean>           _dataModels           = Lists.newArrayList();
     private final ArrayListMultimap<String, String> _extendedAttributes   = ArrayListMultimap.create();
