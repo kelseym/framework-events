@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
 
@@ -47,15 +48,9 @@ public class FrameworkConfig {
                 .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .failOnEmptyBeans(false)
                 .mixIns(mixIns())
-                .dateFormat(dateFormat())
                 .featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES, JsonParser.Feature.ALLOW_YAML_COMMENTS)
                 .featuresToDisable(SerializationFeature.FAIL_ON_EMPTY_BEANS, SerializationFeature.WRITE_NULL_MAP_VALUES)
                 .modulesToInstall(new Hibernate4Module());
-    }
-
-    @Bean
-    public DateFormat dateFormat() {
-        return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.getDefault());
     }
 
     @Bean
