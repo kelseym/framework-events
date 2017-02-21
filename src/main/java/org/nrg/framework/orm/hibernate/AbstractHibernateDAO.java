@@ -320,6 +320,22 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return getAuditReader().find(getParameterizedType(), id, revision);
     }
 
+    protected E getEntityFromResult(final Object result) {
+        if (result == null) {
+            return null;
+        }
+        if (getParameterizedType().isAssignableFrom(result.getClass())) {
+            return (E) result;
+        } else if (result instanceof Object[]) {
+            for (final Object object : (Object[]) result) {
+                if (getParameterizedType().isAssignableFrom(object.getClass())) {
+                    return (E) object;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Returns the current Hibernate session object.
      *
@@ -374,6 +390,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @param name     The name of the property.
      * @param value    The value of the property. May be null.
      */
+    @SuppressWarnings("unused")
     protected void addNullableCriteria(Criteria criteria, String name, Object value) {
         if (value == null) {
             criteria.add(Restrictions.isNull(name));

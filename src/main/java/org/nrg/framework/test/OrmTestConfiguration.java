@@ -60,7 +60,7 @@ public class OrmTestConfiguration {
     public PropertiesFactoryBean hibernateProperties() {
         final Properties properties = new Properties();
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
-        properties.setProperty("hibernate.hbm2ddl.auto", "update");
+        properties.setProperty("hibernate.hbm2ddl.auto", "create-drop");
         properties.setProperty("hibernate.show_sql", "false");
         properties.setProperty("hibernate.cache.use_second_level_cache", "true");
         properties.setProperty("hibernate.cache.use_query_cache", "true");
