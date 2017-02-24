@@ -34,6 +34,9 @@ import java.util.Map;
 @SupportedAnnotationTypes("org.nrg.framework.annotations.XnatPlugin")
 public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcessor<XnatPlugin> {
 
+    /* (non-Javadoc)
+     * @see org.nrg.framework.processors.NrgAbstractAnnotationProcessor#processAnnotation(javax.lang.model.element.TypeElement, java.lang.annotation.Annotation)
+     */
     @Override
     protected Map<String, String> processAnnotation(final TypeElement element, final XnatPlugin plugin) {
         final Map<String, String> properties = new LinkedHashMap<>();
@@ -54,10 +57,19 @@ public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcesso
             beanName = StringUtils.uncapitalize(element.getSimpleName().toString());
         }
         properties.put(XnatPlugin.PLUGIN_BEAN_NAME, beanName);
-
         final List<String> entityPackages = Arrays.asList(plugin.entityPackages());
         if (entityPackages.size() > 0) {
             properties.put(XnatPlugin.PLUGIN_ENTITY_PACKAGES, Joiner.on(", ").join(entityPackages));
+        }
+
+        final List<String> openUrls = Arrays.asList(plugin.openUrls());
+        if (openUrls.size() > 0) {
+            properties.put(XnatPlugin.PLUGIN_OPEN_URLS, Joiner.on(", ").join(openUrls));
+        }
+
+        final List<String> adminUrls = Arrays.asList(plugin.adminUrls());
+        if (adminUrls.size() > 0) {
+            properties.put(XnatPlugin.PLUGIN_ADMIN_URLS, Joiner.on(", ").join(adminUrls));
         }
 
         final List<XnatDataModel> dataModels = Arrays.asList(plugin.dataModels());
@@ -81,11 +93,20 @@ public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcesso
         return properties;
     }
 
+    /**
+     * Gets the element prefix.
+     *
+     * @param dataModel the data model
+     * @return the element prefix
+     */
     private String getElementPrefix(final XnatDataModel dataModel) {
         return "dataModel." + dataModel.value().replace(":", ".") + ".";
     }
 
 
+    /* (non-Javadoc)
+     * @see org.nrg.framework.processors.NrgAbstractAnnotationProcessor#getPropertiesName(javax.lang.model.element.TypeElement, java.lang.annotation.Annotation)
+     */
     @Override
     protected String getPropertiesName(final TypeElement element, final XnatPlugin plugin) {
         final String namespace = plugin.namespace();

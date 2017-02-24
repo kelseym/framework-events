@@ -30,6 +30,8 @@ public @interface XnatPlugin {
     String PLUGIN_DESCRIPTION      = "description";
     String PLUGIN_BEAN_NAME        = "beanName";
     String PLUGIN_ENTITY_PACKAGES  = "entityPackages";
+    String PLUGIN_OPEN_URLS        = "openUrls";
+    String PLUGIN_ADMIN_URLS       = "adminUrls";
 
     /**
      * In combination with the {@link #namespace()} value, indicates the unique ID for this plugin.
@@ -73,6 +75,20 @@ public @interface XnatPlugin {
      */
     String[] entityPackages() default {};
 
+    /**
+     * A list of open URLs defined in this plugin
+     *
+     * @return A list of open URLs.
+     */
+    String[] openUrls() default {};
+
+    /**
+     * A list of admin URLs defined in this plugin
+     *
+     * @return A list of admin URLs.
+     */
+    String[] adminUrls() default {};
+    
     /**
      * Defines all data models provided by the plugin.
      *
