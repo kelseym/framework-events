@@ -9,35 +9,42 @@
 
 package org.nrg.framework.net;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.net.URLConnection;
 
 /**
- * @author ehaas01
- * Represent the JSESSIONID cookie that we are manually inserting into REST calls as of Tomcat 7
- * (The JSESSIONID cookie already present is HttpOnly by default and not visible to applets/JavaScript).
- * Why not just use java.net.HttpCookie here?  It's new as of Java 1.6, and we still officially support 1.5.
- * Also, we're not using it as a "real" cookie, since HTTP headers are set manually within the HttpUrlConnection.
- * All we really need here is a name value pair.
+ * Represent the JSESSIONID cookie that we are manually inserting into REST calls as of Tomcat 7 (the JSESSIONID cookie
+ * already present is HttpOnly by default and not visible to JavaScript or other client-side applications).
+ *
+ * @deprecated This was created to maintain Java 5 compatibility. The Java HttpCookie class or an even higher level of
+ * abstraction is preferred.
  */
+@Deprecated
 public final class JSESSIONIDCookie {
-	private final String jsessionid;
-	
-	public JSESSIONIDCookie(final String jsessionid) {
-	    this.jsessionid = "".equals(jsessionid) ? null : jsessionid;
-	}
-	
-	public void setInRequestHeader(final URLConnection connection) {
-	    if (null != jsessionid) {
-	        connection.setRequestProperty("Cookie", this.toString());
-	    }
-	}
+    public JSESSIONIDCookie(final String jsessionid) {
+        _jsessionid = jsessionid;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return null == jsessionid ? "" : String.format("JSESSIONID=%s", jsessionid);
-	}
+    /**
+     * Sets the JSESSIONID cookie in the request headers for the submitted connection.
+     *
+     * @param connection The connection to be used for authenticated requests.
+     */
+    public void setInRequestHeader(final URLConnection connection) {
+        if (StringUtils.isNotBlank(_jsessionid)) {
+            connection.setRequestProperty("Cookie", toString());
+        }
+    }
+
+    /**
+     * Returns a representation of the JSESSIONID value. This is formatted properly for insertion into a cookie request
+     * header.
+     */
+    @Override
+    public String toString() {
+        return StringUtils.isNotBlank(_jsessionid) ? String.format("JSESSIONID=%s", _jsessionid) : "";
+    }
+
+    private final String _jsessionid;
 }
