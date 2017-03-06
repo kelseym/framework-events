@@ -21,7 +21,7 @@ import org.nrg.framework.utilities.GraphUtils.CyclicGraphException;
 import junit.framework.TestCase;
 
 /**
- * @author Kevin A. Archie <karchie@npg.wustl.edu>
+ * @author Kevin A. Archie &lt;karchie@wustl.edu&gt;
  *
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })

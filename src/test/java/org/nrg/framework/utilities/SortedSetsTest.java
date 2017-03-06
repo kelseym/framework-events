@@ -21,7 +21,7 @@ import java.util.SortedSet;
 import org.junit.Test;
 
 /**
- * @author Kevin A. Archie <karchie@wustl.edu>
+ * @author Kevin A. Archie &lt;karchie@wustl.edu&gt;
  *
  */
 public class SortedSetsTest {

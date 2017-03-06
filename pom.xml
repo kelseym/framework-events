@@ -215,7 +215,6 @@
     </dependencies>
 
     <build>
-        <finalName>nrg-framework-${project.version}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
