@@ -43,7 +43,7 @@ public class TraceableGridBagPanel extends JPanel {
      */
     public TraceableGridBagPanel(final boolean trace) {
         super(new GridBagLayout());
-        _layout = (GridBagLayout) getLayout();
+        _layout = (GridBagLayout) super.getLayout();
         _trace = trace;
     }
 
