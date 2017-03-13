@@ -32,6 +32,7 @@ public abstract class AbstractPintoBean {
      *
      * @param parent    The parent object.
      * @param arguments Incoming parameter arguments to process.
+     *
      * @throws PintoException When something goes wrong constructing the bean.
      */
     protected AbstractPintoBean(final Object parent, final String[] arguments) throws PintoException {
@@ -44,6 +45,7 @@ public abstract class AbstractPintoBean {
      * @param parent      The parent object.
      * @param arguments   Incoming parameter arguments to process.
      * @param printStream Indicates the print stream to be used for printing output.
+     *
      * @throws PintoException When something goes wrong constructing the bean.
      */
     protected AbstractPintoBean(final Object parent, final String[] arguments, final PrintStream printStream) throws PintoException {
@@ -266,6 +268,7 @@ public abstract class AbstractPintoBean {
      * arguments into a more easily queried and manipulated map.
      *
      * @param keyValues A list of key-value arguments, with key and value separated by the default '=' delimiter.
+     *
      * @return A map with the list items separated into key-value pairs.
      */
     @SuppressWarnings("unused")
@@ -279,6 +282,7 @@ public abstract class AbstractPintoBean {
      *
      * @param keyValues A list of key-value arguments, with key and value separated by the indicated delimiter.
      * @param delimiter The delimiter on which key-value arguments should be split.
+     *
      * @return A map with the list items separated into key-value pairs.
      */
     protected Map<String, String> addKeyValueListToParameter(final List<String> keyValues, final String delimiter) {
@@ -302,7 +306,9 @@ public abstract class AbstractPintoBean {
      *
      * @param type     Indicates the type to which the argument should be converted.
      * @param argument The argument to be converted.
+     *
      * @return An object of the indicated type from the given value.
+     *
      * @throws PintoException If the argument can't be converted to the indicated type.
      */
     protected Object convertStringToType(final Class<?> type, final String argument) throws PintoException {
@@ -375,6 +381,9 @@ public abstract class AbstractPintoBean {
                     throw new PintoException(PintoExceptionType.DuplicateParameter, "Your application has multiple declarations of the short option " + parameter.getShortOption());
                 }
                 _parametersByShortOption.put(parameter.getShortOption(), parameter);
+                if (StringUtils.isNotBlank(parameter.getDefaultValue())) {
+                    _parametersWithDefaultValues.put(parameter.getShortOption(), parameter);
+                }
                 final String longOption = parameter.getLongOption();
                 if (!StringUtils.isBlank(longOption)) {
                     if (_parametersByLongOption.containsKey(parameter.getLongOption())) {
@@ -391,7 +400,7 @@ public abstract class AbstractPintoBean {
      * assigned to the last found parameter. Trailing arguments that occur without parameters are stashed in the {@link
      * #getTrailingArguments()} property.
      *
-     * @throws PintoException
+     * @throws PintoException When an error occurs harvesting parameters.
      */
     private void harvest() throws PintoException {
         ParameterData parameter = null;
@@ -436,6 +445,11 @@ public abstract class AbstractPintoBean {
                     _parameters.put(parameter.getShortOption(), new ArrayList<String>());
                 }
 
+                // Remove explicit parameters from default values to be set.
+                if (_parametersWithDefaultValues.containsKey(parameter.getShortOption())) {
+                    _parametersWithDefaultValues.remove(parameter.getShortOption());
+                }
+
                 // If the parameter takes no args, there's no reason to keep it around.  The next tokens have to be
                 // either another parameter or trailing arguments.
                 if (parameter.getArgCount() == ArgCount.StandAlone) {
@@ -451,6 +465,7 @@ public abstract class AbstractPintoBean {
                 args.add(argument);
 
                 ArgCount argCount = parameter.getArgCount();
+
                 // Note that we don't handle ArgCount.StandAlone here because that's cut off when the
                 // stand-alone parameter is detected earlier. We also don't deal with ZeroToN and OneToN,
                 // since they should be cut off by end of command or the next parameter.
@@ -469,11 +484,17 @@ public abstract class AbstractPintoBean {
                 }
             }
         }
+        if (_parametersWithDefaultValues.size() > 0) {
+            for (final String option : _parametersWithDefaultValues.keySet()) {
+                parameter = _parametersWithDefaultValues.get(option);
+                _parameters.put(option, Collections.singletonList(parameter.getDefaultValue()));
+            }
+        }
     }
 
     /**
      * Prunes the parameters and arguments. This includes validating the arguments passed in against the accepted
-     * arguments for each parameter, as well as removing trailing arguments.
+     * arguments for each parameter, as well as removing trailing arguments and setting default values.
      */
     private void prune() throws PintoException {
         for (String parameterId : _parameters.keySet()) {
@@ -719,8 +740,9 @@ public abstract class AbstractPintoBean {
     private String _outputStreamAdapter;
 
     private List<String> _arguments;
-    private Map<String, List<String>>  _parameters              = new LinkedHashMap<>();
-    private List<String>               _trailing                = new ArrayList<>();
-    private Map<String, ParameterData> _parametersByShortOption = new HashMap<>();
-    private Map<String, ParameterData> _parametersByLongOption  = new HashMap<>();
+    private Map<String, List<String>>  _parameters                  = new LinkedHashMap<>();
+    private List<String>               _trailing                    = new ArrayList<>();
+    private Map<String, ParameterData> _parametersByShortOption     = new HashMap<>();
+    private Map<String, ParameterData> _parametersByLongOption      = new HashMap<>();
+    private Map<String, ParameterData> _parametersWithDefaultValues = new HashMap<>();
 }

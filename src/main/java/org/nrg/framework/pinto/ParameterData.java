@@ -29,6 +29,7 @@ public ParameterData(final Method method, Parameter parameter) {
         _method = method;
         _shortOption = parameter.value();
         _longOption = parameter.longOption();
+        _defaultValue = parameter.defaultValue();
         _argCount = parameter.argCount();
         _exactArgCount = parameter.exactArgCount();
         _multiplesAllowed = parameter.multiplesAllowed();
@@ -49,6 +50,14 @@ public ParameterData(final Method method, Parameter parameter) {
 
     public String getLongOption() {
         return _longOption;
+    }
+
+    public boolean hasDefaultValue() {
+        return !StringUtils.isBlank(_defaultValue);
+    }
+
+    public String getDefaultValue() {
+        return _defaultValue;
     }
 
     public ArgCount getArgCount() {
@@ -72,6 +81,7 @@ public ParameterData(final Method method, Parameter parameter) {
     private final Method _method;
     private final String _shortOption;
     private final String _longOption;
+    private final String _defaultValue;
     private final ArgCount _argCount;
     private final int _exactArgCount;
     private final boolean _multiplesAllowed;

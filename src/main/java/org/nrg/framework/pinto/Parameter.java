@@ -45,6 +45,12 @@ public @interface Parameter {
     boolean required() default false;
 
     /**
+     * Provides the default value for this parameter if not specified.
+     * @return A string representation of the default value if specified. Empty string indicates no default.
+     */
+    String defaultValue() default "";
+
+    /**
      * The number of accepted arguments for this parameter. This is specified using the {@link ArgCount} enumeration. In
      * the case of {@link ArgCount#SpecificCount}, you can set the specific count to be used with the {@link
      * #exactArgCount()} attribute. The default value for this is {@link ArgCount#OneArgument}.

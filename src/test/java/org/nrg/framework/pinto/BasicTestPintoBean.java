@@ -20,7 +20,7 @@ public class BasicTestPintoBean extends AbstractPintoBean {
     /**
      * Provides an opportunity for subclasses to validate the processed parameters and their arguments.
      *
-     * @throws org.nrg.framework.pinto.PintoException
+     * @throws PintoException When an error occurs.
      *
      */
     @Override
@@ -64,9 +64,30 @@ public class BasicTestPintoBean extends AbstractPintoBean {
         return _targets;
     }
 
-    private boolean _showHelp;
+    @Parameter(value = "q", longOption = "quit-on-complete", defaultValue = "true", help = "Indicates whether this should quit when done.")
+    public void setQuitOnComplete(final boolean quitOnComplete) {
+        _quitOnComplete = quitOnComplete;
+    }
+
+    @Value("q")
+    public boolean isQuitOnComplete() {
+        return _quitOnComplete;
+    }
+
+    @Parameter(value = "threads", longOption = "n-upload-threads", argCount = ArgCount.OneArgument, defaultValue = "4", help = "Indicates number of upload threads.")
+    public void setUploadThreads(final int uploadThreads) {
+        _uploadThreads = uploadThreads;
+    }
+
+    @Value("threads")
+    public int getUploadThreads() {
+        return _uploadThreads;
+    }
+
     private String _name;
     private URI _uri;
     private int _count;
     private String[] _targets;
+    private boolean _quitOnComplete;
+    private int     _uploadThreads;
 }

@@ -31,6 +31,7 @@ public class TestPintoBeans {
     public static final String TEST_TARGET_2 = "two";
     public static final String TEST_TARGET_3 = "three";
     private static final String[] TEST_PARAMS = { "-n", TEST_NAME, "-u", TEST_URI, "-c", Integer.toString(TEST_COUNT), "--targets", TEST_TARGET_1, TEST_TARGET_2, TEST_TARGET_3 };
+    private static final String[] TEST_OVERRIDE_DEFAULT_PARAMS = { "-n", TEST_NAME, "-u", TEST_URI, "-c", Integer.toString(TEST_COUNT), "-threads", "2", "--targets", TEST_TARGET_1, TEST_TARGET_2, TEST_TARGET_3 };
 
     @Test
     public void testBasicTestApplication() throws PintoException, URISyntaxException {
@@ -45,6 +46,25 @@ public class TestPintoBeans {
         assertEquals(new URI(TEST_URI), bean.getUri());
         assertEquals(TEST_COUNT, bean.getCount());
         assertNotNull(bean.getTargets());
+        assertTrue(bean.isQuitOnComplete());
+        assertEquals(4, bean.getUploadThreads());
+    }
+
+    @Test
+    public void testBasicTestApplicationWithDefaultOverride() throws PintoException, URISyntaxException {
+        BasicTestPintoBean bean = new BasicTestPintoBean(this, TEST_OVERRIDE_DEFAULT_PARAMS);
+        assertNotNull(bean);
+        assertFalse(bean.getHelp());
+        assertFalse(bean.getVersion());
+        assertTrue(bean.getShouldContinue());
+        assertFalse(StringUtils.isBlank(bean.getName()));
+        assertEquals("foo", bean.getName());
+        assertNotNull(bean.getUri());
+        assertEquals(new URI(TEST_URI), bean.getUri());
+        assertEquals(TEST_COUNT, bean.getCount());
+        assertNotNull(bean.getTargets());
+        assertTrue(bean.isQuitOnComplete());
+        assertEquals(2, bean.getUploadThreads());
     }
 
     @Test
