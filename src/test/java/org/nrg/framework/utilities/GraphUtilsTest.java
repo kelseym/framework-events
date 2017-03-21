@@ -9,30 +9,22 @@
 
 package org.nrg.framework.utilities;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.junit.Test;
 import org.nrg.framework.utilities.GraphUtils.CyclicGraphException;
 
-import junit.framework.TestCase;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * @author Kevin A. Archie &lt;karchie@wustl.edu&gt;
- *
  */
-@SuppressWarnings({ "rawtypes", "unchecked" })
-public class GraphUtilsTest extends TestCase {
-    private final List asMutableList(final Object[] a) {
-        return new ArrayList(Arrays.asList(a));
-    }
-
+@SuppressWarnings({"rawtypes", "unchecked"})
+public class GraphUtilsTest {
     /**
-     * Test method for {@link org.nrg.util.GraphUtils#topologicalSort(java.util.Map)}.
+     * Test method for {@link GraphUtils#topologicalSort(Map)}.
      */
+    @Test
     public void testTopologicalSort() {
         final Map m1 = new LinkedHashMap();
         m1.put("A", Collections.EMPTY_LIST);
@@ -75,7 +67,7 @@ public class GraphUtilsTest extends TestCase {
             GraphUtils.topologicalSort(m4);
             fail("Expected CyclicGraphException");
         } catch (CyclicGraphException e) {
-            final List sorted = (List)e.getPartialResult();
+            final List sorted = (List) e.getPartialResult();
             assertEquals(2, sorted.size());
             assertEquals("A", sorted.get(0));
             assertEquals("B", sorted.get(1));
@@ -83,13 +75,18 @@ public class GraphUtilsTest extends TestCase {
     }
 
     /**
-     * Test method for {@link org.nrg.util.GraphUtils#topologicalSort(java.util.Map)}.
+     * Test method for {@link GraphUtils#topologicalSort(Map)}.
      */
+    @Test
     public void testTopologicalSortSelfEdge() {
         final Map m = new LinkedHashMap();
         m.put("A", asMutableList(new String[]{"A"}));
         final List s = GraphUtils.topologicalSort(m);
         assertEquals(1, s.size());
         assertEquals("A", s.get(0));
+    }
+
+    private List asMutableList(final Object[] a) {
+        return new ArrayList(Arrays.asList(a));
     }
 }

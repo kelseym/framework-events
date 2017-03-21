@@ -14,9 +14,9 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Properties;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class SortedPropertiesTest {
     private static final String[]   KEYS                = new String[] {"aa", "xx", "de", "tt", "dd", "rx"};

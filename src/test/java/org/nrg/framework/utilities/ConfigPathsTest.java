@@ -23,7 +23,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 
-import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 public class ConfigPathsTest {
     @Before
