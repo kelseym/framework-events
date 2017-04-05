@@ -10,10 +10,15 @@
 package org.nrg.framework.utilities;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.nrg.framework.annotations.XnatPlugin;
 import org.nrg.framework.exceptions.NotConcreteTypeException;
 import org.nrg.framework.exceptions.NotParameterizedTypeException;
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 import org.slf4j.Logger;
@@ -32,11 +37,27 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 
+import static org.reflections.ReflectionUtils.*;
+
 public class Reflection {
-    public static final Pattern                     PATTERN_GETTER            = Pattern.compile("^get[A-Z][A-z]+");
-    public static final Pattern                     PATTERN_BOOL_GETTER       = Pattern.compile("^is[A-Z][A-z]+");
-    public static final Pattern                     PATTERN_SETTER            = Pattern.compile("^set[A-Z][A-z]+");
-    public static       Map<String, List<Class<?>>> CACHED_CLASSES_BY_PACKAGE = Maps.newHashMap();
+    public static final String                          CAPITALIZED_NAME          = "[A-Z][A-z0-9_]*";
+    public static final String                          REGEX_REFL_GETTER         = "^public.*\\.(get|is)%s\\(\\).*$";
+    @SuppressWarnings("unchecked")
+    public static final List<Predicate<? super Method>> PREDICATES_ANY_GETTER     = getGetterPredicate();
+    public static final String                          REGEX_REFL_SETTER         = "^public.*\\.set(%s)\\(.+\\).*$";
+    @SuppressWarnings("unchecked")
+    public static final List<Predicate<? super Method>> PREDICATES_ANY_SETTER     = getSetterPredicate();
+    public static final String                          REGEX_BOOL_GETTER         = "^is(?<property>[A-Z][A-z0-9_]*)$";
+    public static final String                          REGEX_OBJECT_GETTER       = "^get(?<property>[A-Z][A-z0-9_]*)$";
+    public static final String                          REGEX_GETTER              = "^(is|get)(?<property>[A-Z][A-z0-9_]*)$";
+    public static final String                          REGEX_SETTER              = "^set(?<property>[A-Z][A-z0-9_]*)$";
+    public static final String                          REGEX_PROPERTY            = "^(?<prefix>is|get|set)(?<property>[A-Z][A-z0-9_]*)$";
+    public static final Pattern                         PATTERN_OBJECT_GETTER     = Pattern.compile(REGEX_OBJECT_GETTER);
+    public static final Pattern                         PATTERN_BOOL_GETTER       = Pattern.compile(REGEX_BOOL_GETTER);
+    public static final Pattern                         PATTERN_GETTER            = Pattern.compile(REGEX_GETTER);
+    public static final Pattern                         PATTERN_SETTER            = Pattern.compile(REGEX_SETTER);
+    public static final Pattern                         PATTERN_PROPERTY          = Pattern.compile(REGEX_PROPERTY);
+    public static       Map<String, List<Class<?>>>     CACHED_CLASSES_BY_PACKAGE = Maps.newHashMap();
 
     /**
      * Scans all classes accessible from the context class loader which belong
@@ -97,9 +118,9 @@ public class Reflection {
      *
      * See {@link XnatPlugin} for an example of an annotation that includes this configuration.
      *
-     * @param <T>                 The annotation class to check.
-     * @param clazz               The top-level class to check.
-     * @param annotationClass     The annotation definition to check for.
+     * @param <T>             The annotation class to check.
+     * @param clazz           The top-level class to check.
+     * @param annotationClass The annotation definition to check for.
      *
      * @return The annotation instance if it exists on the class or any of its subtypes, null otherwise.
      */
@@ -165,11 +186,59 @@ public class Reflection {
     public static boolean isGetter(final Method method) {
         return Modifier.isPublic(method.getModifiers()) &&
                method.getParameterTypes().length == 0 &&
-               ((PATTERN_GETTER.matcher(method.getName()).matches() && !method.getReturnType().equals(Void.TYPE)) || (PATTERN_BOOL_GETTER.matcher((method.getName())).matches() && method.getReturnType().equals(Boolean.TYPE)));
+               ((PATTERN_OBJECT_GETTER.matcher(method.getName()).matches() && !method.getReturnType().equals(Void.TYPE)) || (PATTERN_BOOL_GETTER.matcher((method.getName())).matches() && method.getReturnType().equals(Boolean.TYPE)));
     }
 
     public static boolean isSetter(final Method method) {
         return Modifier.isPublic(method.getModifiers()) && PATTERN_SETTER.matcher(method.getName()).matches() && method.getParameterTypes().length == 1;
+    }
+
+    @SafeVarargs
+    public static Method getGetter(final Class<?> clazz, final String property, final Predicate<? super Method>... predicates) {
+        return getGetter(clazz, null, property, predicates);
+    }
+
+    @SafeVarargs
+    public static Method getGetter(final Class<?> clazz, final Class<?> terminator, final String property, final Predicate<? super Method>... predicates) {
+        final List<Method> methods = getMethodsUpToSuperclass(clazz, terminator, getGetterPredicate(property, Arrays.asList(predicates)));
+        if (methods.size() == 0) {
+            return null;
+        }
+        return methods.get(0);
+    }
+
+    @SafeVarargs
+    public static Method getSetter(final Class<?> clazz, final String property, final Predicate<? super Method>... predicates) {
+        return getSetter(clazz, null, property, predicates);
+    }
+
+    @SafeVarargs
+    public static Method getSetter(final Class<?> clazz, final Class<?> terminator, final String property, final Predicate<? super Method>... predicates) {
+        final List<Method> methods = getMethodsUpToSuperclass(clazz, terminator, getSetterPredicate(property, Arrays.asList(predicates)));
+        if (methods.size() == 0) {
+            return null;
+        }
+        return methods.get(0);
+    }
+
+    @SafeVarargs
+    public static List<Method> getGetters(final Class<?> clazz, final Predicate<? super Method>... predicates) {
+        return getGetters(clazz, null, predicates);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Method> getGetters(final Class<?> clazz, final Class<?> terminator, final Predicate<? super Method>... predicates) {
+        return getMethodsUpToSuperclass(clazz, terminator, PREDICATES_ANY_GETTER, predicates);
+    }
+
+    @SafeVarargs
+    public static List<Method> getSetters(final Class<?> clazz, final Predicate<? super Method>... predicates) {
+        return getSetters(clazz, null, predicates);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Method> getSetters(final Class<?> clazz, final Class<?> terminator, final Predicate<? super Method>... predicates) {
+        return getMethodsUpToSuperclass(clazz, terminator, PREDICATES_ANY_SETTER, predicates);
     }
 
     public interface InjectableI {
@@ -416,6 +485,50 @@ public class Reflection {
             _reflectionsCache.put(resourcePackage, new Reflections(resourcePackage, new ResourcesScanner()));
         }
         return _reflectionsCache.get(resourcePackage);
+    }
+
+    @SafeVarargs
+    private static List<Method> getMethodsUpToSuperclass(final Class<?> subclass, final Class<?> terminator, final List<Predicate<? super Method>> predicates, final Predicate<? super Method>... added) {
+        final List<Method> methods = Lists.newArrayList();
+        final Predicate[] asArray = predicates.toArray(new Predicate[predicates.size()]);
+        final Predicate[] submitted = added.length == 0 ? asArray : ArrayUtils.addAll(asArray, added);
+        //noinspection unchecked
+        methods.addAll(ReflectionUtils.getMethods(subclass, submitted));
+        final Class<?> superclass = subclass.getSuperclass();
+        if (superclass != null && !superclass.equals(Object.class) && (terminator == null || !terminator.equals(superclass))) {
+            methods.addAll(getMethodsUpToSuperclass(superclass, terminator, predicates));
+        }
+        return methods;
+    }
+
+    private static List<Predicate<? super Method>> getGetterPredicate() {
+        return getGetterPredicate(null, null);
+    }
+
+    private static List<Predicate<? super Method>> getGetterPredicate(final String property, final List<Predicate<? super Method>> added) {
+        final String pattern = String.format(REGEX_REFL_GETTER, StringUtils.isBlank(property) ? CAPITALIZED_NAME : StringUtils.capitalize(property));
+        final List<Predicate<? super Method>> predicates = Lists.newArrayList();
+        predicates.add(withPattern(pattern));
+        predicates.add(withParametersCount(0));
+        if (added != null) {
+            predicates.addAll(added);
+        }
+        return predicates;
+    }
+
+    private static List<Predicate<? super Method>> getSetterPredicate() {
+        return getSetterPredicate(null, null);
+    }
+
+    private static List<Predicate<? super Method>> getSetterPredicate(final String property, final List<Predicate<? super Method>> added) {
+        final String pattern = String.format(REGEX_REFL_SETTER, StringUtils.isBlank(property) ? CAPITALIZED_NAME : StringUtils.capitalize(property));
+        final List<Predicate<? super Method>> predicates = Lists.newArrayList();
+        predicates.add(withPattern(pattern));
+        predicates.add(withReturnType(Void.TYPE));
+        if (added != null) {
+            predicates.addAll(added);
+        }
+        return predicates;
     }
 
     private static final Map<String, Reflections> _reflectionsCache = Collections.synchronizedMap(new HashMap<String, Reflections>());
