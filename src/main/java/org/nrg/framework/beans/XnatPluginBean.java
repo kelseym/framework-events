@@ -26,6 +26,7 @@ public class XnatPluginBean {
     public XnatPluginBean(final TypeElement element, final XnatPlugin plugin) {
         _id = plugin.value();
         _name = plugin.name();
+        _version = plugin.version();
         _pluginClass = element.getQualifiedName().toString();
         _namespace = StringUtils.defaultIfBlank(plugin.namespace(), null);
         _description = StringUtils.defaultIfBlank(plugin.description(), null);
@@ -42,6 +43,7 @@ public class XnatPluginBean {
              properties.getProperty(XnatPlugin.PLUGIN_ID),
              properties.getProperty(XnatPlugin.PLUGIN_NAMESPACE),
              properties.getProperty(XnatPlugin.PLUGIN_NAME),
+             properties.getProperty(XnatPlugin.PLUGIN_VERSION),
              properties.getProperty(XnatPlugin.PLUGIN_DESCRIPTION),
              properties.getProperty(XnatPlugin.PLUGIN_BEAN_NAME),
              properties.getProperty(XnatPlugin.PLUGIN_ENTITY_PACKAGES),
@@ -49,9 +51,10 @@ public class XnatPluginBean {
              getDataModelBeans(properties));
     }
 
-    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String description, final String beanName, final String entityPackages, final String log4jPropertiesFile, final List<XnatDataModelBean> dataModels) {
+    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String version, final String description, final String beanName, final String entityPackages, final String log4jPropertiesFile, final List<XnatDataModelBean> dataModels) {
         _id = id;
         _name = name;
+        _version = version;
         _pluginClass = pluginClass;
         _namespace = StringUtils.defaultIfBlank(namespace, null);
         _description = StringUtils.defaultIfBlank(description, null);
@@ -77,6 +80,10 @@ public class XnatPluginBean {
         return _name;
     }
 
+    public String getVersion() {
+        return _version;
+    }
+
     public String getDescription() {
         return _description;
     }
@@ -87,6 +94,10 @@ public class XnatPluginBean {
 
     public List<String> getEntityPackages() {
         return ImmutableList.copyOf(_entityPackages);
+    }
+
+    public String getLog4jPropertiesFile() {
+        return _log4jPropertiesFile;
     }
 
     public List<XnatDataModelBean> getDataModelBeans() {
@@ -218,10 +229,6 @@ public class XnatPluginBean {
         return StringUtils.uncapitalize(lastToken == -1 ? config : config.substring(lastToken + 1));
     }
 
-    public String getLog4jPropertiesFile() {
-        return _log4jPropertiesFile;
-    }
-
     private static List<String> parseCommaSeparatedList(final String entityPackages) {
         if (StringUtils.isBlank(entityPackages)) {
             return Collections.emptyList();
@@ -251,6 +258,7 @@ public class XnatPluginBean {
     private final String _id;
     private final String _namespace;
     private final String _name;
+    private final String _version;
     private final String _description;
     private final String _beanName;
     private final String _log4jPropertiesFile;

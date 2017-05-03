@@ -27,12 +27,13 @@ public @interface XnatPlugin {
     String PLUGIN_ID               = "id";
     String PLUGIN_NAMESPACE        = "namespace";
     String PLUGIN_NAME             = "name";
+    String PLUGIN_VERSION          = "version";
     String PLUGIN_DESCRIPTION      = "description";
     String PLUGIN_BEAN_NAME        = "beanName";
     String PLUGIN_ENTITY_PACKAGES  = "entityPackages";
     String PLUGIN_OPEN_URLS        = "openUrls";
     String PLUGIN_ADMIN_URLS       = "adminUrls";
-    String PLUGIN_LOG4J_PROPERTIES  = "log4jPropertiesFile";
+    String PLUGIN_LOG4J_PROPERTIES = "log4jPropertiesFile";
 
     /**
      * In combination with the {@link #namespace()} value, indicates the unique ID for this plugin.
@@ -54,6 +55,13 @@ public @interface XnatPlugin {
      * @return The name of the plugin.
      */
     String name();
+
+    /**
+     * The version of this plugin.
+     *
+     * @return The version of the plugin.
+     */
+    String version();
 
     /**
      * A description for this plugin.
@@ -89,7 +97,7 @@ public @interface XnatPlugin {
      * @return A list of admin URLs.
      */
     String[] adminUrls() default {};
-    
+
     /**
      * Defines all data models provided by the plugin.
      *

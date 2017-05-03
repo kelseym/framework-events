@@ -43,6 +43,9 @@ public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcesso
         properties.put(XnatPlugin.PLUGIN_ID, plugin.value());
         properties.put(XnatPlugin.PLUGIN_CLASS, element.getQualifiedName().toString());
         properties.put(XnatPlugin.PLUGIN_NAME, plugin.name());
+        if (StringUtils.isNotBlank(plugin.version())) {
+            properties.put(XnatPlugin.PLUGIN_VERSION, plugin.version());
+        }
         if (StringUtils.isNotBlank(plugin.namespace())) {
             properties.put(XnatPlugin.PLUGIN_NAMESPACE, plugin.namespace());
         }
