@@ -62,6 +62,10 @@ public class XnatPluginAnnotationProcessor extends NrgAbstractAnnotationProcesso
             properties.put(XnatPlugin.PLUGIN_ENTITY_PACKAGES, Joiner.on(", ").join(entityPackages));
         }
 
+        if (StringUtils.isNotBlank(plugin.log4jPropertiesFile())) {
+            properties.put(XnatPlugin.PLUGIN_LOG4J_PROPERTIES, plugin.log4jPropertiesFile());
+        }
+
         final List<String> openUrls = Arrays.asList(plugin.openUrls());
         if (openUrls.size() > 0) {
             properties.put(XnatPlugin.PLUGIN_OPEN_URLS, Joiner.on(", ").join(openUrls));

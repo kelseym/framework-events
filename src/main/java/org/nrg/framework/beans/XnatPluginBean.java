@@ -31,6 +31,7 @@ public class XnatPluginBean {
         _description = StringUtils.defaultIfBlank(plugin.description(), null);
         _beanName = StringUtils.defaultIfBlank(plugin.beanName(), StringUtils.uncapitalize(element.getSimpleName().toString()));
         _entityPackages.addAll(Arrays.asList(plugin.entityPackages()));
+        _log4jPropertiesFile = StringUtils.defaultIfBlank(plugin.log4jPropertiesFile(), null);
         for (final XnatDataModel dataModel : Arrays.asList(plugin.dataModels())) {
             _dataModels.add(new XnatDataModelBean(dataModel));
         }
@@ -44,10 +45,11 @@ public class XnatPluginBean {
              properties.getProperty(XnatPlugin.PLUGIN_DESCRIPTION),
              properties.getProperty(XnatPlugin.PLUGIN_BEAN_NAME),
              properties.getProperty(XnatPlugin.PLUGIN_ENTITY_PACKAGES),
+             properties.getProperty(XnatPlugin.PLUGIN_LOG4J_PROPERTIES),
              getDataModelBeans(properties));
     }
 
-    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String description, final String beanName, final String entityPackages, final List<XnatDataModelBean> dataModels) {
+    public XnatPluginBean(final String pluginClass, final String id, final String namespace, final String name, final String description, final String beanName, final String entityPackages, final String log4jPropertiesFile, final List<XnatDataModelBean> dataModels) {
         _id = id;
         _name = name;
         _pluginClass = pluginClass;
@@ -55,6 +57,7 @@ public class XnatPluginBean {
         _description = StringUtils.defaultIfBlank(description, null);
         _beanName = StringUtils.defaultIfBlank(beanName, getBeanName(pluginClass));
         _entityPackages.addAll(parseCommaSeparatedList(entityPackages));
+        _log4jPropertiesFile = StringUtils.defaultIfBlank(log4jPropertiesFile, null);
         _dataModels.addAll(dataModels);
     }
 
@@ -203,6 +206,7 @@ public class XnatPluginBean {
         properties.setProperty(XnatPlugin.PLUGIN_NAME, _name);
         properties.setProperty(XnatPlugin.PLUGIN_DESCRIPTION, _description);
         properties.setProperty(XnatPlugin.PLUGIN_ENTITY_PACKAGES, Joiner.on(", ").join(_entityPackages));
+        properties.setProperty(XnatPlugin.PLUGIN_LOG4J_PROPERTIES, _log4jPropertiesFile);
         for (final XnatDataModelBean dataModel : _dataModels) {
             properties.putAll(dataModel.asProperties());
         }
@@ -212,6 +216,10 @@ public class XnatPluginBean {
     private String getBeanName(final String config) {
         final int lastToken = config.lastIndexOf(".");
         return StringUtils.uncapitalize(lastToken == -1 ? config : config.substring(lastToken + 1));
+    }
+
+    public String getLog4jPropertiesFile() {
+        return _log4jPropertiesFile;
     }
 
     private static List<String> parseCommaSeparatedList(final String entityPackages) {
@@ -245,6 +253,7 @@ public class XnatPluginBean {
     private final String _name;
     private final String _description;
     private final String _beanName;
+    private final String _log4jPropertiesFile;
 
     private final List<String>                      _entityPackages       = Lists.newArrayList();
     private final List<XnatDataModelBean>           _dataModels           = Lists.newArrayList();

@@ -32,6 +32,7 @@ public @interface XnatPlugin {
     String PLUGIN_ENTITY_PACKAGES  = "entityPackages";
     String PLUGIN_OPEN_URLS        = "openUrls";
     String PLUGIN_ADMIN_URLS       = "adminUrls";
+    String PLUGIN_LOG4J_PROPERTIES  = "log4jPropertiesFile";
 
     /**
      * In combination with the {@link #namespace()} value, indicates the unique ID for this plugin.
@@ -95,4 +96,11 @@ public @interface XnatPlugin {
      * @return An array of data models provided by the plugin.
      */
     XnatDataModel[] dataModels() default {};
+
+    /**
+     * A file containing Log4j properties you want to add.
+     *
+     * @return A path to the file containing properties to add.
+     */
+    String log4jPropertiesFile() default "";
 }
