@@ -61,7 +61,7 @@ public @interface XnatPlugin {
      *
      * @return The version of the plugin.
      */
-    String version();
+    String version() default "";
 
     /**
      * A description for this plugin.
