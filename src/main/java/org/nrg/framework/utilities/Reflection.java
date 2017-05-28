@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.nrg.framework.annotations.XnatPlugin;
 import org.nrg.framework.exceptions.NotConcreteTypeException;
 import org.nrg.framework.exceptions.NotParameterizedTypeException;
+import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClassUsageException;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
@@ -58,6 +59,27 @@ public class Reflection {
     public static final Pattern                         PATTERN_SETTER            = Pattern.compile(REGEX_SETTER);
     public static final Pattern                         PATTERN_PROPERTY          = Pattern.compile(REGEX_PROPERTY);
     public static       Map<String, List<Class<?>>>     CACHED_CLASSES_BY_PACKAGE = Maps.newHashMap();
+
+    public static <T> Class<T> getParameterizedTypeForClass(final Class<?> clazz) {
+        Class<?> working = clazz;
+        ParameterizedType parameterizedType = null;
+        while(parameterizedType == null) {
+            final Type superclass = working.getGenericSuperclass();
+            if (superclass == null) {
+                throw new RuntimeException("Can't find superclass as parameterized type!");
+            }
+            if (superclass instanceof ParameterizedType) {
+                parameterizedType = (ParameterizedType) superclass;
+                if (parameterizedType.getActualTypeArguments()[0] instanceof TypeVariable) {
+                    throw new InvalidDirectParameterizedClassUsageException("When using a parameterized worker directly (i.e. with a generic subclass), you must call the AbstractParameterizedWorker constructor that takes the parameterized type directly.");
+                }
+            } else {
+                working = clazz.getSuperclass();
+            }
+        }
+        //noinspection unchecked
+        return (Class<T>) parameterizedType.getActualTypeArguments()[0];
+    }
 
     /**
      * Scans all classes accessible from the context class loader which belong
