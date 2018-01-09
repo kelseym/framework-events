@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.nrg</groupId>
         <artifactId>parent</artifactId>
-        <version>1.7.4</version>
+        <version>X.X.X-eventservice-SNAPSHOT</version>
     </parent>
 
     <artifactId>framework</artifactId>
