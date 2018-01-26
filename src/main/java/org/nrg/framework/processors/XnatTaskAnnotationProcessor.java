@@ -9,6 +9,7 @@
 
 package org.nrg.framework.processors;
 
+import com.google.common.base.Joiner;
 import org.kohsuke.MetaInfServices;
 import org.nrg.framework.task.XnatTask;
 
@@ -38,7 +39,7 @@ public class XnatTaskAnnotationProcessor extends NrgAbstractAnnotationProcessor<
         properties.put(XnatTask.DESCRIPTION, task.description());
         properties.put(XnatTask.DEFAULT_EXECUTION_RESOLVER, task.defaultExecutionResolver());
         properties.put(XnatTask.EXECUTION_RESOLVER_CONFIGURABLE, String.valueOf(task.executionResolverConfigurable()));
-        properties.put(XnatTask.ALLOWED_EXECUTION_RESOLVERS, String.valueOf(task.allowedExecutionResolvers()));
+        properties.put(XnatTask.ALLOWED_EXECUTION_RESOLVERS, Joiner.on(",").join(task.allowedExecutionResolvers()));
         properties.put("javaClass", element.getQualifiedName().toString());
         return properties;
     }
@@ -51,5 +52,4 @@ public class XnatTaskAnnotationProcessor extends NrgAbstractAnnotationProcessor<
     	final String taskId = task.taskId();
         return String.format("META-INF/xnat/task/%s-xnat-task.properties", taskId);
     }
-    
 }

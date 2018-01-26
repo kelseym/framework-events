@@ -12,18 +12,16 @@ package org.nrg.framework.task;
 /**
  * The Interface XnatTaskI.
  */
-public interface XnatTaskI {
-	
+public interface XnatTaskI extends Runnable {
 	/**
 	 * Should run task.
 	 *
 	 * @return true, if successful
 	 */
-	public boolean shouldRunTask();
+	boolean shouldRunTask();
 	
 	/**
 	 * Record task run.
 	 */
-	public void recordTaskRun();
-
+	void recordTaskRun();
 }

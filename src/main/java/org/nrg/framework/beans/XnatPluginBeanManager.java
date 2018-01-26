@@ -9,7 +9,7 @@
 
 package org.nrg.framework.beans;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.nrg.framework.annotations.XnatPlugin;
 import org.nrg.framework.utilities.BasicXnatResourceLocator;
@@ -20,6 +20,7 @@ import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
 @Service
 public class XnatPluginBeanManager {
     public XnatPluginBeanManager() {
-        _pluginBeans.putAll(scanForXnatPluginBeans());
+        _pluginBeans = ImmutableMap.copyOf(scanForXnatPluginBeans());
     }
 
     public Set<String> getPluginIds() {
@@ -40,13 +41,16 @@ public class XnatPluginBeanManager {
         return _pluginBeans.get(pluginId);
     }
 
+    public Map<String, XnatPluginBean> getPluginBeans() {
+        return _pluginBeans;
+    }
+
     public static Map<String, XnatPluginBean> scanForXnatPluginBeans() {
-        final Map<String, XnatPluginBean> pluginBeans = Maps.newHashMap();
+        final Map<String, XnatPluginBean> pluginBeans = new HashMap<>();
         try {
             for (final Resource resource : BasicXnatResourceLocator.getResources("classpath*:META-INF/xnat/**/*-plugin.properties")) {
-                final Properties properties;
                 try {
-                    properties = PropertiesLoaderUtils.loadProperties(resource);
+                    final Properties properties = PropertiesLoaderUtils.loadProperties(resource);
                     if (!properties.containsKey(XnatPlugin.PLUGIN_VERSION)) {
                         final String version = getVersionFromResource(resource);
                         properties.setProperty(XnatPlugin.PLUGIN_VERSION, StringUtils.defaultIfBlank(version, "unknown"));
@@ -79,5 +83,5 @@ public class XnatPluginBeanManager {
 
     private static final Pattern EXTRACT_PLUGIN_VERSION = Pattern.compile("^.*/[A-Za-z0-9._-]+-(?<version>\\d.*)\\.jar.*$");
 
-    private final Map<String, XnatPluginBean> _pluginBeans = Maps.newHashMap();
+    private final Map<String, XnatPluginBean> _pluginBeans;
 }

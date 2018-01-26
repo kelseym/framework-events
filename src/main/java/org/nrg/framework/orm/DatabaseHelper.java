@@ -10,6 +10,7 @@
 package org.nrg.framework.orm;
 
 import org.apache.commons.lang3.StringUtils;
+import org.postgresql.util.PGInterval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,6 +46,26 @@ public class DatabaseHelper {
         _template = template;
         _transactionTemplate = transactionTemplate;
     }
+
+    public static long convertPGIntervalToSeconds(final String expression) {
+        try {
+            final PGInterval interval = new PGInterval(expression);
+            return ((long) interval.getYears()) * 31536000L +
+                   ((long) interval.getMonths()) * 2592000L +
+                   ((long) interval.getDays()) * 86400L +
+                   ((long) interval.getHours()) * 3600L +
+                   ((long) interval.getMinutes()) * 60L +
+                   ((long) interval.getSeconds());
+        } catch (SQLException e) {
+            // This is ignored because it doesn't happen: there's no database transaction in this call.
+            return 0L;
+        }
+    }
+
+    public static int convertPGIntervalToIntSeconds(final String interval) {
+        return (int) convertPGIntervalToSeconds(interval);
+    }
+
 
     /**
      * Gets the database helper's JDBC template to allow database transactions outside of the helper's standard
@@ -168,8 +189,8 @@ public class DatabaseHelper {
      * the second parameter: if <b>true</b>, the code will be executed without transaction protection or rollback
      * capabilities.
      *
-     * @param callable                            A callable object that implements the desired function.
-     * @param executeWithoutTransactionManager    Whether the transaction should be executed if no transaction manager is available.
+     * @param callable                         A callable object that implements the desired function.
+     * @param executeWithoutTransactionManager Whether the transaction should be executed if no transaction manager is available.
      *
      * @return A message with the results of the transaction. The value for this depends on your implementation.
      */
