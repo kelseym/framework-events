@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -49,7 +50,8 @@ public class LapStopWatch extends StopWatch {
             return message;
         }
 
-        private final long lapTime, overallTime;
+        private final long   lapTime;
+        private final long   overallTime;
         private final String message;
     }
 
@@ -76,7 +78,7 @@ public class LapStopWatch extends StopWatch {
     /**
      * Adds a lap time to the list without a specific message.
      *
-     * @see #lap(String)
+     * @see #lap(String, Object...)
      */
     public void lap() {
         lap("");
@@ -90,7 +92,7 @@ public class LapStopWatch extends StopWatch {
      *
      * @see #lap()
      */
-    public void lap(final String message) {
+    public void lap(final String message, final Object... arguments) {
         final long currentTime;
         if (isStopped() || isSuspended()) {
             currentTime = getNanoTime();
@@ -101,16 +103,17 @@ public class LapStopWatch extends StopWatch {
         }
 
         log.debug("Time at lap request: {}", currentTime);
+        final String formattedMessage = arguments.length == 0 || StringUtils.isBlank(message) ? message : MessageFormatter.arrayFormat(message, arguments).getMessage();
 
         if (laps.isEmpty()) {
-            log.debug("Adding first lap with time {} ns and message \"{}\", also set to largest lap time since it's the only lap time.", currentTime, message);
-            laps.add(new Lap(currentTime, message));
+            log.debug("Adding first lap with time {} ns and message \"{}\", also set to largest lap time since it's the only lap time.", currentTime, formattedMessage);
+            laps.add(new Lap(currentTime, formattedMessage));
             largestLapTime = currentTime;
         } else {
             // Calculate the lap time: subtract the overall time at the last lap with the overall time now.
             final long lapTime = currentTime - laps.get(laps.size() - 1).getOverallTime();
-            log.debug("Adding next lap with lap time {} ns and message \"{}\"", lapTime, message);
-            laps.add(new Lap(lapTime, currentTime, message));
+            log.debug("Adding next lap with lap time {} ns and message \"{}\"", lapTime, formattedMessage);
+            laps.add(new Lap(lapTime, currentTime, formattedMessage));
             if (lapTime > largestLapTime) {
                 log.debug("Exceeded the previous largest lap time {} with {}", largestLapTime, lapTime);
                 largestLapTime = lapTime;
@@ -212,7 +215,7 @@ public class LapStopWatch extends StopWatch {
         builder.append(header).append("\n");
         builder.append(StringUtils.repeat("-", header.length())).append("\n");
 
-        final String formatString =  "%" + indexPadding + "d  |  %," + lapPadding + "d  |  %," + elapsedPadding + "d  |  %s\n";
+        final String formatString = "%" + indexPadding + "d  |  %," + lapPadding + "d  |  %," + elapsedPadding + "d  |  %s\n";
         for (int index = 0; index < size; ) {
             final Lap lap = laps.get(index);
             builder.append(String.format(formatString, ++index, lap.getLapTime(), lap.getOverallTime(), lap.getMessage()));
@@ -260,7 +263,7 @@ public class LapStopWatch extends StopWatch {
     private static final Logger log                       = LoggerFactory.getLogger(LapStopWatch.class);
     private static final long   NANO_2_MILLIS             = 1000000L;
     private static final String HEADER_LAP                = "Lap";
-    public static final  int    HEADER_LAP_LENGTH         = HEADER_LAP.length();
+    private static final int    HEADER_LAP_LENGTH         = HEADER_LAP.length();
     private static final String HEADER_LAP_MS             = "Lap Time (ms)";
     private static final int    HEADER_LAP_TIME_MS_LENGTH = HEADER_LAP_MS.length();
     private static final String HEADER_ELAPSED_MS         = "Elapsed (ms)";
