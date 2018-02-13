@@ -25,9 +25,9 @@ public class LapStopWatchTest {
         assertNotNull(lapTimes);
         assertEquals(1, lapTimes.size());
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
-        stopWatch.lap("Just waited one second");
+        stopWatch.lap("Just waited two seconds");
 
         lapTimes = stopWatch.getLapTimes();
         assertNotNull(lapTimes);
@@ -47,8 +47,7 @@ public class LapStopWatchTest {
         assertTrue(lapTime2 > 0);
         assertTrue(lapTime3 > 0);
         assertTrue(lapTime2 > lapTime1);
-        assertTrue(lapTime3 > lapTime2);
-        assertEquals(stopWatch.getTime(), lapTime3);
+        assertTrue(lapTime2 > lapTime3);
 
         final List<LapStopWatch.Lap> laps = stopWatch.getLaps();
         final LapStopWatch.Lap lap1 = laps.get(0);
@@ -59,11 +58,12 @@ public class LapStopWatchTest {
         assertEquals(lapTime2, lap2.getLapTime());
         assertEquals(lapTime3, lap3.getLapTime());
         assertEquals(lap1.getMessage(), "");
-        assertEquals(lap2.getMessage(), "Just waited one second");
+        assertEquals(lap2.getMessage(), "Just waited two seconds");
         assertEquals(lap3.getMessage(), "Stop");
+        assertEquals(stopWatch.getTime(), lap3.getOverallTime());
 
-        LapStopWatch.toTable(stopWatch, System.out);
-        LapStopWatch.toCSV(stopWatch, System.out);
+        stopWatch.toTable(System.out);
+        stopWatch.toCSV(System.out);
 
         Thread.sleep(100);
     }
