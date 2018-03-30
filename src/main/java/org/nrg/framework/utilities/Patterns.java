@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * Contains re-usable regex patterns for matching strings.
  */
 public class Patterns {
-    public static final String EXPR_USERNAME = "[a-zA-Z][a-zA-Z0-9_'-]{3,15}";
+    public static final String EXPR_USERNAME = "[a-zA-Z][a-zA-Z0-9_'-]{0,24}";
     public static final String EXPR_EMAIL = "[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})";
     public static final String EXPR_COMBINED = "(" + EXPR_USERNAME + ")[\\s]*<(" + EXPR_EMAIL + ")>";
 
