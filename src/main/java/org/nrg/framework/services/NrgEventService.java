@@ -10,10 +10,10 @@
 package org.nrg.framework.services;
 
 import org.nrg.framework.event.EventI;
-//import org.nrg.xdat.XDAT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import reactor.bus.Bus;
 import reactor.bus.Event;
 import reactor.bus.EventBus;
@@ -44,6 +44,7 @@ public class NrgEventService {
 	 * @param notifyClassListeners Notify class listeners?
 	 */
 	public void triggerEvent(String eventDesc, EventI event, boolean notifyClassListeners) {
+		log.debug("Triggering event {}: {}", event, eventDesc);
 		_eventBus.notify(eventDesc, Event.wrap(event));
 		if (notifyClassListeners) {
 			_eventBus.notify(event.getClass(), Event.wrap(event));
@@ -66,6 +67,7 @@ public class NrgEventService {
 	 * @param event the event
 	 */
 	public void triggerEvent(EventI event) {
+		log.debug("Triggering event {}", event);
 		_eventBus.notify(event.getClass(), Event.wrap(event));
 	}
 	
@@ -79,6 +81,7 @@ public class NrgEventService {
 		if (replyTo == null) {
 			throw new IllegalArgumentException("Event replyTo object cannot be null");
 		}
+		log.debug("Triggering event {}", event);
 		_eventBus.notify(event.getClass(), Event.wrap(event, replyTo));
 	}
 	
@@ -91,6 +94,7 @@ public class NrgEventService {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void triggerEvent(String eventDesc,Event event,boolean notifyClassListeners) {
+		log.debug("Triggering event {}: {}", event, eventDesc);
 		_eventBus.notify(eventDesc, event);
 		if (notifyClassListeners) {
 			_eventBus.notify(event.getClass(), Event.wrap(event));
@@ -105,6 +109,7 @@ public class NrgEventService {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void triggerEvent(String eventDesc,Event event) {
+		log.debug("Triggering event {}: {}", event, eventDesc);
 		triggerEvent(eventDesc,event,true);
 	}
 	
@@ -115,6 +120,7 @@ public class NrgEventService {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void triggerEvent(Event event) {
+		log.debug("Triggering event {}", event);
 		_eventBus.notify(event.getClass(), event);
 	}
 	
@@ -128,6 +134,7 @@ public class NrgEventService {
 		if (event.getReplyTo() == null) {
 			throw new IllegalArgumentException("Event replyTo object cannot be null");
 		}
+		log.debug("Triggering event {}", event);
 		_eventBus.send(event.getClass(), event);
 	}
 	
@@ -170,4 +177,5 @@ public class NrgEventService {
 		_eventBus.send(event.getClass(), Event.wrap(event), replyTo);
 	}
 
+	private final Logger log = LoggerFactory.getLogger(NrgEventService.class);
 }
