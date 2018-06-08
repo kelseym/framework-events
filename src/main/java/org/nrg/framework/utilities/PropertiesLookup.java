@@ -14,8 +14,12 @@ import org.apache.commons.lang3.text.StrLookup;
 import java.util.Properties;
 
 /**
- * Provides a lookup implementation that handles Properties objects for use with the Commons Lang3 StrSubstitutor class.
+ * Provides a lookup implementation that handles {@link OrderedProperties} objects for use with the Commons Text StringSubstitutor class.
+ *
+ * @deprecated Use {@link OrderedPropertiesLookup} and migrate to using classes from the commons-text library.
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
+@Deprecated
 public class PropertiesLookup extends StrLookup<String> {
     public PropertiesLookup(final Properties properties) {
         _properties = properties;
