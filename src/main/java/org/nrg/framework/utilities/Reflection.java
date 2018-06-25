@@ -1,7 +1,7 @@
 /*
  * framework: org.nrg.framework.utilities.Reflection
  * XNAT http://www.xnat.org
- * Copyright (c) 2017, Washington University School of Medicine
+ * Copyright (c) 2018, Washington University School of Medicine
  * All Rights Reserved
  *
  * Released under the Simplified BSD.
@@ -9,8 +9,10 @@
 
 package org.nrg.framework.utilities;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.nrg.framework.annotations.XnatPlugin;
 import org.nrg.framework.exceptions.NotConcreteTypeException;
 import org.nrg.framework.exceptions.NotParameterizedTypeException;
+import org.nrg.framework.exceptions.NrgServiceError;
+import org.nrg.framework.exceptions.NrgServiceRuntimeException;
 import org.nrg.framework.orm.hibernate.exceptions.InvalidDirectParameterizedClassUsageException;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
@@ -40,6 +44,7 @@ import java.util.regex.Pattern;
 
 import static org.reflections.ReflectionUtils.*;
 
+@SuppressWarnings("WeakerAccess")
 public class Reflection {
     public static final String                          CAPITALIZED_NAME          = "[A-Z][A-z0-9_]*";
     public static final String                          REGEX_REFL_GETTER         = "^public.*\\.(get|is)%s\\(\\).*$";
@@ -51,19 +56,20 @@ public class Reflection {
     public static final String                          REGEX_BOOL_GETTER         = "^is(?<property>[A-Z][A-z0-9_]*)$";
     public static final String                          REGEX_OBJECT_GETTER       = "^get(?<property>[A-Z][A-z0-9_]*)$";
     public static final String                          REGEX_GETTER              = "^(is|get)(?<property>[A-Z][A-z0-9_]*)$";
-    public static final String                          REGEX_SETTER              = "^set(?<property>[A-Z][A-z0-9_]*)$";
-    public static final String                          REGEX_PROPERTY            = "^(?<prefix>is|get|set)(?<property>[A-Z][A-z0-9_]*)$";
-    public static final Pattern                         PATTERN_OBJECT_GETTER     = Pattern.compile(REGEX_OBJECT_GETTER);
-    public static final Pattern                         PATTERN_BOOL_GETTER       = Pattern.compile(REGEX_BOOL_GETTER);
-    public static final Pattern                         PATTERN_GETTER            = Pattern.compile(REGEX_GETTER);
-    public static final Pattern                         PATTERN_SETTER            = Pattern.compile(REGEX_SETTER);
-    public static final Pattern                         PATTERN_PROPERTY          = Pattern.compile(REGEX_PROPERTY);
-    public static       Map<String, List<Class<?>>>     CACHED_CLASSES_BY_PACKAGE = Maps.newHashMap();
+    public static final String                      REGEX_SETTER              = "^set(?<property>[A-Z][A-z0-9_]*)$";
+    public static final String                      REGEX_PROPERTY            = "^(?<prefix>is|get|set)(?<property>[A-Z][A-z0-9_]*)$";
+    public static final Pattern                     PATTERN_OBJECT_GETTER     = Pattern.compile(REGEX_OBJECT_GETTER);
+    public static final Pattern                     PATTERN_BOOL_GETTER       = Pattern.compile(REGEX_BOOL_GETTER);
+    @SuppressWarnings("unused")
+    public static final Pattern                     PATTERN_GETTER            = Pattern.compile(REGEX_GETTER);
+    public static final Pattern                     PATTERN_SETTER            = Pattern.compile(REGEX_SETTER);
+    public static final Pattern                     PATTERN_PROPERTY          = Pattern.compile(REGEX_PROPERTY);
+    public static       Map<String, List<Class<?>>> CACHED_CLASSES_BY_PACKAGE = Maps.newHashMap();
 
     public static <T> Class<T> getParameterizedTypeForClass(final Class<?> clazz) {
-        Class<?> working = clazz;
+        Class<?>          working           = clazz;
         ParameterizedType parameterizedType = null;
-        while(parameterizedType == null) {
+        while (parameterizedType == null) {
             final Type superclass = working.getGenericSuperclass();
             if (superclass == null) {
                 throw new RuntimeException("Can't find superclass as parameterized type!");
@@ -102,10 +108,10 @@ public class Reflection {
         final ClassLoader loader = getClassLoader();
         assert loader != null;
 
-        Enumeration<URL> resources = loader.getResources(packageName.replace('.', '/'));
-        List<File> directories = new ArrayList<>();
-        List<URL> jarFiles = new ArrayList<>();
-        final List<Class<?>> classes = new ArrayList<>();
+        Enumeration<URL>     resources   = loader.getResources(packageName.replace('.', '/'));
+        List<File>           directories = new ArrayList<>();
+        List<URL>            jarFiles    = new ArrayList<>();
+        final List<Class<?>> classes     = new ArrayList<>();
 
         while (resources.hasMoreElements()) {
             URL resource = resources.nextElement();
@@ -137,7 +143,7 @@ public class Reflection {
      * analysis, which requires the following annotation on the definition:
      *
      * <pre>@Retention(RetentionPolicy.RUNTIME)</pre>
-     *
+     * <p>
      * See {@link XnatPlugin} for an example of an annotation that includes this configuration.
      *
      * @param <T>             The annotation class to check.
@@ -182,6 +188,7 @@ public class Reflection {
         }
     }
 
+    @SuppressWarnings("unused")
     public static void injectDynamicImplementations(final String _package, final Map<String, Object> params) {
         try {
             injectDynamicImplementations(_package, false, params);
@@ -194,7 +201,7 @@ public class Reflection {
         if (!(type instanceof ParameterizedType)) {
             throw new NotParameterizedTypeException(type, "The type " + type.toString() + " is not a parameterized type");
         }
-        final List<Class<?>> classes = new ArrayList<>();
+        final List<Class<?>>    classes           = new ArrayList<>();
         final ParameterizedType parameterizedType = (ParameterizedType) type;
         for (final Type subtype : parameterizedType.getActualTypeArguments()) {
             if (subtype instanceof ParameterizedType) {
@@ -263,6 +270,20 @@ public class Reflection {
         return getMethodsUpToSuperclass(clazz, terminator, PREDICATES_ANY_SETTER, predicates);
     }
 
+    public static Object callMethodForParameters(final Object object, final String methodName, final Object... parameters) {
+        final Class<?> objectClass = object.getClass();
+        final Method   method = getMethodForParameters(objectClass, methodName, getClassTypes(parameters));
+        if (method == null) {
+            return null;
+        }
+        try {
+            return method.invoke(object, parameters);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            _log.error("An error occurred trying to call the method '{}.{}'", objectClass.getName(), methodName, e);
+        }
+        return null;
+    }
+
     public interface InjectableI {
         void execute(Map<String, Object> params);
     }
@@ -279,9 +300,9 @@ public class Reflection {
      * @throws ClassNotFoundException the class not found exception
      */
     public static Collection<? extends Class<?>> findClassesInJarFile(final URL jarFile, final String packageName) throws IOException, ClassNotFoundException {
-        final List<Class<?>> classes = new ArrayList<>();
+        final List<Class<?>>   classes    = new ArrayList<>();
         final JarURLConnection connection = (JarURLConnection) jarFile.openConnection();
-        final JarFile jar = connection.getJarFile();
+        final JarFile          jar        = connection.getJarFile();
         for (final JarEntry entry : Collections.list(jar.entries())) {
             if (entry.getName().startsWith(packageName.replace('.', '/')) && entry.getName().endsWith(".class") && !entry.getName().contains("$")) {
                 final String className = entry.getName().replace("/", ".").substring(0, entry.getName().length() - 6);
@@ -300,9 +321,8 @@ public class Reflection {
      * @return The classes
      *
      * @throws ClassNotFoundException the class not found exception
-     * @throws IOException            Signals that an I/O exception has occurred.
      */
-    public static List<Class<?>> findClasses(final File directory, final String packageName) throws ClassNotFoundException, IOException {
+    public static List<Class<?>> findClasses(final File directory, final String packageName) throws ClassNotFoundException {
         final List<Class<?>> classes = new ArrayList<>();
 
         if (!directory.exists()) {
@@ -343,8 +363,8 @@ public class Reflection {
     }
 
     public static Properties getPropertiesForClass(final Class<?> parent) {
-        final String bundle = "/" + parent.getName().replace(".", "/") + ".properties";
-        Properties properties = new Properties();
+        final String bundle     = "/" + parent.getName().replace(".", "/") + ".properties";
+        Properties   properties = new Properties();
         try {
             try (InputStream inputStream = parent.getResourceAsStream(bundle)) {
                 properties.load(inputStream);
@@ -405,7 +425,7 @@ public class Reflection {
         // If there are no parameters specified, return the default constructor.
         if (parameterTypes == null || parameterTypes.length == 0) {
             try {
-                Constructor<T> constructor = target.getConstructor();
+                final Constructor<T> constructor = target.getConstructor();
                 // If the default constructor isn't accessible
                 return isAccessible(requestedAccess, constructor.getModifiers()) ? constructor : null;
             } catch (NoSuchMethodException e) {
@@ -421,42 +441,79 @@ public class Reflection {
         } catch (NoSuchMethodException ignored) {
             //
         }
+
         final Constructor<T>[] constructors = (Constructor<T>[]) target.getConstructors();
         // Honestly I don't even think this can happen, but just in case...
         if (constructors == null || constructors.length == 0) {
             return null;
         }
-        // If we got through all the bits where there are no constructors or parameters, we can try to match the
-        // submitted parameter types.
-        for (final Constructor<T> candidate : constructors) {
-            // If it's not accessible, don't even process.
-            if (!isAccessible(requestedAccess, candidate.getModifiers())) {
-                continue;
-            }
-            // Get all of the parameter types for the current candidate constructor.
-            final Class<?>[] candidateParameterTypes = candidate.getParameterTypes();
-            // If the number of parameter types don't match, then this isn't a match.
-            // TODO: Check how this works with vararg constructors. It should be fine (should be Object[]), but still.
-            if (candidateParameterTypes.length != parameterTypes.length) {
-                continue;
-            }
-            // Let's assume the best.
-            boolean match = true;
-            // Now go through all of the parameters.
-            for (int index = 0; index < candidateParameterTypes.length; index++) {
-                // If we can't assign this submitted parameter to the candidate parameter...
-                if (!(candidateParameterTypes[index].isAssignableFrom(parameterTypes[index]))) {
-                    // We don't have a match.
-                    match = false;
-                    break;
-                }
-            }
-            if (match) {
-                return candidate;
+
+        return (Constructor<T>) getAccessibleForParameters(constructors, requestedAccess, parameterTypes);
+    }
+
+    public static <T> Method getMethodForParameters(final Class<T> target, final String name, final Class<?>... parameterTypes) {
+        return getMethodForParameters(target, name, Modifier.PUBLIC, parameterTypes);
+    }
+
+    public static <T> Method getMethodForParameters(final Class<T> target, final String name, final int requestedAccess, final Class<?>... parameterTypes) {
+        // If there are no parameters specified, return the default method.
+        if (parameterTypes == null || parameterTypes.length == 0) {
+            try {
+                final Method method = target.getMethod(name);
+                // If the default method isn't accessible
+                return isAccessible(requestedAccess, method.getModifiers()) ? method : null;
+            } catch (NoSuchMethodException e) {
+                // If there was no default method, then return null.
+                return null;
             }
         }
-        // If we made it through without returning, none of the constructor candidates match.
+        // Try to return constructor that's an exact match for the parameter types.
+        // If that doesn't exist, ignore the exception. We have more sophisticated
+        // things that we can try to match superclasses, interfaces, etc.
+        try {
+            return target.getMethod(name, parameterTypes);
+        } catch (NoSuchMethodException ignored) {
+            //
+        }
+
+        final Method[] methods = target.getMethods();
+        // Honestly I don't even think this can happen, but just in case...
+        if (methods == null || methods.length == 0) {
+            return null;
+        }
+
+        return (Method) getAccessibleForParameters(methods, requestedAccess, parameterTypes);
+    }
+
+    public static <T> T constructObjectFromParameters(final Class<? extends T> type, final Object... parameters) {
+        return constructObjectFromParameters(null, type, parameters);
+    }
+
+    public static <T> T constructObjectFromParameters(final String className, final Class<? extends T> type, final Object... parameters) {
+        try {
+            final Class<? extends T>       implClass      = StringUtils.isBlank(className) ? type : Class.forName(className).asSubclass(type);
+            final Class<?>[]               parameterTypes = getClassTypes(parameters);
+            final Constructor<? extends T> constructor    = getConstructorForParameters(implClass, parameterTypes);
+            if (constructor == null) {
+                _log.error("No constructor was found for the class '{}' with the following parameter types: {}", className, StringUtils.join(parameterTypes, ", "));
+                return null;
+            }
+            return constructor.newInstance(parameters);
+        } catch (ClassNotFoundException e) {
+            _log.error("Couldn't find definition of the specified class '{}'", className);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            _log.error("An error occurred trying to create an instance of the class '{}'", className, e);
+        }
         return null;
+    }
+
+    public static Class<?>[] getClassTypes(final Object[] parameters) {
+        return Lists.transform(Arrays.asList(parameters), new Function<Object, Class<?>>() {
+            @Override
+            public Class<?> apply(final Object object) {
+                return object.getClass();
+            }
+        }).toArray(new Class<?>[0]);
     }
 
     @SuppressWarnings("unused")
@@ -471,6 +528,7 @@ public class Reflection {
         return (String) resources.toArray()[0];
     }
 
+    @SuppressWarnings("unused")
     public static Set<String> findResources(final String resourcePackage, final String resourcePattern) {
         return findResources(resourcePackage, Pattern.compile(resourcePattern));
     }
@@ -487,6 +545,57 @@ public class Reflection {
         return classLoader.getResource(resource);
     }
 
+    private static AccessibleObject getAccessibleForParameters(final AccessibleObject[] candidates, final int requestedAccess, final Class<?>... parameterTypes) {
+        // If we got through all the bits where there are no constructors or parameters, we can try to match the
+        // submitted parameter types.
+        for (final AccessibleObject candidate : candidates) {
+            final boolean isConstructor;
+            if (candidate instanceof Constructor) {
+                isConstructor = true;
+            } else if (candidate instanceof Method) {
+                isConstructor = false;
+            } else {
+                throw new NrgServiceRuntimeException(NrgServiceError.ConfigurationError, "This method only works for constructors and methods at this time.");
+            }
+            // If it's not accessible, don't even process.
+            final int modifiers = isConstructor ? ((Constructor) candidate).getModifiers() : ((Method) candidate).getModifiers();
+            if (!isAccessible(requestedAccess, modifiers)) {
+                continue;
+            }
+
+            // Get all of the parameter types for the current candidate constructor.
+            final Class<?>[] candidateParameterTypes = isConstructor ? ((Constructor) candidate).getParameterTypes() : ((Method) candidate).getParameterTypes();
+
+            // If the number of parameter types don't match, then this isn't a match.
+            // TODO: Check how this works with vararg constructors. It should be fine (should be Object[]), but still.
+            if (candidateParameterTypes.length != parameterTypes.length) {
+                continue;
+            }
+            // Let's assume the best.
+            boolean match = true;
+            // Now go through all of the parameters.
+            for (int index = 0; index < candidateParameterTypes.length; index++) {
+                // If we can't assign this submitted parameter to the candidate parameter...
+                if (!matchParameterTypes(candidateParameterTypes[index], parameterTypes[index])) {
+                    // We don't have a match.
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                return candidate;
+            }
+        }
+        // If we made it through without returning, none of the constructor candidates match.
+        return null;
+    }
+
+    private static boolean matchParameterTypes(final Class<?> first, final Class<?> second) {
+        return first.isAssignableFrom(second) ||
+               PRIMITIVES.contains(first) && PRIMITIVES.indexOf(first) == WRAPPERS.indexOf(second) ||
+               PRIMITIVES.contains(second) && PRIMITIVES.indexOf(second) == WRAPPERS.indexOf(first);
+    }
+
     private static boolean isAccessible(final int requestedAccess, final int modifiers) {
         // If they want private, they can have anything, so just say yes.
         if (requestedAccess == Modifier.PRIVATE) {
@@ -494,7 +603,7 @@ public class Reflection {
         }
 
         // Find out if the target modifier is private or protected.
-        boolean isPrivate = Modifier.isPrivate(modifiers);
+        boolean isPrivate   = Modifier.isPrivate(modifiers);
         boolean isProtected = Modifier.isPrivate(modifiers);
 
         // If requested access is protected, then return true if the modifier is NOT private, otherwise it's public so
@@ -511,9 +620,9 @@ public class Reflection {
 
     @SafeVarargs
     private static List<Method> getMethodsUpToSuperclass(final Class<?> subclass, final Class<?> terminator, final List<Predicate<? super Method>> predicates, final Predicate<? super Method>... added) {
-        final List<Method> methods = Lists.newArrayList();
-        final Predicate[] asArray = predicates.toArray(new Predicate[predicates.size()]);
-        final Predicate[] submitted = added.length == 0 ? asArray : ArrayUtils.addAll(asArray, added);
+        final List<Method> methods   = Lists.newArrayList();
+        final Predicate[]  asArray   = predicates.toArray(new Predicate[0]);
+        final Predicate[]  submitted = added.length == 0 ? asArray : ArrayUtils.addAll(asArray, added);
         //noinspection unchecked
         methods.addAll(ReflectionUtils.getMethods(subclass, submitted));
         final Class<?> superclass = subclass.getSuperclass();
@@ -528,7 +637,7 @@ public class Reflection {
     }
 
     private static List<Predicate<? super Method>> getGetterPredicate(final String property, final List<Predicate<? super Method>> added) {
-        final String pattern = String.format(REGEX_REFL_GETTER, StringUtils.isBlank(property) ? CAPITALIZED_NAME : StringUtils.capitalize(property));
+        final String                          pattern    = String.format(REGEX_REFL_GETTER, StringUtils.isBlank(property) ? CAPITALIZED_NAME : StringUtils.capitalize(property));
         final List<Predicate<? super Method>> predicates = Lists.newArrayList();
         predicates.add(withPattern(pattern));
         predicates.add(withParametersCount(0));
@@ -543,7 +652,7 @@ public class Reflection {
     }
 
     private static List<Predicate<? super Method>> getSetterPredicate(final String property, final List<Predicate<? super Method>> added) {
-        final String pattern = String.format(REGEX_REFL_SETTER, StringUtils.isBlank(property) ? CAPITALIZED_NAME : StringUtils.capitalize(property));
+        final String                          pattern    = String.format(REGEX_REFL_SETTER, StringUtils.isBlank(property) ? CAPITALIZED_NAME : StringUtils.capitalize(property));
         final List<Predicate<? super Method>> predicates = Lists.newArrayList();
         predicates.add(withPattern(pattern));
         predicates.add(withReturnType(Void.TYPE));
@@ -552,6 +661,9 @@ public class Reflection {
         }
         return predicates;
     }
+
+    private static final List<Class<?>> WRAPPERS   = ImmutableList.of(Boolean.class, Byte.class, Character.class, Double.class, Float.class, Integer.class, Long.class, Short.class, Void.class);
+    private static final List<Class<?>> PRIMITIVES = ImmutableList.of(boolean.class, byte.class, char.class, double.class, float.class, int.class, long.class, short.class, void.class);
 
     private static final Map<String, Reflections> _reflectionsCache = Collections.synchronizedMap(new HashMap<String, Reflections>());
 

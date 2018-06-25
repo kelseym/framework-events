@@ -10,7 +10,6 @@
 package org.nrg.framework.orm.hibernate;
 
 import com.google.common.base.Joiner;
-import org.hibernate.Hibernate;
 import org.nrg.framework.exceptions.NotFoundException;
 import org.nrg.framework.exceptions.NrgServiceError;
 import org.nrg.framework.exceptions.NrgServiceException;
@@ -29,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity, DAO extends BaseHibernateDAO<E>> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E>, ApplicationContextAware, InitializingBean {
 
@@ -69,7 +70,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
                 create(instance);
             }
             return postProcessNewEntity(instance);
-        } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+        } catch (NrgServiceException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
             throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, e);
         }
     }
@@ -234,6 +235,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         refresh(true, entities);
     }
 
+    @SuppressWarnings("ImplicitSubclassInspection")
     @SafeVarargs
     @Override
     @Transactional
@@ -255,6 +257,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
     }
 
+    @SuppressWarnings("ImplicitSubclassInspection")
     @SafeVarargs
     @Override
     @Transactional
@@ -270,6 +273,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         getDao().flush();
     }
 
+    @SuppressWarnings("ImplicitSubclassInspection")
     @Override
     @Transactional
     public final List<Number> getRevisions(final long id) {
@@ -278,7 +282,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
 
     @Override
     @Transactional
-    public final E getRevision(final long id, final Number revision) {
+    public E getRevision(final long id, final Number revision) {
         return getDao().getRevision(id, revision);
     }
 
@@ -356,6 +360,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     protected E postProcessNewEntity(final E entity) {
         return entity;
     }
@@ -372,54 +377,16 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         return _context;
     }
 
-    private Constructor<E> getConstructor(final Object[] parameters) {
-        try {
-            return getConstructor(parameters, true);
-        } catch (NrgServiceException e) {
-            if (e.getServiceError() == NrgServiceError.Instantiation) {
-                try {
-                    return getConstructor(parameters, false);
-                } catch (NrgServiceException e1) {
-                    final Class<?>[] types = getClassTypes(parameters, false);
-                    throw new NrgServiceRuntimeException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
-                }
-            } else {
-                throw new NrgServiceRuntimeException(e);
-            }
-        }
-    }
-
-    private Constructor<E> getConstructor(final Object[] parameters, final boolean coercePrimitives) throws NrgServiceException {
+    private Constructor<E> getConstructor(final Object[] parameters) throws NrgServiceException {
         if (parameters == null || parameters.length == 0) {
             return Reflection.getConstructorForParameters(getParameterizedType());
         }
-        final Class<?>[] types = getClassTypes(parameters, coercePrimitives);
+        final Class<?>[] types = Reflection.getClassTypes(parameters);
         Constructor<E> constructor = Reflection.getConstructorForParameters(getParameterizedType(), types);
         if (constructor == null) {
             throw new NrgServiceException(NrgServiceError.Instantiation, "No constructor available for the class " + getParameterizedType().getName() + " that matches the submitted signature: (" + displayTypes(types) + ")");
         }
         return constructor;
-    }
-
-    private Class<?>[] getClassTypes(final Object[] parameters, final boolean coercePrimitives) {
-        final List<Class<?>> buffer = new ArrayList<>();
-        boolean hasPrimitive = false;
-        for (final Object parameter : parameters) {
-            final boolean isPrimitive = PRIMITIVES.contains(parameter.getClass());
-            if (!hasPrimitive && isPrimitive) {
-                hasPrimitive = true;
-            }
-            buffer.add((coercePrimitives && isPrimitive) ? getPrimitiveType(parameter.getClass()) : parameter.getClass());
-        }
-        return buffer.toArray(new Class<?>[buffer.size()]);
-    }
-
-    private Class<?> getPrimitiveType(final Class<?> parameterClass) {
-        try {
-            return (Class<?>) parameterClass.getField("TYPE").get(null);
-        } catch (ReflectiveOperationException e) {
-            return parameterClass;
-        }
     }
 
     private String displayTypes(final Class<?>[] types) {
@@ -430,18 +397,6 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     private static final Logger _log = LoggerFactory.getLogger(AbstractHibernateEntityService.class);
-    private static final List<Class<?>> PRIMITIVES = new ArrayList<>();
-
-    static {
-        PRIMITIVES.add(Boolean.class);
-        PRIMITIVES.add(Character.class);
-        PRIMITIVES.add(Byte.class);
-        PRIMITIVES.add(Short.class);
-        PRIMITIVES.add(Integer.class);
-        PRIMITIVES.add(Long.class);
-        PRIMITIVES.add(Float.class);
-        PRIMITIVES.add(Double.class);
-    }
 
     @SuppressWarnings({"SpringJavaAutowiringInspection", "SpringAutowiredFieldsWarningInspection"})
     @Autowired

@@ -18,6 +18,7 @@ import org.nrg.framework.orm.hibernate.AggregatedAnnotationSessionFactoryBean;
 import org.nrg.framework.orm.hibernate.HibernateEntityPackageList;
 import org.nrg.framework.orm.hibernate.PrefixedTableNamingStrategy;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.annotation.Bean;
@@ -80,7 +81,7 @@ public class OrmTestConfiguration {
                                                       final DataSource dataSource,
                                                       @Qualifier("hibernateProperties") final Properties properties,
                                                       final ImprovedNamingStrategy namingStrategy,
-                                                      final List<HibernateEntityPackageList> packageLists) {
+                                                      @Autowired(required = false) final List<HibernateEntityPackageList> packageLists) {
         final AggregatedAnnotationSessionFactoryBean bean = new AggregatedAnnotationSessionFactoryBean();
         bean.setEntityPackageLists(packageLists);
         bean.setCacheRegionFactory(factory);

@@ -12,6 +12,7 @@ package org.nrg.framework.orm.hibernate;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import org.apache.commons.lang3.ArrayUtils;
+import org.hibernate.envers.Audited;
 import org.nrg.framework.orm.NrgEntity;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ import java.util.Date;
 import java.util.Objects;
 
 @MappedSuperclass
+@Audited
 @SuppressWarnings("serial")
 abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Serializable {
     /**
