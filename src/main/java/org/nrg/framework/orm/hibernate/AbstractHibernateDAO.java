@@ -10,6 +10,7 @@
 package org.nrg.framework.orm.hibernate;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.hibernate.*;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Example;
@@ -24,36 +25,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extends AbstractParameterizedWorker<E> implements BaseHibernateDAO<E> {
 
     public static final String DEFAULT_CACHE_REGION = "nrg";
 
     protected AbstractHibernateDAO() {
         super();
-        _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
-        _cacheRegion = extractCacheRegion(getParameterizedType());
-        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
+
+        final Class<E> parameterizedType = getParameterizedType();
+        _isAuditable = HibernateUtils.isAuditable(parameterizedType);
+        _cacheRegion = extractCacheRegion(parameterizedType);
+        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(parameterizedType);
     }
 
-    protected AbstractHibernateDAO(Class<E> clazz) {
+    protected AbstractHibernateDAO(final Class<E> clazz) {
         super(clazz);
-        _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
-        _cacheRegion = extractCacheRegion(getParameterizedType());
-        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
+
+        final Class<E> parameterizedType = getParameterizedType();
+        _isAuditable = HibernateUtils.isAuditable(parameterizedType);
+        _cacheRegion = extractCacheRegion(parameterizedType);
+        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(parameterizedType);
     }
 
-    protected AbstractHibernateDAO(SessionFactory factory) {
-        if (_log.isDebugEnabled()) {
-            _log.debug("Adding session factory in constructor: " + factory.hashCode());
-        }
+    protected AbstractHibernateDAO(final SessionFactory factory) {
+        _log.debug("Adding session factory in constructor: {}", factory.hashCode());
         _factory = factory;
-        _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
-        _cacheRegion = extractCacheRegion(getParameterizedType());
-        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(getParameterizedType());
+
+        final Class<E> parameterizedType = getParameterizedType();
+        _isAuditable = HibernateUtils.isAuditable(parameterizedType);
+        _cacheRegion = extractCacheRegion(parameterizedType);
+        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(parameterizedType);
     }
 
     /**
@@ -61,10 +67,8 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      */
     @Autowired(required = false)
     @Override
-    public void setSessionFactory(SessionFactory factory) {
-        if (_log.isDebugEnabled()) {
-            _log.debug("Setting session factory in setter: " + factory.hashCode());
-        }
+    public void setSessionFactory(final SessionFactory factory) {
+        _log.debug("Setting session factory in setter: {}", factory.hashCode());
         _factory = factory;
     }
 
@@ -72,9 +76,9 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * {@inheritDoc}
      */
     @Override
-    public Serializable create(E entity) {
+    public Serializable create(final E entity) {
         // TODO: Setting all of these things would be best done in an EntityListener class, but that doesn't work for some reason.
-        Date now = new Date();
+        final Date now = new Date();
         entity.setCreated(now);
         entity.setTimestamp(now);
         entity.setEnabled(true);
@@ -86,7 +90,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * {@inheritDoc}
      */
     @Override
-    public E retrieve(long id) {
+    public E retrieve(final long id) {
         if (_isAuditable) {
             return findEnabledById(id);
         }
@@ -97,7 +101,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * {@inheritDoc}
      */
     @Override
-    public void update(E entity) {
+    public void update(final E entity) {
         // TODO: When JPA persistence lifecycle support is working, remove explicit timestamp update.
         entity.setTimestamp(new Date());
         getSession().update(entity);
@@ -107,7 +111,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * {@inheritDoc}
      */
     @Override
-    public void delete(E entity) {
+    public void delete(final E entity) {
         if (_isAuditable) {
             entity.setEnabled(false);
             entity.setDisabled(new Date());
@@ -125,7 +129,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         try {
             final Criteria criteria = getCriteriaForType();
             criteria.add(Restrictions.eq("id", entity.getId()));
-            if (criteria.list().size() > 0) {
+            if (!criteria.list().isEmpty()) {
                 update(entity);
             } else {
                 create(entity);
@@ -148,21 +152,21 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      */
     @Override
     public List<E> findAllEnabled() {
-        Criteria criteria = getCriteriaForType();
+        final Criteria criteria = getCriteriaForType();
         criteria.add(Restrictions.eq("enabled", true));
         return criteria.list();
     }
 
     @Override
     public long countAll() {
-        Criteria criteria = getCriteriaForType();
+        final Criteria criteria = getCriteriaForType();
         criteria.setProjection(Projections.rowCount());
         return (long) criteria.uniqueResult();
     }
 
     @Override
     public long countAllEnabled() {
-        Criteria criteria = getCriteriaForType();
+        final Criteria criteria = getCriteriaForType();
         criteria.setProjection(Projections.rowCount());
         criteria.add(Restrictions.eq("enabled", true));
         return (long) criteria.uniqueResult();
@@ -173,12 +177,12 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      */
     @Override
     public List<E> findByExample(E exampleInstance, String[] excludeProperty) {
-        Criteria criteria = getCriteriaForType();
+        final Criteria criteria = getCriteriaForType();
         if (_isAuditable) {
             exampleInstance.setEnabled(true);
         }
-        Example example = Example.create(exampleInstance);
-        for (String exclude : excludeProperty) {
+        final Example example = Example.create(exampleInstance);
+        for (final String exclude : excludeProperty) {
             if (!_isAuditable || !exclude.equals("enabled")) {
                 example.excludeProperty(exclude);
             }
@@ -191,10 +195,10 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findByExample(BaseHibernateEntity, String[])
      */
     @Override
-    public List<E> findAllByExample(E exampleInstance, String[] excludeProperty) {
-        Criteria criteria = getCriteriaForType();
-        Example example = Example.create(exampleInstance);
-        for (String exclude : excludeProperty) {
+    public List<E> findAllByExample(final E exampleInstance, final String[] excludeProperty) {
+        final Criteria criteria = getCriteriaForType();
+        final Example  example  = Example.create(exampleInstance);
+        for (final String exclude : excludeProperty) {
             example.excludeProperty(exclude);
         }
         criteria.add(example);
@@ -203,7 +207,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
 
     @Override
     public List<E> findByProperty(final String property, final Object value) {
-        Criteria criteria = getCriteriaForType();
+        final Criteria criteria = getCriteriaForType();
         criteria.add(Restrictions.eq(property, value));
         if (_isAuditable) {
             criteria.add(Restrictions.eq("enabled", true));
@@ -218,7 +222,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
 
     @Override
     public List<E> findByProperties(final Map<String, Object> properties) {
-        Criteria criteria = getCriteriaForType();
+        final Criteria criteria = getCriteriaForType();
         for (final String property : properties.keySet()) {
             final Object value = properties.get(property);
             criteria.add(Restrictions.eq(property, value));
@@ -229,9 +233,8 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         final List list = criteria.list();
         if (list == null || list.size() == 0) {
             return null;
-        } else {
-            return (List<E>) list;
         }
+        return (List<E>) list;
     }
 
     @Override
@@ -247,7 +250,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findById(long)
      */
     @Override
-    public E findById(long id) {
+    public E findById(final long id) {
         return findById(id, false);
     }
 
@@ -255,22 +258,15 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findById(long, boolean)
      */
     @Override
-    public E findById(long id, boolean lock) {
-        E entity;
-        if (lock) {
-            entity = (E) getSession().load(getParameterizedType(), id, LockOptions.UPGRADE);
-        } else {
-            entity = (E) getSession().load(getParameterizedType(), id);
-        }
-
-        return entity;
+    public E findById(final long id, final boolean lock) {
+        return lock ? (E) getSession().load(getParameterizedType(), id, LockOptions.UPGRADE) : (E) getSession().load(getParameterizedType(), id);
     }
 
     /**
      * @see BaseHibernateDAO#findEnabledById(long)
      */
     @Override
-    public E findEnabledById(long id) {
+    public E findEnabledById(final long id) {
         return findEnabledById(id, false);
     }
 
@@ -278,8 +274,8 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#findEnabledById(long, boolean)
      */
     @Override
-    public E findEnabledById(long id, boolean lock) {
-        E entity = findById(id, lock);
+    public E findEnabledById(final long id, final boolean lock) {
+        final E entity = findById(id, lock);
         return entity != null && entity.isEnabled() ? entity : null;
     }
 
@@ -287,7 +283,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @see BaseHibernateDAO#refresh(boolean, BaseHibernateEntity)
      */
     @Override
-    public void refresh(boolean initialize, E entity) {
+    public void refresh(final boolean initialize, final E entity) {
         getSession().refresh(entity);
         if (initialize) {
             initialize(entity);
@@ -310,11 +306,17 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         Hibernate.initialize(entity);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Number> getRevisions(final long id) {
         return getAuditReader().getRevisions(getParameterizedType(), id);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public E getRevision(final long id, final Number revision) {
         return getAuditReader().find(getParameterizedType(), id, revision);
@@ -345,7 +347,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         try {
             return _factory.getCurrentSession();
         } catch (HibernateException exception) {
-            _log.error("Trying to get session for parameterized type: " + getParameterizedType(), exception);
+            _log.error("Trying to get session for parameterized type: {}", getParameterizedType(), exception);
             throw exception;
         }
     }
@@ -357,12 +359,19 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      *
      * @return All entities matching the submitted criteria.
      */
-    protected List<E> findByCriteria(Criterion... criterion) {
-        Criteria criteria = getCriteriaForType();
-        for (Criterion c : criterion) {
+    protected List<E> findByCriteria(final Criterion... criterion) {
+        final Criteria criteria = getCriteriaForType();
+        for (final Criterion c : criterion) {
             criteria.add(c);
         }
         return criteria.list();
+    }
+
+    protected boolean exists(final String property, final String value) {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put("type", getParameterizedType().getSimpleName());
+        properties.put("property", property);
+        return getSession().createQuery(StringSubstitutor.replace(HQL_EXISTS, properties)).setString(property, value).uniqueResult() != null;
     }
 
     /**
@@ -372,7 +381,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @return An initialized {@link Criteria Criteria object}.
      */
     protected Criteria getCriteriaForType() {
-        Criteria criteria = getSession().createCriteria(getParameterizedType(), StringUtils.uncapitalize(getParameterizedType().getSimpleName()));
+        final Criteria criteria = getSession().createCriteria(getParameterizedType(), StringUtils.uncapitalize(getParameterizedType().getSimpleName()));
         criteria.setCacheable(true);
         criteria.setCacheRegion(getCacheRegion());
         if (_addDistinctRootEntity) {
@@ -391,7 +400,7 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      * @param value    The value of the property. May be null.
      */
     @SuppressWarnings("unused")
-    protected void addNullableCriteria(Criteria criteria, String name, Object value) {
+    protected void addNullableCriteria(final Criteria criteria, final String name, final Object value) {
         if (value == null) {
             criteria.add(Restrictions.isNull(name));
         } else {
@@ -407,13 +416,15 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return AuditReaderFactory.get(getSession());
     }
 
-    private String extractCacheRegion(Class<E> type) {
+    private String extractCacheRegion(final Class<E> type) {
         return type.isAnnotationPresent(org.hibernate.annotations.Cache.class)
                ? type.getAnnotation(org.hibernate.annotations.Cache.class).region()
                : DEFAULT_CACHE_REGION;
     }
 
     private static final Logger _log = LoggerFactory.getLogger(AbstractHibernateDAO.class);
+
+    private static final String HQL_EXISTS = "select 1 from ${type} where ${property} = :${property}";
 
     private SessionFactory _factory;
 

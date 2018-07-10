@@ -15,8 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Represents the basic functionality for a CRUD service in XNAT supporting {@link BaseHibernateEntity basic XNAT
+ * data entity} implementations.
+ *
+ * @param <E> An entity class that implements the {@link BaseHibernateEntity} interface.
+ */
 public interface BaseHibernateService<E extends BaseHibernateEntity> extends NrgService {
-
     /**
      * Gets a new entity object, using the entity constructor matching the submitted parameters. Note
      * that the new entity is not yet created and added to the system!
@@ -181,9 +186,26 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
 
     void flush();
 
+    /**
+     * Gets a list of the available revisions for the entity with the specified ID. These
+     * revision numbers can be used when calling {@link #getRevision(long, Number)}.
+     *
+     * @param id       The ID of the entity to retrieve.
+     *
+     * @return The available revision numbers for the specified entity.
+     */
     @Transactional
     List<Number> getRevisions(long id);
 
+    /**
+     * Gets the requested revision of the entity with the specified ID. You can get a
+     * list of the available revision numbers by calling {@link #getRevisions(long)}.
+     *
+     * @param id       The ID of the entity to retrieve.
+     * @param revision The revision of the entity to retrieve.
+     *
+     * @return The requested revision of the specified entity.
+     */
     @Transactional
     E getRevision(final long id, final Number revision);
 

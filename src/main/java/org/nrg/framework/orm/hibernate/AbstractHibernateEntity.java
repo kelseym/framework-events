@@ -12,7 +12,7 @@ package org.nrg.framework.orm.hibernate;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import org.apache.commons.lang3.ArrayUtils;
-import org.hibernate.envers.Audited;
+import org.apache.commons.lang3.ObjectUtils;
 import org.nrg.framework.orm.NrgEntity;
 
 import javax.persistence.*;
@@ -21,15 +21,17 @@ import java.util.Date;
 import java.util.Objects;
 
 @MappedSuperclass
-@Audited
 @SuppressWarnings("serial")
 abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Serializable {
     /**
      * Adds the submitted properties to the properties of the base {@link NrgEntity} class to exclude those properties
      * from search-by-example entity instances.
-     * @param properties    The properties above and beyond the base entity properties to be excluded from a search.
+     *
+     * @param properties The properties above and beyond the base entity properties to be excluded from a search.
+     *
      * @return The full array of properties to be excluded from a search-by-example.
      */
+    @SuppressWarnings("unused")
     public static String[] getExcludedProperties(final String... properties) {
         return ArrayUtils.addAll(EXCLUDE_BASE_PROPS, properties);
     }
@@ -37,6 +39,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     /**
      * Returns the ID of the data entity. This usually maps to the entity's primary
      * key in the appropriate database table.
+     *
      * @return The ID of the data entity.
      */
     @Id
@@ -50,6 +53,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
      * Sets the ID of the data entity. This usually maps to the entity's primary
      * key in the appropriate database table and, as such, should rarely be used
      * directly.
+     *
      * @param id The ID to set for the data entity.
      */
     @Override
@@ -59,11 +63,13 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
 
     /**
      * Indicates whether this entity is currently enabled. For accountability and
-     * auditability purposes, many entities can't actually be deleted from the database
+     * auditing purposes, many entities can't actually be deleted from the database
      * but must be disabled instead. If this value is false, the entity should be
-     * considered to be effectively deleted from the system for purposes of on-going use.
-     * Note that new entities should be enabled by default.
+     * considered to be effectively deleted from the system for purposes of on-going
+     * use. Note that new entities should be enabled by default.
+     *
      * @return <b>true</b> if the entity is currently enabled, <b>false</b> otherwise.
+     *
      * @see BaseHibernateEntity#isEnabled()
      */
     @Column(columnDefinition = "boolean default true")
@@ -75,7 +81,9 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     /**
      * Sets the enabled flag for the entity. See {@link #isEnabled()} for more information
      * on the enabled state of data entities.
+     *
      * @param enabled The enabled state to set on the entity.
+     *
      * @see BaseHibernateEntity#setEnabled(boolean)
      */
     @Override
@@ -85,6 +93,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
 
     /**
      * Returns the timestamp of the data entity's creation.
+     *
      * @return The timestamp of the data entity's creation.
      */
     @Temporal(TemporalType.TIMESTAMP)
@@ -96,6 +105,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
 
     /**
      * Sets the timestamp of the data entity's creation.
+     *
      * @param created The timestamp of the data entity's creation.
      */
     public void setCreated(Date created) {
@@ -104,6 +114,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
 
     /**
      * Returns the timestamp of the last update to the data entity.
+     *
      * @return The timestamp of the last update to the data entity.
      */
     @Temporal(TemporalType.TIMESTAMP)
@@ -115,6 +126,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
 
     /**
      * Sets the timestamp of the last update to the data entity.
+     *
      * @param timestamp The timestamp to set for the last update to the data entity.
      */
     @Override
@@ -125,6 +137,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     /**
      * Returns the timestamp of the data entity's disabling. If this value is the same
      * as {@link HibernateUtils#DEFAULT_DATE}, the entity hasn't been disabled.
+     *
      * @return The timestamp of the data entity's disabling.
      */
     @Temporal(TemporalType.TIMESTAMP)
@@ -136,6 +149,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
 
     /**
      * Sets the timestamp of the data entity's disabling.
+     *
      * @param disabled The timestamp to set for the data entity's disabling.
      */
     @Override
@@ -146,18 +160,22 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     /**
      * Used to exclude the properties of the base {@link NrgEntity} class.
      */
-    private static final String[] EXCLUDE_BASE_PROPS = new String[] { "id", "enabled", "created", "timestamp", "disabled" };
+    private static final String[] EXCLUDE_BASE_PROPS = new String[]{"id", "enabled", "created", "timestamp", "disabled"};
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         final AbstractHibernateEntity that = (AbstractHibernateEntity) o;
         return _id == that._id &&
-                _enabled == that._enabled &&
-                Objects.equals(_created, that._created) &&
-                Objects.equals(_timestamp, that._timestamp) &&
-                Objects.equals(_disabled, that._disabled);
+               _enabled == that._enabled &&
+               compareDates(_created, that._created) &&
+               compareDates(_timestamp, that._timestamp) &&
+               compareDates(_disabled, that._disabled);
     }
 
     @Override
@@ -171,7 +189,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
                 .toString();
     }
 
-    public ToStringHelper addParentPropertiesToString(final ToStringHelper toStringHelper) {
+    private ToStringHelper addParentPropertiesToString(final ToStringHelper toStringHelper) {
         return toStringHelper
                 .add("id", _id)
                 .add("enabled", _enabled)
@@ -180,9 +198,18 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
                 .add("timestamp", _timestamp);
     }
 
-    private long _id;
+    private static boolean compareDates(final Date first, final Date second) {
+        // If they're both not null, we can just compare the times.
+        if (ObjectUtils.allNotNull(first, second)) {
+            return first.getTime() == second.getTime();
+        }
+        // If they're not both null, then they're not equal.
+        return !ObjectUtils.anyNotNull(first, second);
+    }
+
+    private long    _id;
     private boolean _enabled;
-    private Date _created;
-    private Date _timestamp;
-    private Date _disabled = HibernateUtils.DEFAULT_DATE;
+    private Date    _created;
+    private Date    _timestamp;
+    private Date    _disabled = HibernateUtils.DEFAULT_DATE;
 }

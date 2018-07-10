@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Properties;
 
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity, DAO extends BaseHibernateDAO<E>> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E>, ApplicationContextAware, InitializingBean {
-
     public AbstractHibernateEntityService() {
         super();
         _isAuditable = HibernateUtils.isAuditable(getParameterizedType());
@@ -273,16 +273,25 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         getDao().flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("ImplicitSubclassInspection")
     @Override
     @Transactional
-    public final List<Number> getRevisions(final long id) {
+    public List<Number> getRevisions(final long id) {
         return getDao().getRevisions(id);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Transactional
-    public E getRevision(final long id, final Number revision) {
+    public E getRevision(final long id, @Nonnull final Number revision) {
+        if (revision.longValue() < 1) {
+            throw new IllegalArgumentException("Revision numbers for entities start at 1, anything less than that is invalid.");
+        }
         return getDao().getRevision(id, revision);
     }
 
@@ -342,7 +351,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
+    public void setApplicationContext(@Nonnull final ApplicationContext context) throws BeansException {
         _context = context;
     }
 
@@ -352,11 +361,9 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
      */
     @Override
     public void afterPropertiesSet() {
-        Properties properties = getContext().getBean("hibernateProperties", Properties.class);
-        if (properties != null) {
-            if (properties.containsKey("xnat.initialize_entities")) {
-                setInitialize(Boolean.parseBoolean(properties.getProperty("xnat.initialize_entities")));
-            }
+        final Properties properties = getContext().getBean("hibernateProperties", Properties.class);
+        if (properties.containsKey("xnat.initialize_entities")) {
+            setInitialize(Boolean.parseBoolean(properties.getProperty("xnat.initialize_entities")));
         }
     }
 
