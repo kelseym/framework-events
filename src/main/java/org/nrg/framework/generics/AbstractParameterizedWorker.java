@@ -15,13 +15,18 @@ abstract public class AbstractParameterizedWorker<E> {
 
     @SuppressWarnings("unchecked")
     protected AbstractParameterizedWorker() {
-        _parameterizedType = getParameterizedTypeForClass(getClass());
+        this(null);
     }
 
-    protected AbstractParameterizedWorker(Class<E> clazz) {
-        _parameterizedType = clazz;
+    protected AbstractParameterizedWorker(final Class<E> clazz) {
+        if (clazz != null) {
+            _parameterizedType = clazz;
+        } else {
+            _parameterizedType = getParameterizedTypeForClass(getClass());
+        }
     }
 
+    @SuppressWarnings("unused")
     public boolean isMatchingType(AbstractParameterizedWorker other) {
         return getParameterizedType().equals(other.getParameterizedType());
     }

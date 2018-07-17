@@ -14,6 +14,7 @@ import org.nrg.framework.services.NrgService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the basic functionality for a CRUD service in XNAT supporting {@link BaseHibernateEntity basic XNAT
@@ -47,7 +48,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * Creates a new entity similar to the {@link #newEntity(Object...)} method, then adds the submitted
      * entity object to the system. This will always create an entirely new entity, but if data validation
      * constraints are violated for the particular table or schema, an exception will be thrown.
-     *
+     * <p>
      * This method is a convenience method that combines the functions of the {@link #newEntity(Object...)} and
      * {@link #create(BaseHibernateEntity)} methods.
      *
@@ -70,8 +71,10 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * Retrieves the entity with the specified ID.
      *
      * @param id The ID of the entity to be retrieved.
-     * @throws NotFoundException If entity is not found.
+     *
      * @return The requested entity.
+     *
+     * @throws NotFoundException If entity is not found.
      */
     E get(long id) throws NotFoundException;
 
@@ -124,6 +127,81 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      */
     @SuppressWarnings("unused")
     long getCountWithDisabled();
+
+    /**
+     * Uses an efficient query to quickly determine whether an object exists on the system with the specified value
+     * for the indicated property. The value <b>true</b> for the <b>enabled</b> is presumed unless <b>enabled</b>
+     * is explicitly specified.
+     *
+     * @param property The property to check.
+     * @param value    The value to check for.
+     *
+     * @return Returns true if an object with the value for the specified property exists.
+     *
+     * @see #exists(Map)
+     */
+    boolean exists(final String property, final Object value);
+
+    /**
+     * Convenience version of {@link #exists(Map)} that creates parameter map on the fly.
+     *
+     * @param property1 First property name.
+     * @param value1    First property value
+     * @param property2 Second property name.
+     * @param value2    Second property value
+     *
+     * @return Returns true if an object with the values for the specified properties exists.
+     *
+     * @see #exists(Map)
+     */
+    boolean exists(final String property1, final Object value1, final String property2, final Object value2);
+
+    /**
+     * Convenience version of {@link #exists(Map)} that creates parameter map on the fly.
+     *
+     * @param property1 First property name.
+     * @param value1    First property value
+     * @param property2 Second property name.
+     * @param value2    Second property value
+     * @param property3 Third property name.
+     * @param value3    Third property value
+     *
+     * @return Returns true if an object with the values for the specified properties exists.
+     *
+     * @see #exists(Map)
+     */
+    boolean exists(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3);
+
+    /**
+     * Convenience version of {@link #exists(Map)} that creates parameter map on the fly.
+     *
+     * @param property1 First property name.
+     * @param value1    First property value
+     * @param property2 Second property name.
+     * @param value2    Second property value
+     * @param property3 Third property name.
+     * @param value3    Third property value
+     * @param property4 Fourth property name.
+     * @param value4    Fourth property value
+     *
+     * @return Returns true if an object with the values for the specified properties exists.
+     *
+     * @see #exists(Map)
+     */
+    boolean exists(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3, final String property4, final Object value4);
+
+    /**
+     * Uses an efficient query to quickly determine whether an object exists on the system with the specified values
+     * for the indicated properties. The value <b>true</b> for the <b>enabled</b> is presumed unless <b>enabled</b>
+     * is explicitly specified.
+     *
+     * @param parameters The properties and values to check.
+     *
+     * @return Returns true if an object with the value for the specified properties exists.
+     *
+     * @see #exists(String, Object)
+     */
+    boolean exists(final Map<String, Object> parameters);
 
     /**
      * Refreshes the submitted entity. If the entity's properties have been changed elsewhere, the submitted instance
@@ -190,7 +268,7 @@ public interface BaseHibernateService<E extends BaseHibernateEntity> extends Nrg
      * Gets a list of the available revisions for the entity with the specified ID. These
      * revision numbers can be used when calling {@link #getRevision(long, Number)}.
      *
-     * @param id       The ID of the entity to retrieve.
+     * @param id The ID of the entity to retrieve.
      *
      * @return The available revision numbers for the specified entity.
      */

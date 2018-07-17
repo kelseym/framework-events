@@ -9,39 +9,33 @@
 
 package org.nrg.framework.orm.pacs;
 
-import org.junit.Before;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nrg.framework.exceptions.NrgServiceException;
 import org.nrg.framework.orm.utils.TestDBUtils;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.validation.ConstraintViolationException;
-import java.sql.SQLException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = PacsEntityServiceTestConfiguration.class)
+@Transactional
 public class PacsEntityServiceTest {
-
-    @Inject
-    private TestDBUtils testDbUtils;
-
-    @Inject
-    private PacsEntityService pacsEntityService;
-
-    @Before
-    public void before() throws SQLException {
-        testDbUtils.cleanDb("XHBM_PACS");
-    }
+    public static final String AE_TITLE            = "TIP-DEV-PACS";
+    public static final String HOST                = "10.28.16.215";
+    public static final int    STORAGE_PORT        = 11112;
+    public static final int    QUERY_RETRIEVE_PORT = 11112;
+    public static final String DICOM_ORM_STRATEGY  = "dicomOrmStrategy";
 
     @Test(expected = ConstraintViolationException.class)
-    public void testNullPacs() throws NrgServiceException {
-        Pacs entity = pacsEntityService.newEntity();
+    public void testNullPacs() {
+        final Pacs entity = pacsEntityService.newEntity();
         entity.setAeTitle("testNullPacs");
         pacsEntityService.create(entity);
     }
@@ -49,27 +43,44 @@ public class PacsEntityServiceTest {
     @Test
     public void testAllServiceMethods() {
         assertEquals(0, pacsEntityService.getAll().size());
-        Pacs pacs = buildTestPacs();
-        pacsEntityService.create(pacs);
+
+        final Pacs pacs1 = buildTestPacs();
+        pacsEntityService.create(pacs1);
         assertEquals(1, pacsEntityService.getAll().size());
-        pacs = pacsEntityService.findByAeTitle("TIP-DEV-PACS");
-        assertNotNull(pacs);
-        assertEquals("TIP-DEV-PACS", pacs.getAeTitle());
-        pacs.setAeTitle("FOO");
-        pacsEntityService.update(pacs);
-        pacs = pacsEntityService.retrieve(pacs.getId());
-        assertEquals("FOO", pacs.getAeTitle());
-        pacsEntityService.delete(pacs);
+
+        final Pacs pacs2 = pacsEntityService.findByAeTitle("TIP-DEV-PACS");
+        assertNotNull(pacs2);
+        assertEquals("TIP-DEV-PACS", pacs2.getAeTitle());
+        pacs2.setAeTitle("FOO");
+        pacsEntityService.update(pacs2);
+
+        final Pacs pacs3 = pacsEntityService.retrieve(pacs2.getId());
+        assertEquals("FOO", pacs3.getAeTitle());
+        pacsEntityService.delete(pacs3);
         assertEquals(0, pacsEntityService.getAll().size());
+    }
+
+    @Test
+    public void testQueries() {
+        final Pacs pacs1 = buildTestPacs();
+        pacsEntityService.create(pacs1);
+        assertEquals(1, pacsEntityService.getAll().size());
+
+        assertTrue(pacsEntityService.exists("host", HOST));
+        assertTrue(pacsEntityService.exists(ImmutableMap.<String, Object>of("aeTitle", AE_TITLE, "host", HOST, "storagePort", STORAGE_PORT)));
+        assertFalse(pacsEntityService.exists(ImmutableMap.<String, Object>of("aeTitle", "garbage", "host", HOST, "storagePort", STORAGE_PORT)));
     }
 
     private Pacs buildTestPacs() {
         Pacs pacs = new Pacs();
-        pacs.setAeTitle("TIP-DEV-PACS");
-        pacs.setHost("10.28.16.215");
-        pacs.setStoragePort(11112);
-        pacs.setQueryRetrievePort(11112);
-        pacs.setOrmStrategySpringBeanId("dicomOrmStrategy");
+        pacs.setAeTitle(AE_TITLE);
+        pacs.setHost(HOST);
+        pacs.setStoragePort(STORAGE_PORT);
+        pacs.setQueryRetrievePort(QUERY_RETRIEVE_PORT);
+        pacs.setOrmStrategySpringBeanId(DICOM_ORM_STRATEGY);
         return pacs;
     }
+
+    @Inject
+    private PacsEntityService pacsEntityService;
 }

@@ -9,6 +9,7 @@
 
 package org.nrg.framework.orm.hibernate;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.hibernate.*;
@@ -35,31 +36,30 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     public static final String DEFAULT_CACHE_REGION = "nrg";
 
     protected AbstractHibernateDAO() {
-        super();
-
-        final Class<E> parameterizedType = getParameterizedType();
-        _isAuditable = HibernateUtils.isAuditable(parameterizedType);
-        _cacheRegion = extractCacheRegion(parameterizedType);
-        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(parameterizedType);
+        this(null, null);
     }
 
     protected AbstractHibernateDAO(final Class<E> clazz) {
-        super(clazz);
-
-        final Class<E> parameterizedType = getParameterizedType();
-        _isAuditable = HibernateUtils.isAuditable(parameterizedType);
-        _cacheRegion = extractCacheRegion(parameterizedType);
-        _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(parameterizedType);
+        this(clazz, null);
     }
 
     protected AbstractHibernateDAO(final SessionFactory factory) {
-        _log.debug("Adding session factory in constructor: {}", factory.hashCode());
-        _factory = factory;
+        this(null, factory);
+    }
+
+    private AbstractHibernateDAO(final Class<E> clazz, final SessionFactory factory) {
+        super(clazz);
+
+        if (factory != null) {
+            _log.debug("Adding session factory in constructor: {}", factory.hashCode());
+            _factory = factory;
+        }
 
         final Class<E> parameterizedType = getParameterizedType();
         _isAuditable = HibernateUtils.isAuditable(parameterizedType);
         _cacheRegion = extractCacheRegion(parameterizedType);
         _addDistinctRootEntity = HibernateUtils.hasEagerlyFetchedCollection(parameterizedType);
+        _hqlExistsBody = getHqlExistsComponent(HQL_EXISTS_BODY, "type", parameterizedType.getName());
     }
 
     /**
@@ -77,12 +77,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
      */
     @Override
     public Serializable create(final E entity) {
-        // TODO: Setting all of these things would be best done in an EntityListener class, but that doesn't work for some reason.
-        final Date now = new Date();
-        entity.setCreated(now);
-        entity.setTimestamp(now);
-        entity.setEnabled(true);
-        entity.setDisabled(new Date(0));
         return getSession().save(entity);
     }
 
@@ -280,6 +274,37 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean exists(final String property, final Object value) {
+        return exists(parameters(property, value));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean exists(final Map<String, Object> criteria) {
+        if (criteria.isEmpty()) {
+            return false;
+        }
+        final StringBuilder       query      = new StringBuilder();
+        final Map<String, Object> parameters = new HashMap<>();
+        parameters.put("type", getParameterizedType().getSimpleName());
+        if (!criteria.containsKey("enabled")) {
+            query.append(_hqlExistsBody).append(getHqlExistsComponent(HQL_EXISTS_WHERE, "property", "enabled"));
+            parameters.put("enabled", true);
+        }
+        for (final String name : criteria.keySet()) {
+            query.append(query.length() == 0 ? HQL_EXISTS_BODY : " and ").append(getHqlExistsComponent(HQL_EXISTS_WHERE, "property", name));
+            parameters.put(name, criteria.get(name));
+        }
+        _log.debug("Composed HQL query '{}' with parameters: {}", query, parameters);
+        return getSession().createQuery(query.toString()).setProperties(parameters).uniqueResult() != null;
+    }
+
+    /**
      * @see BaseHibernateDAO#refresh(boolean, BaseHibernateEntity)
      */
     @Override
@@ -322,6 +347,23 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
         return getAuditReader().find(getParameterizedType(), id, revision);
     }
 
+    protected static Map<String, Object> parameters(final String property, final Object value) {
+        return ImmutableMap.of(property, value);
+    }
+
+    protected static Map<String, Object> parameters(final String property1, final Object value1, final String property2, final Object value2) {
+        return ImmutableMap.of(property1, value1, property2, value2);
+    }
+
+    protected static Map<String, Object> parameters(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3) {
+        return ImmutableMap.of(property1, value1, property2, value2, property3, value3);
+    }
+
+    protected static Map<String, Object> parameters(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3, final String property4, final Object value4) {
+        return ImmutableMap.of(property1, value1, property2, value2, property3, value3, property4, value4);
+    }
+
+    @SuppressWarnings("unused")
     protected E getEntityFromResult(final Object result) {
         if (result == null) {
             return null;
@@ -365,13 +407,6 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
             criteria.add(c);
         }
         return criteria.list();
-    }
-
-    protected boolean exists(final String property, final String value) {
-        final Map<String, String> properties = new HashMap<>();
-        properties.put("type", getParameterizedType().getSimpleName());
-        properties.put("property", property);
-        return getSession().createQuery(StringSubstitutor.replace(HQL_EXISTS, properties)).setString(property, value).uniqueResult() != null;
     }
 
     /**
@@ -422,12 +457,18 @@ abstract public class AbstractHibernateDAO<E extends BaseHibernateEntity> extend
                : DEFAULT_CACHE_REGION;
     }
 
+    private static String getHqlExistsComponent(final String hqlExistsBody, final String type, final String name) {
+        return StringSubstitutor.replace(hqlExistsBody, parameters(type, name));
+    }
+
     private static final Logger _log = LoggerFactory.getLogger(AbstractHibernateDAO.class);
 
-    private static final String HQL_EXISTS = "select 1 from ${type} where ${property} = :${property}";
+    private static final String HQL_EXISTS_BODY  = "select 1 from ${type} where ";
+    private static final String HQL_EXISTS_WHERE = "${property} = :${property}";
 
     private SessionFactory _factory;
 
+    private final String  _hqlExistsBody;
     private final boolean _isAuditable;
     private final String  _cacheRegion;
     private final boolean _addDistinctRootEntity;

@@ -13,6 +13,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.nrg.framework.orm.NrgEntity;
 
 import javax.persistence.*;
@@ -96,6 +98,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
      *
      * @return The timestamp of the data entity's creation.
      */
+    @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     @Override
@@ -117,6 +120,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
      *
      * @return The timestamp of the last update to the data entity.
      */
+    @UpdateTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
     @Override
@@ -208,7 +212,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
     }
 
     private long    _id;
-    private boolean _enabled;
+    private boolean _enabled  = true;
     private Date    _created;
     private Date    _timestamp;
     private Date    _disabled = HibernateUtils.DEFAULT_DATE;

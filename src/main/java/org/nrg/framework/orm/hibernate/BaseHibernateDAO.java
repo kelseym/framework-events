@@ -81,6 +81,33 @@ public interface BaseHibernateDAO<E extends BaseHibernateEntity> {
     @SuppressWarnings({"unused", "deprecation"})
     List<E> findAllByExample(E exampleInstance, String[] excludeProperty);
 
+    /**
+     * Uses an efficient query to quickly determine whether an object exists on the system with the specified value
+     * for the indicated property. The value <b>true</b> for the <b>enabled</b> is presumed unless <b>enabled</b>
+     * is explicitly specified.
+     *
+     * @param property The property to check.
+     * @param value    The value to check for.
+     *
+     * @return Returns true if an object with the value for the specified property exists.
+     *
+     * @see #exists(Map)
+     */
+    boolean exists(final String property, final Object value);
+
+    /**
+     * Uses an efficient query to quickly determine whether an object exists on the system with the specified values
+     * for the indicated properties. The value <b>true</b> for the <b>enabled</b> is presumed unless <b>enabled</b>
+     * is explicitly specified.
+     *
+     * @param parameters The properties and values to check.
+     *
+     * @return Returns true if an object with the value for the specified properties exists.
+     *
+     * @see #exists(String, Object)
+     */
+    boolean exists(final Map<String, Object> parameters);
+
     void refresh(boolean initialize, E entity);
 
     void flush();

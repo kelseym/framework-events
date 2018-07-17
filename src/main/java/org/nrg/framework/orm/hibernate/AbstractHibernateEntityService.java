@@ -10,6 +10,7 @@
 package org.nrg.framework.orm.hibernate;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableMap;
 import org.nrg.framework.exceptions.NotFoundException;
 import org.nrg.framework.exceptions.NrgServiceError;
 import org.nrg.framework.exceptions.NrgServiceException;
@@ -31,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 abstract public class AbstractHibernateEntityService<E extends BaseHibernateEntity, DAO extends BaseHibernateDAO<E>> extends AbstractParameterizedWorker<E> implements BaseHibernateService<E>, ApplicationContextAware, InitializingBean {
@@ -83,9 +85,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Override
     @Transactional
     public E create(E entity) {
-        if (_log.isDebugEnabled()) {
-            _log.debug("Creating a new entity: " + entity.toString());
-        }
+        _log.debug("Creating a new entity: {}", entity);
         getDao().create(entity);
         return postProcessNewEntity(entity);
     }
@@ -115,9 +115,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Override
     @Transactional
     public E retrieve(long id) {
-        if (_log.isDebugEnabled()) {
-            _log.debug("Retrieving entity for ID: " + id);
-        }
+        _log.debug("Retrieving entity for ID: {}", id);
         final E entity;
         if (_isAuditable) {
             entity = getDao().findEnabledById(id);
@@ -149,9 +147,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Override
     @Transactional
     public void update(E entity) {
-        if (_log.isDebugEnabled()) {
-            _log.debug("Updating entity for ID: " + entity.getId());
-        }
+        _log.debug("Updating entity for ID: {}", entity.getId());
         getDao().update(entity);
     }
 
@@ -161,9 +157,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Override
     @Transactional
     public void delete(E entity) {
-        if (_log.isDebugEnabled()) {
-            _log.debug("Deleting entity for ID: " + entity.getId());
-        }
+        _log.debug("Deleting entity for ID: {}", entity.getId());
         if (_isAuditable) {
             entity.setEnabled(false);
             entity.setDisabled(new Date());
@@ -179,9 +173,7 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Override
     @Transactional
     public void delete(long id) {
-        if (_log.isDebugEnabled()) {
-            _log.debug("Deleting entity for ID: " + id);
-        }
+        _log.debug("Deleting entity for ID: {}", id);
         delete(getDao().retrieve(id));
     }
 
@@ -221,6 +213,51 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
     @Transactional
     public long getCountWithDisabled() {
         return getDao().countAll();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Override
+    public boolean exists(final String property, final Object value) {
+        return getDao().exists(property, value);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Override
+    public boolean exists(final String property1, final Object value1, final String property2, final Object value2) {
+        return getDao().exists(parameters(property1, value1, property2, value2));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Override
+    public boolean exists(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3) {
+        return getDao().exists(parameters(property1, value1, property2, value2, property3, value3));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Override
+    public boolean exists(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3, final String property4, final Object value4) {
+        return getDao().exists(parameters(property1, value1, property2, value2, property3, value3, property4, value4));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    @Override
+    public boolean exists(final Map<String, Object> parameters) {
+        return getDao().exists(parameters);
     }
 
     @Override
@@ -365,6 +402,22 @@ abstract public class AbstractHibernateEntityService<E extends BaseHibernateEnti
         if (properties.containsKey("xnat.initialize_entities")) {
             setInitialize(Boolean.parseBoolean(properties.getProperty("xnat.initialize_entities")));
         }
+    }
+
+    protected static Map<String, Object> parameters(final String property, final Object value) {
+        return ImmutableMap.of(property, value);
+    }
+
+    protected static Map<String, Object> parameters(final String property1, final Object value1, final String property2, final Object value2) {
+        return ImmutableMap.of(property1, value1, property2, value2);
+    }
+
+    protected static Map<String, Object> parameters(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3) {
+        return ImmutableMap.of(property1, value1, property2, value2, property3, value3);
+    }
+
+    protected static Map<String, Object> parameters(final String property1, final Object value1, final String property2, final Object value2, final String property3, final Object value3, final String property4, final Object value4) {
+        return ImmutableMap.of(property1, value1, property2, value2, property3, value3, property4, value4);
     }
 
     @SuppressWarnings("WeakerAccess")
