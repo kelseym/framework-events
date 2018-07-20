@@ -193,7 +193,7 @@ abstract public class AbstractHibernateEntity implements BaseHibernateEntity, Se
                 .toString();
     }
 
-    private ToStringHelper addParentPropertiesToString(final ToStringHelper toStringHelper) {
+    protected ToStringHelper addParentPropertiesToString(final ToStringHelper toStringHelper) {
         return toStringHelper
                 .add("id", _id)
                 .add("enabled", _enabled)
