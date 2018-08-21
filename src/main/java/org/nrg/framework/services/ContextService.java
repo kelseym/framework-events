@@ -10,6 +10,8 @@
 package org.nrg.framework.services;
 
 import com.google.common.base.Joiner;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -174,10 +176,20 @@ public class ContextService implements NrgService, ApplicationContextAware, Serv
         if (_applicationContext == null) {
             return null;
         }
-        final Map<String, T> candidate = _applicationContext.getBeansOfType(type);
-        if (candidate.size() > 0) {
-            return candidate;
+        BeanFactory beanFactory = _applicationContext.getParentBeanFactory();
+        if(ListableBeanFactory.class.isAssignableFrom(beanFactory.getClass())){
+            final Map<String, T> candidate = ((ListableBeanFactory)beanFactory).getBeansOfType(type);
+            if (candidate.size() > 0) {
+                return candidate;
+            }
         }
+        else{
+            final Map<String, T> candidate = _applicationContext.getBeansOfType(type);
+            if (candidate.size() > 0) {
+                return candidate;
+            }
+        }
+
         return new HashMap<>();
     }
 
