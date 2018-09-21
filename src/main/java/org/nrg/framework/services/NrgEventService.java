@@ -62,7 +62,7 @@ public class NrgEventService {
      * @param event       the event
      */
     public void triggerEvent(final String description, final EventI event) {
-        triggerEvent(description, event, true);
+        triggerEventInternal(Event.wrap(event), description, true);
     }
 
     /**
@@ -167,19 +167,21 @@ public class NrgEventService {
     }
 
     private void triggerEventInternal(@Nonnull final Event event, final String description, final Boolean notifyClassListeners) {
-        if (StringUtils.isNotBlank(description)) {
-            log.debug("Triggering event {}: {}", event, description);
-            getEventBus().notify(description, event);
-            if (notifyClassListeners) {
-                getEventBus().notify(event.getClass(), event);
-            }
+        final Object data = event.getData();
+        final Class<?> dataClass;
+        if (data != null && EventI.class.isAssignableFrom(data.getClass())) {
+            dataClass = data.getClass();
         } else {
-            log.debug("Triggering event {}", event);
-            getEventBus().notify(event.getClass(), Event.wrap(event));
+            dataClass = event.getClass();
         }
 
+        final Object key = StringUtils.isNotBlank(description) ? description : dataClass;
+
+        log.debug("Triggering '{}' event: {}", key, event);
+        getEventBus().notify(key, event);
+
         if (BooleanUtils.toBooleanDefaultIfNull(notifyClassListeners, false)) {
-            getEventBus().notify(event.getClass(), Event.wrap(event));
+            getEventBus().notify(dataClass, event);
         }
     }
 
