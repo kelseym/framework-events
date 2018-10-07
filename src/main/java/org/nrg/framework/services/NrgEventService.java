@@ -175,11 +175,22 @@ public class NrgEventService {
             dataClass = event.getClass();
         }
 
-        final Object key = StringUtils.isNotBlank(description) ? description : dataClass;
+        if (log.isTraceEnabled()) {
+            final StringBuilder stackTraceDisplay = new StringBuilder();
+            final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            for (int index = 2; index < stackTrace.length; index++) {
+                final StackTraceElement element = stackTrace[index];
+                final String            className = element.getClassName();
+                if (className.startsWith("org.nrg")) {
+                    stackTraceDisplay.append("    at ").append(className).append(".").append(element.getMethodName()).append("(), line ").append(element.getLineNumber()).append("\n");
+                }
+            }
+            log.trace("Triggering '{}' event: {}\n{}", StringUtils.isNotBlank(description) ? description : dataClass.getName(), ObjectUtils.defaultIfNull(data, event), stackTraceDisplay);
+        } else {
+            log.debug("Triggering '{}' event: {}", StringUtils.isNotBlank(description) ? description : dataClass.getName(), ObjectUtils.defaultIfNull(data, event));
+        }
 
-        log.debug("Triggering '{}' event: {}", key, event);
-        getEventBus().notify(key, event);
-
+        getEventBus().notify(StringUtils.isNotBlank(description) ? description : dataClass, event);
         if (BooleanUtils.toBooleanDefaultIfNull(notifyClassListeners, false)) {
             getEventBus().notify(dataClass, event);
         }
